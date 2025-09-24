@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Received Orders</title>
+<style>
+/* ===== Base ===== */
+body {
+  font-family: 'Poppins', Arial, sans-serif;
+  background: linear-gradient(135deg, #f9fbfd, #eef3f8);
+  margin: 0;
+  padding: 20px;
+  color: #333;
+}
+
+/* ===== Container ===== */
+.container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ===== Headings ===== */
+h2 {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #222;
+  font-weight: 700;
+  font-size: 28px;
+}
+
+.active-orders {
+  text-align: center;
+  margin-bottom: 35px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #555;
+}
+
+/* ===== Orders Grid ===== */
+.orders-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: center;
+  animation: fadeIn 1s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== Order Card ===== */
+.order {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  padding: 18px;
+  width: 100%;
+  max-width: 360px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: slideIn 0.4s ease;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.order:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.15);
+}
+
+/* Left Accent Bar */
+.order::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 100%;
+  border-radius: 12px 0 0 12px;
+  background: linear-gradient(to bottom, #03a9f4, #00e5ff);
+  transition: background 0.6s ease-in-out;
+}
+
+.order.received::before { background: linear-gradient(to bottom, #03a9f4, #00e5ff); }
+.order.preparing::before { background: linear-gradient(to bottom, #ffa726, #fb8c00); }
+.order.ready::before     { background: linear-gradient(to bottom, #66bb6a, #43a047); }
+
+/* ===== Header ===== */
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+/* Status Circles */
+.status-circles {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-circle {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 4px rgba(0,0,0,0.3);
+}
+
+.food-preparing.food-circle { background: #ff9800; }
+.food-ready.food-circle     { background: #4caf50; }
+.drink-preparing.drink-circle { background: #ff9800; }
+.drink-ready.drink-circle     { background: #4caf50; }
+
+/* ===== Sections ===== */
+.order .section {
+  border-bottom: 1px dashed #ddd;
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+}
+.order .section:last-of-type { border-bottom: none; }
+
+/* ===== Items ===== */
+.order-items {
+  margin: 8px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.order-items li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f9fafb;
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin-bottom: 5px;
+  font-size: 13px;
+}
+
+.order-items .item-name { font-weight: 600; }
+.order-items .item-qty { color: #666; font-size: 12px; }
+.order-items .item-price { font-weight: 600; color: #333; }
+
+/* ===== Status Badge ===== */
+.badge {
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+}
+
+.badge.new-order {
+  background: #2196f3;
+  animation: pulseNew 1.2s infinite;
+}
+
+.badge.preparing { background: #fb8c00; }
+.badge.ready     { background: #43a047; }
+
+@keyframes pulseNew {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.75; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* ===== Delete Button ===== */
+.delete-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: linear-gradient(135deg, #f44336, #d32f2f);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.25s ease;
+}
+.delete-btn:hover {
+  background: linear-gradient(135deg, #d32f2f, #b71c1c);
+  transform: scale(1.05);
+}
+
+/* ===== Order Action Buttons ===== */
+.order-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.order-actions button {
+  flex: 1 1 calc(50% - 10px);
+  border: none;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  color: #fff;
+  font-weight: 600;
+  transition: all 0.25s ease;
+  text-align: center;
+}
+
+.order-actions button:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+/* Button Variants */
+button.food-ready { background: linear-gradient(135deg, #43a047, #2e7d32); }
+button.food-preparing { background: linear-gradient(135deg, #fb8c00, #ef6c00); }
+button.drink-ready { background: linear-gradient(135deg, #1e88e5, #1565c0); }
+button.drink-preparing { background: linear-gradient(135deg, #ff7043, #e64a19); }
+button.print { background: linear-gradient(135deg, #9e9e9e, #616161); }
+button.copy { background: linear-gradient(135deg, #607d8b, #455a64); }
+
+/* ===== Top Custom Buttons ===== */
+.custom-btn {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: linear-gradient(135deg, #007bff, #0056d2);
+  color: #fff;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+}
+
+.custom-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 12px rgba(0,0,0,0.2);
+}
+
+.custom-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Danger variation */
+.danger-btn {
+  background: linear-gradient(135deg, #ff4d4d, #cc0000);
+}
+
+.danger-btn:hover:not(:disabled) {
+  box-shadow: 0 5px 12px rgba(255,0,0,0.25);
+}
+
+/* Spinner */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 3px solid rgba(255,255,255,0.3);
+  border-top: 3px solid #fff;
+  border-radius: 50%;
+  display: inline-block;
+  animation: spin 1s linear infinite;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+/* ===== Daily Quote ===== */
+#daily-quote {
+  white-space: pre-wrap;
+  max-width: 600px;
+  font-size: 13px;
+  font-style: italic;
+  margin: 20px auto;
+  color: #555;
+  text-align: center;
+}
+
+/* ===== Responsive ===== */
+@media (min-width: 600px) {
+  .orders-container { justify-content: flex-start; }
+  .order { width: calc(50% - 24px); }
+}
+
+@media (min-width: 992px) {
+  .order { width: calc(33.33% - 24px); }
+}
+
+</style>
+
+
+
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getDatabase, ref, onChildAdded, update, onValue, remove } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+
+        const firebaseConfig = {
+  apiKey: "AIzaSyAUO2ZoVhSFEtAyJAP5r5zxu3kGqoIAyQ4",
+  authDomain: "ordersystem-d710a.firebaseapp.com",
+  databaseURL: "https://ordersystem-d710a-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "ordersystem-d710a",
+  storageBucket: "ordersystem-d710a.firebasestorage.app",
+  messagingSenderId: "741444965493",
+  appId: "1:741444965493:web:9991535a9105035c80943c",
+  measurementId: "G-4P6YQDH0LL"
+};
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const ordersRef = ref(db, 'orders/');
+
+function displayOrder(order, orderId) {
+    const orderContainer = document.getElementById("orders");
+    const orderDiv = document.createElement("div");
+
+    // === Normalize statuses (empty if not set yet) ===
+    const foodStatus = order.foodStatus || "";
+    const drinkStatus = order.drinkStatus || "";
+
+    const safeFoodStatus = (foodStatus || "").replace(/\s+/g, "-");   // e.g. food-preparing
+    const safeDrinkStatus = (drinkStatus || "").replace(/\s+/g, "-"); // e.g. drink-ready
+
+    orderDiv.classList.add("order");
+    if (safeFoodStatus) orderDiv.classList.add(safeFoodStatus);
+    if (safeDrinkStatus) orderDiv.classList.add(safeDrinkStatus);
+    orderDiv.id = `order-${orderId}`;
+
+    // === Determine overall state ===
+    const foodReady = safeFoodStatus === "food-ready";
+    const drinkReady = safeDrinkStatus === "drink-ready";
+    const foodPreparing = safeFoodStatus === "food-preparing";
+    const drinkPreparing = safeDrinkStatus === "drink-preparing";
+
+    let overallBadgeClass = "badge new-order";
+    let overallBadgeText = "🆕 New Order";
+    let orderClass = "received";
+
+    if (foodReady && drinkReady) {
+        overallBadgeClass = "badge ready";
+        overallBadgeText = "All Ready";
+        orderClass = "ready";
+    } else if (foodPreparing || drinkPreparing || foodReady || drinkReady) {
+        overallBadgeClass = "badge preparing";
+        overallBadgeText = "Preparing";
+        orderClass = "preparing";
+    }
+
+    // apply main status class (this controls the left accent bar via CSS)
+    orderDiv.classList.add(orderClass);
+
+    // Manually define category lookup by item name
+    const categoryLookup = {
+        "Original Peha(Sambal Kacang)": "food",
+        "Original Kepak (Sambal Kacang)": "food",
+        "Signiture Peha": "food",
+        "Signiture Kepak": "food",
+        "Set Lele": "food",
+        "Set Daging Balado": "food",
+        "Bakso": "food",
+        "Bakso Beranak Telur": "food",
+        "Bakso Mercun": "food",
+        "Bakso Special": "food",
+
+
+        "Ayam Sahaja": "Side Dish",
+        "Lele Sahaja": "Side Dish",
+        "Daging Sahaja": "Side Dish",
+        "Bakso Kosong": "Side Dish",
+        "Sambal Gepuk": "Side Dish",
+        "Sambal Balado": "Side Dish",
+
+
+
+        "Teh O Panas": "Air Panas",
+        "Kopi O Panas": "Air Panas",
+        "Nescafe O Panas": "Air Panas",
+        "Teh Panas": "Air Panas",
+        "Kopi Panas": "Air Panas",
+        "Nescafe Panas": "Air Panas",
+        "Sirap Panas": "Air Panas",
+        "Sirap Selasih Panas": "Air Panas",
+        "Sirap Limau Panas": "Air Panas",
+        "Sirap Laici Panas": "Air Panas",
+        "Teh O Limau Panas": "Air Panas",
+        "Teh O Laici Panas": "Air Panas",
+        "Sirap Bandung Panas": "Air Panas",
+        "Sirap Bandung Cincau Panas": "Air Panas",
+        "Teh Cincau Panas": "Air Panas",
+        "Limau Panas": "Air Panas",
+        "Sanquick Panas": "Air Panas",
+        "Sanquick Laici Panas": "Air Panas",
+        "Laici Panas": "Air Panas",
+        "Air Panas": "Air Panas",
+       
+
+
+
+
+        "Es Buah": "Air Sejuk",
+        "Teh O Ais": "Air Sejuk",
+        "Kopi O Ais": "Air Sejuk",
+        "Nescafe O Ais": "Air Sejuk",
+        "Teh Ais": "Air Sejuk",
+        "Kopi Ais": "Air Sejuk",
+        "Nescafe Ais": "Air Sejuk",
+        "Sirap Ais": "Air Sejuk",
+        "Sirap Selasih Ais": "Air Sejuk",
+        "Sirap Limau Ais": "Air Sejuk",
+        "Sirap Laici Ais": "Air Sejuk",
+        "Teh O Limau Ais": "Air Sejuk",
+        "Teh O Laici Ais": "Air Sejuk",
+        "Sirap Bandung Ais": "Air Sejuk",
+        "Sirap Bandung Cincau Ais": "Air Sejuk",
+        "Teh Cincau Ais": "Air Sejuk",
+        "Limau Ais": "Air Sejuk",
+        "Sanquick Ais": "Air Sejuk",
+        "Sanquick Laici Ais": "Air Sejuk",
+        "Laici Ais": "Air Sejuk",
+        "ExtraJoss Anggur Susu": "Air Sejuk",
+        "ExtraJoss Anggur": "Air Sejuk",
+        "ExtraJoss Mangga Susu": "Air Sejuk",
+        "ExtraJoss Mangga Gula": "Air Sejuk",
+        "Air Kosong": "Air Sejuk",
+        
+
+
+        "Buttermilk Chicken with rice": "Little Ngences Food",
+        "Sweet Chilli Chicken with rice": "Little Ngences Food",
+        "Soy Garlic Chicken with rice": "Little Ngences Food",
+        "Teriyaki Chicken with rice": "Little Ngences Food",
+        "Spaghetti Samyang Chicken": "Little Ngences Food",
+        "Spaghetti Tomyam Chicken": "Little Ngences Food",
+        "Spaghetti Buttermilk Chicken": "Little Ngences Food",
+        "Spaghetti Carbonara Chicken": "Little Ngences Food",
+        "Crispy Chicken Burger": "Little Ngences Food",
+        "Beef Burger": "Little Ngences Food",
+        "Baby Pancake": "Little Ngences Food",
+        "Croissant @ Croffle": "Little Ngences Food",
+        "Teobokki": "Little Ngences Food",
+        "Chicken Popcorn": "Little Ngences Food",
+        "Fries": "Little Ngences Food",
+        "Cheezy Fries": "Little Ngences Food",
+        "Mee Sedap": "Little Ngences Food",
+        "Mee Tomyam": "Little Ngences Food",
+        "Chicken Burger": "Little Ngences Food",
+        
+        
+
+
+
+        "Ngences Latte": "Little Ngences Drink",
+        "Caramel Macchiato": "Little Ngences Drink",
+        "Vanilla Latte": "Little Ngences Drink",
+        "Caffe Latte": "Little Ngences Drink",
+        "Caffe Mocha": "Little Ngences Drink",
+        "Caffe Americano": "Little Ngences Drink",
+        "Oatmilk Latte": "Little Ngences Drink",
+        "Oatmilk Mocha": "Little Ngences Drink",
+        "Chocoa Latte": "Little Ngences Drink",
+        "Dirty Matcha Latte": "Little Ngences Drink",
+        "Matchogato": "Little Ngences Drink",
+        "Fruity Milk": "Little Ngences Drink",
+        "Fruity Sparkling": "Little Ngences Drink",
+        "Ngences Coffe": "Little Ngences Drink",
+        "Mocha": "Little Ngences Drink",
+        "Mocha Chip": "Little Ngences Drink",
+        "Chocolate Cream": "Little Ngences Drink",
+        "Chocolate Cream Chip": "Little Ngences Drink",
+        "Matcha Cream": "Little Ngences Drink",
+        "Matcha Cream Chip": "Little Ngences Drink",
+        "Vanilla Cream": "Little Ngences Drink",
+        "Brown Sugar Latte": "Little Ngences Drink",
+        "Chocolate Macchiato": "Little Ngences Drink",
+        "Dirty Taro Latte": "Little Ngences Drink",
+        "Dirty Strawberry Latte": "Little Ngences Drink",
+        "Cloudy Coffe": "Little Ngences Drink",
+        "Taro Latte": "Little Ngences Drink",
+        "Strawberry Latte": "Little Ngences Drink",
+        "Cocoa Matcha Latte": "Little Ngences Drink",
+        "Taro Matcha Latte": "Little Ngences Drink",
+        "Strawberry Matcha Latte": "Little Ngences Drink",
+        "Passion Tea": "Little Ngences Drink",
+        "Black Tea": "Little Ngences Drink",
+        "Cloudy Cocoa": "Little Ngences Drink",
+        "Cloudy Taro": "Little Ngences Drink",
+        "Cloudy Strawberry": "Little Ngences Drink",
+        "Cloudy Matcha": "Little Ngences Drink",
+        "Taro Cream": "Little Ngences Drink",
+        "Taro Cream Chip": "Little Ngences Drink",
+        "Strawberry Cream": "Little Ngences Drink",
+        "Strawberry Cream Chip": "Little Ngences Drink",
+
+
+
+        "Latte": "Little Ngences Drink",
+        "Cappuccino": "Little Ngences Drink",
+        "Mini Waffle": "Little Ngences Food",
+        "Chicken Nugget": "Little Ngences Food"
+        // Add more items as needed
+    };
+
+    const grouped = {};
+    if (Array.isArray(order.cart)) {
+        order.cart.forEach(item => {
+            const category = categoryLookup[item.item] || "Others";
+            if (!grouped[category]) grouped[category] = [];
+            grouped[category].push(item);
+        });
+    }
+
+    // Render grouped items
+    const categoryOrder = ["food", "Side Dish", "Air Panas", "Air Sejuk", "Little Ngences Food", "Little Ngences Drink", "Others"];
+    let groupedItemsHTML = "";
+    categoryOrder.forEach(category => {
+        if (grouped[category]) {
+            groupedItemsHTML += `
+                <div style="margin-top:10px; margin-bottom:10px;">
+                    <strong>${category.toUpperCase()}</strong>
+                    <ul style="margin-left:10px; margin-top:5px;">
+            `;
+            grouped[category].forEach(item => {
+                const addOns = item.addOns?.length ? item.addOns.join(", ") : "Tiada";
+                groupedItemsHTML += `
+                    <li>
+                        ${item.item} x ${item.quantity}<br>
+                        AddOn: (${addOns}) - RM${((item.price || 0) * (item.quantity || 0)).toFixed(2)}
+                    </li>
+                `;
+            });
+            groupedItemsHTML += `</ul><hr></div>`;
+        }
+    });
+
+    // === Build card ===
+    orderDiv.innerHTML = `
+        <div class="order-header">
+            <div class="status-circles">
+                <span>🍴</span>
+                <span class="status-circle food-circle ${safeFoodStatus}" title="Food Status"></span>
+                <span>🥤</span>
+                <span class="status-circle drink-circle ${safeDrinkStatus}" title="Drink Status"></span>
+                <span class="${overallBadgeClass}" data-field="overall">${overallBadgeText}</span>
+            </div>
+            <button class="delete-btn" onclick="confirmDelete('${orderId}')">❌</button>
+        </div>
+
+        <div class="section"><strong><i class="fas fa-receipt"></i> Order Number:</strong>
+            <span class="order-number">${order.queueNumber ?? "N/A"}</span>
+        </div>
+
+        <div class="section"><strong><i class="fas fa-user"></i> Name:</strong>
+            <span class="order-name">${order.name ?? "-"}</span>
+        </div>
+
+        <div class="section"><strong><i class="fas fa-chair"></i> Table:</strong>
+            <span class="order-table">${order.table ?? "-"}</span>
+        </div>
+
+        <div class="section"><strong><i class="fas fa-clipboard-list"></i> Special Request:</strong>
+            <span class="order-request">${order.request ?? "-"}</span>
+        </div>
+
+        <strong><i class="fas fa-shopping-basket"></i> Items:</strong>
+        <ul class="order-items">${groupedItemsHTML || "<em>No items</em>"}</ul>
+
+        <div class="section"><strong><i class="fas fa-coins"></i> Total Harga:</strong>
+            <span class="order-total">RM${(order.totalPrice ?? 0).toFixed(2)}</span>
+        </div>
+
+        <div class="section"><strong><i class="fas fa-clock"></i> Time:</strong>
+            <span class="order-time">${order.timestamp ? new Date(order.timestamp).toLocaleString() : "-"}</span>
+        </div>
+
+        <!-- Update buttons -->
+        <div class="order-actions grouped">
+            <button class="food-ready" onclick="updateStatus('${orderId}', 'food ready', 'foodStatus')">
+                <i class="fas fa-check-circle"></i> Food Ready
+            </button>
+            <button class="food-preparing" onclick="updateStatus('${orderId}', 'food preparing', 'foodStatus')">
+                <i class="fas fa-fire"></i> Food Preparing
+            </button>
+            <button class="drink-ready" onclick="updateStatus('${orderId}', 'drink ready', 'drinkStatus')">
+                <i class="fas fa-check-circle"></i> Drink Ready
+            </button>
+            <button class="drink-preparing" onclick="updateStatus('${orderId}', 'drink preparing', 'drinkStatus')">
+                <i class="fas fa-fire"></i> Drink Preparing
+            </button>
+        </div>
+
+        <!-- Extra actions -->
+        <div class="order-actions grouped">
+            <button class="print" onclick="printOrder('${orderId}')">
+                <i class="fas fa-print"></i> Print
+            </button>
+            <button class="copy" onclick="copyOrderToClipboard('${orderId}')">
+                <i class="fas fa-copy"></i> Copy
+            </button>
+        </div>
+    `;
+
+    orderContainer.prepend(orderDiv);
+}
+
+
+
+
+
+
+        function exportToCSV() {
+    let orders = [];
+
+    document.querySelectorAll(".order").forEach(orderDiv => {
+        const name = orderDiv.querySelector(".order-name")?.textContent.trim() || "";
+        const table = orderDiv.querySelector(".order-table")?.textContent.trim() || "";
+        const request = orderDiv.querySelector(".order-request")?.textContent.replace(/\s+/g, " ").trim() || "";
+        // ✅ Multiline items
+        const items = Array.from(orderDiv.querySelectorAll(".order-items li"))
+        .map(li => li.innerText.trim())
+        .join("\n");
+
+
+        const totalPrice = orderDiv.querySelector(".order-total")?.textContent.trim() || "";
+        const rawTime = orderDiv.querySelector(".order-time")?.textContent.trim() || "";
+        const status = orderDiv.querySelector(".order-status")?.textContent.trim() || "";
+
+        const [date, time] = new Date(rawTime).toLocaleString().split(", ");
+        orders.push({ date, time, name, table, request, items, totalPrice, status, timestamp: new Date(rawTime) });
+    });
+
+    orders.sort((a, b) => b.timestamp - a.timestamp);
+
+    let csvContent = "data:text/csv;charset=utf-8,Date,Time,Name,Table,Special Request,Items,Total Price,Status\n";
+    orders.forEach(order => {
+        csvContent += `${order.date},${order.time},${order.name},${order.table},"${order.request.replace(/\s+/g, ' ').replace(/"/g, '""')}","${order.items.replace(/"/g, '""')}",${order.totalPrice},${order.status}\n`;
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "orders_multiline.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+        document.addEventListener("DOMContentLoaded", () => {
+    const exportBtn = document.createElement("button");
+    exportBtn.innerHTML = "📁 Export to CSV";
+    exportBtn.onclick = () => exportWithSpinner(exportBtn);
+    exportBtn.classList.add("custom-btn");
+
+    const removeAllQueueBtn = document.createElement("button");
+    removeAllQueueBtn.textContent = "🗑️ Remove All Queue Numbers";
+    removeAllQueueBtn.onclick = removeAllQueueNumbers;
+    removeAllQueueBtn.classList.add("custom-btn", "danger-btn");
+
+    const buttonContainer = document.createElement("div");
+    buttonContainer.style.display = "flex";
+    buttonContainer.style.justifyContent = "center";
+    buttonContainer.style.gap = "10px";
+    buttonContainer.style.marginBottom = "20px";
+
+    buttonContainer.appendChild(exportBtn);
+    buttonContainer.appendChild(removeAllQueueBtn);
+
+    document.querySelector(".container").prepend(buttonContainer);
+});
+
+// New wrapper function
+function exportWithSpinner(button) {
+    const originalText = button.innerHTML;
+    button.innerHTML = `<span class="spinner"></span> Exporting...`;
+    button.disabled = true;
+
+    // Simulate a short loading (since export is quick)
+    setTimeout(() => {
+        exportToCSV();
+        button.innerHTML = originalText;
+        button.disabled = false;
+    }, 500); // 0.5 second spinner effect
+}
+
+
+async function removeAllQueueNumbers() {
+    const confirmation = confirm("Are you sure you want to REMOVE all order numbers?");
+    if (!confirmation) return;
+
+    const ordersRef = ref(db, "orders/");
+
+    onValue(ordersRef, (snapshot) => {
+        snapshot.forEach((childSnapshot) => {
+            const queueNumberPath = ref(db, `orders/${childSnapshot.key}/queueNumber`);
+            remove(queueNumberPath)
+                .then(() => {
+                    console.log(`Removed queueNumber from order: ${childSnapshot.key}`);
+                })
+                .catch((error) => {
+                    console.error(`Error removing queueNumber:`, error);
+                });
+        });
+
+        // After finishing all removals, update the DOM
+        document.querySelectorAll(".order-number").forEach(span => {
+            span.textContent = "N/A";
+        });
+
+        alert("✅ All queue numbers removed successfully.");
+    }, { onlyOnce: true });
+}
+        
+
+   function updateActiveOrders() {
+    onValue(ordersRef, snapshot => {
+        let activeCount = 0;
+        let preparingCount = 0;
+        let readyCount = 0;
+
+        snapshot.forEach(childSnapshot => {
+            const order = childSnapshot.val();
+            if (order.status !== "ready") {
+                activeCount++;
+                if (order.status.includes("preparing")) preparingCount++;
+            } else {
+                readyCount++;
+            }
+        });
+
+        const activeOrdersEl = document.getElementById("active-orders");
+        if (activeOrdersEl) {
+            activeOrdersEl.textContent = `Active Orders (${activeCount}) | Preparing: ${preparingCount} | Ready: ${readyCount}`;
+        }
+    });
+}
+
+
+
+
+
+        onChildAdded(ordersRef, snapshot => {
+    const order = snapshot.val();
+    const orderId = snapshot.key;
+
+    // If status is missing, update to 'received order'
+    if (!order.status) {
+        const orderRef = ref(db, `orders/${orderId}`);
+        update(orderRef, { status: 'received order' });
+        order.status = 'received order'; // Ensure correct display immediately
+    }
+
+    displayOrder(order, orderId);
+    updateActiveOrders();
+});
+
+
+window.updateStatus = function(orderId, status, field = "status") {
+    const orderRef = ref(db, `orders/${orderId}`);
+    const payload = { [field]: status };
+
+    // Write to Firebase
+    update(orderRef, payload).catch(err => console.error("Firebase update error:", err));
+
+    const orderDiv = document.getElementById(`order-${orderId}`);
+    if (!orderDiv) return;
+
+    const safeStatus = (status || "").replace(/\s+/g, "-");
+
+    // Update food/drink circles
+    if (field === "foodStatus") {
+        const circle = orderDiv.querySelector(".status-circle.food-circle");
+        if (circle) circle.className = `status-circle food-circle ${safeStatus}`;
+    } else if (field === "drinkStatus") {
+        const circle = orderDiv.querySelector(".status-circle.drink-circle");
+        if (circle) circle.className = `status-circle drink-circle ${safeStatus}`;
+    }
+
+    // Check overall state
+    const foodReady = orderDiv.querySelector(".status-circle.food-circle")?.classList.contains("food-ready");
+    const drinkReady = orderDiv.querySelector(".status-circle.drink-circle")?.classList.contains("drink-ready");
+    const foodPreparing = orderDiv.querySelector(".status-circle.food-circle")?.classList.contains("food-preparing");
+    const drinkPreparing = orderDiv.querySelector(".status-circle.drink-circle")?.classList.contains("drink-preparing");
+
+    const overallBadge = orderDiv.querySelector('.badge[data-field="overall"]');
+
+    if (overallBadge) {
+        if (foodReady && drinkReady) {
+            overallBadge.textContent = "All Ready";
+            overallBadge.className = "badge ready";
+            orderDiv.classList.remove("received", "preparing");
+            orderDiv.classList.add("ready");
+        } else if (foodPreparing || drinkPreparing || foodReady || drinkReady) {
+            overallBadge.textContent = "Preparing";
+            overallBadge.className = "badge preparing";
+            orderDiv.classList.remove("received", "ready");
+            orderDiv.classList.add("preparing");
+        } else {
+            overallBadge.textContent = "🆕 New Order";
+            overallBadge.className = "badge new-order";
+            orderDiv.classList.remove("preparing", "ready");
+            orderDiv.classList.add("received");
+        }
+    }
+
+    // Refresh counter if exists
+    try { updateActiveOrders(); } catch (e) {}
+
+    // Auto-remove queue number when all ready
+    if (foodReady && drinkReady) {
+        setTimeout(() => {
+            update(ref(db, `orders/${orderId}`), { queueNumber: null })
+                .then(() => {
+                    const q = orderDiv.querySelector(".order-number");
+                    if (q) q.textContent = "N/A";
+                })
+                .catch(err => console.error("Error removing queueNumber:", err));
+        }, 100000);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    function resetQueueNumbersAtMidnight() {
+    const now = new Date();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+
+    // Kalau tepat pukul 00:00
+    if (hours === 0 && minutes === 0) {
+        onValue(ordersRef, snapshot => {
+            snapshot.forEach(childSnapshot => {
+                const orderId = childSnapshot.key;
+                // Update queueNumber jadi null
+                update(ref(db, "orders/" + orderId), {
+                    queueNumber: null
+                });
+            });
+        }, { onlyOnce: true });
+    }
+}
+
+// Check setiap 1 minit
+setInterval(resetQueueNumbersAtMidnight, 60000);
+
+};
+function updateDashboard() {
+  onValue(ordersRef, snapshot => {
+    let totalOrders = 0;
+    let activeOrders = 0;
+    let itemCount = {};
+
+    snapshot.forEach(childSnapshot => {
+      const order = childSnapshot.val();
+      const orderDate = new Date(order.timestamp).toISOString().split('T')[0];
+      const today = new Date().toISOString().split('T')[0];
+
+      // ✅ Count total orders for today
+      if (orderDate === today) {
+        totalOrders++;
+
+        // ✅ Loop through the cart items
+        if (order.cart) {
+          order.cart.forEach(cartItem => {
+            const itemName = cartItem.item;
+            const qty = cartItem.quantity || 1;
+            itemCount[itemName] = (itemCount[itemName] || 0) + qty;
+          });
+        }
+      }
+
+      // ✅ Count active orders (not ready/cancelled)
+      if (order.status !== "ready" && order.status !== "cancelled") {
+        activeOrders++;
+      }
+    });
+
+    // ✅ Find top selling item
+    let topItem = "-";
+    if (Object.keys(itemCount).length > 0) {
+      topItem = Object.keys(itemCount).reduce((a, b) => itemCount[a] > itemCount[b] ? a : b);
+    }
+
+    // ✅ Update Live Stats panel
+    document.getElementById("total-orders-today").textContent = `Total Orders Today: ${totalOrders}`;
+    document.getElementById("active-orders-count").textContent = `Active Orders: ${activeOrders}`;
+    document.getElementById("top-item").textContent = `Top Item: ${topItem}🔝🔥`;
+  });
+}
+
+updateDashboard();
+
+
+
+
+    </script>
+    <script type="module">
+    import { getDatabase, ref, remove } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+
+    const dbr = getDatabase();
+
+    window.confirmDelete = function(orderId) {
+        const confirmation = confirm("Are you sure you want to delete this data?");
+        if (confirmation) {
+            deleteOrder(orderId);
+        }
+    };
+
+    function deleteOrder(orderId) {
+        const orderRef = ref(dbr, `orders/${orderId}`);
+        remove(orderRef)
+            .then(() => {
+                const orderDiv = document.getElementById(`order-${orderId}`);
+                if (orderDiv) {
+                    orderDiv.remove();
+                }
+                alert("Order deleted successfully.");
+            })
+            .catch(error => {
+                console.error("Error deleting order:", error);
+                alert("Failed to delete order.");
+            });
+    }
+</script>
+    <script>
+        function printOrder(orderId) {
+    const orderDiv = document.getElementById(`order-${orderId}`);
+    if (!orderDiv) return;
+
+    const orderItems = orderDiv.querySelector('.order-items');
+    const orderQuery = orderDiv.querySelector('.order-number');
+    const orderName = orderDiv.querySelector('.order-name');
+    const Table = orderDiv.querySelector('.order-table');
+    const Request = orderDiv.querySelector('.order-request');
+    const Price = orderDiv.querySelector('.order-total');
+    const orderReceive = orderDiv.querySelector('.order-time');
+
+    const printWindow = window.open('', '_blank', 'width=300,height=600');
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>Receipt - RESTORAN AYAM GEPUK NGENCES</title>
+            <style>
+                @media print {
+                    @page {
+                        size: 58mm auto; 
+                        margin: 0;
+                    }
+                    body {
+                        margin: 0;
+                    }
+                }
+                body {
+                    font-family: monospace;
+                    font-size: 10px;
+                    padding: 5px;
+                    width: 58mm;
+                    box-sizing: border-box;
+                    text-align: center;
+                }
+                .logo {
+                    width: 100px;
+                    display: block;
+                    margin: 0 auto 5px;
+                }
+                .line {
+                    border-top: 1px dashed #000;
+                    margin: 5px 0;
+                }
+                .footer {
+                    text-align: center;
+                    margin-top: 10px;
+                    font-size: 10px;
+                }
+                ul {
+                    padding-left: 0;
+                    list-style: none;
+                    text-align: left;
+                }
+            </style>
+        </head>
+        <body>
+            <b>RESTORAN AYAM GEPUK NGENCES</b><br>
+            39, Laluan BG Transit 2, Kampung Bendera, 30200 Batu Gajah, Perak**<br>
+            <div class="line"></div>
+            Order at: ${orderReceive.innerHTML}<br>
+            Order No: ${orderQuery.innerHTML}<br>
+            Name: ${orderName.innerHTML}<br>
+            Table: ${Table.innerHTML}<br>
+            Special Request: ${Request.innerHTML || 'None'}<br>
+            _________________________________ <br>
+            <b>Order List:</b><br>
+            <ul>${orderItems.innerHTML}</ul>
+            _________________________________ <br>
+            <b>Total:</b> ${Price.innerHTML}<br>
+            _________________________________ <br>
+            <div class="footer">
+                Terima kasih!<br>
+                Ayam Gepuk Ngences X Ngences Coffee<br>
+                Powered by electricaltechnologymy <br><br>
+                <i>This receipt prints automatically by the ordering system.</i><br>
+            </div>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+}
+
+        </script>
+
+<script>
+    function copyOrderToClipboard(orderId) {
+        const orderDiv = document.getElementById(`order-${orderId}`);
+        if (!orderDiv) return;
+
+        const orderItems = orderDiv.querySelector('.order-items');
+        const orderQuery = orderDiv.querySelector('.order-number');
+        const orderName = orderDiv.querySelector('.order-name');
+        const Table = orderDiv.querySelector('.order-table');
+        const Request = orderDiv.querySelector('.order-request');
+        const Price = orderDiv.querySelector('.order-total');
+        const orderReceive = orderDiv.querySelector('.order-time');
+
+        const textContent = `
+RESTORAN AYAM GEPUK NGENCES
+39, Laluan BG Transit 2, Kampung Bendera, 30200 Batu Gajah, Perak
+
+Order at: ${orderReceive.innerHTML}
+Order No: ${orderQuery.innerHTML}
+Name: ${orderName.innerHTML}
+Table: ${Table.innerHTML}
+Special Request: ${Request.innerHTML || 'None'}
+----------------------------------------
+Order List:
+${orderItems.innerText}
+----------------------------------------
+Total: ${Price.innerHTML}
+----------------------------------------
+
+Terima kasih!
+Ayam Gepuk Ngences X Ngences Coffee
+Powered by electricaltechnologymy
+
+(This receipt was copied from the system)
+        `.trim();
+
+        navigator.clipboard.writeText(textContent).then(() => {
+            alert("Order copied to clipboard!");
+        }).catch(err => {
+            alert("Failed to copy: " + err);
+        });
+    }
+
+    // ✅ Make it global
+    window.copyOrderToClipboard = copyOrderToClipboard;
+    
+</script>
+</head>
+<body>
+
+<!-- Live Stats Display -->
+<div id="live-stats" style="
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0,0,0,0.85); /* Solid when showing */
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.4;
+    z-index: 9999;
+    min-width: 240px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    transition: background 0.3s ease; /* Smooth fade */
+">
+    <!-- Header row with button -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+        <strong>📊 Live Stats</strong>
+        <button id="toggle-stats" style="
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: #fff;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+        ">Hide</button>
+    </div>
+
+    <div id="stats-content">
+        <div id="online-status">Status: ...</div>
+        <div id="speed">Speed: ...</div>
+        <div id="fps">FPS: ...</div>
+        <div id="preparing-count">Preparing Orders: ...</div>
+        <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.2); margin: 8px 0;">
+        <div id="total-orders-today">Total Orders Today: 0</div>
+        <div id="active-orders-count">Active Orders: 0</div>
+        <div id="top-item">Top Item: -</div>
+    </div>
+</div>
+
+<script type="module">
+import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+
+// ✅ Firebase reference
+const dbs = getDatabase();
+const statsStateRef = ref(dbs, "settings/liveStatsVisible");
+
+// Elements
+const liveStats = document.getElementById("live-stats");
+const toggleBtn = document.getElementById("toggle-stats");
+const statsContent = document.getElementById("stats-content");
+
+// ✅ Apply UI state helper
+function applyState(isVisible) {
+    statsContent.style.display = isVisible ? "block" : "none";
+    toggleBtn.textContent = isVisible ? "Hide" : "Show";
+    liveStats.style.background = isVisible ? "rgba(0,0,0,0.85)" : "rgba(0,0,0,0.4)";
+}
+
+// ✅ Live sync with Firebase
+onValue(statsStateRef, snapshot => {
+    if (snapshot.exists()) {
+        applyState(snapshot.val());
+    } else {
+        // Default = visible
+        set(statsStateRef, true);
+        applyState(true);
+    }
+});
+
+// ✅ Button click event
+toggleBtn.addEventListener("click", () => {
+    const isHidden = statsContent.style.display === "none";
+    const newState = isHidden ? true : false;
+
+    // Apply instantly
+    applyState(newState);
+
+    // ✅ Save to Firebase
+    set(statsStateRef, newState);
+});
+</script>
+
+
+
+
+
+    <div class="container">
+    <div class="buttons" style="display: flex; justify-content: center; gap: 15px;">
+
+  <!-- New button to go to inventory -->
+  <button onclick="window.location.href='inventory.html';" style="
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    font-size: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  ">
+    Go to Inventory
+  </button>
+</div>
+
+        
+  <h2>Received Orders</h2>
+  <div class="active-orders" id="active-orders">Active Orders (0)</div>
+  <!-- Daily Quote Section -->
+  <div id="daily-quote"
+       style="margin-top:20px;
+              padding:12px;
+              background:#f9f9f9;
+              border-left:4px solid #4CAF50;
+              border-radius:6px;
+              font-style:italic;">
+  </div>
+  <div class="orders-container" id="orders"></div>
+
+  
+</div>
+
+
+
+</body>
+<script>
+    // ✅ Internet Speed Test
+    async function testInternetSpeed() {
+    const imageUrl = "https://upload.wikimedia.org/wikipedia/commons/3/3f/Fronalpstock_big.jpg"; // ~400KB
+    const fileSizeInBits = 400_000 * 8;
+    const speedElem = document.getElementById("speed");
+
+    const startTime = performance.now();
+
+    try {
+        const response = await fetch(imageUrl + "?nocache=" + Math.random(), {
+            cache: "no-store",
+            mode: "no-cors"
+        });
+
+        const endTime = performance.now();
+        const duration = (endTime - startTime) / 1000;
+        const speedMbps = (fileSizeInBits / duration / 1_000_000).toFixed(2);
+
+        speedElem.textContent = `Speed: ${speedMbps} Mbps`;
+        speedElem.style.color = speedMbps < 10 ? "#f44336" : "#ffffff"; // 🔴 Red if < 10 Mbps
+    } catch (e) {
+        speedElem.textContent = "Speed: offline";
+        speedElem.style.color = "#f44336"; // Always red when offline
+        console.error("Speed test failed:", e);
+    }
+}
+
+
+
+    // ✅ FPS Display
+    function trackFPS() {
+    const fpsElem = document.getElementById("fps");
+    let lastFrame = performance.now();
+    let frames = 0;
+
+    function update(now) {
+        frames++;
+        if (now - lastFrame >= 1000) {
+            fpsElem.textContent = `FPS: ${frames}`;
+            fpsElem.style.color = frames < 30 ? "#f44336" : "#ffffff"; // Red if low FPS
+            frames = 0;
+            lastFrame = now;
+        }
+        requestAnimationFrame(update);
+    }
+
+    requestAnimationFrame(update);
+}
+
+
+    function updateOnlineStatus() {
+    const statusEl = document.getElementById("online-status");
+    if (!statusEl) return;
+    const isOnline = navigator.onLine;
+    statusEl.textContent = isOnline ? "Status: 🌐 Online" : "Status: ❌ Offline";
+    statusEl.style.color = isOnline ? "#8bc34a" : "#f44336";
+}
+
+// Update on load
+document.addEventListener("DOMContentLoaded", () => {
+    updateOnlineStatus();
+    window.addEventListener("online", updateOnlineStatus);
+    window.addEventListener("offline", updateOnlineStatus);
+});
+
+    // ✅ Count Preparing Orders
+    function countPreparingOrders() {
+    const count = document.querySelectorAll(".order.preparing").length;
+    const elem = document.getElementById("preparing-count");
+    elem.textContent = `Preparing Orders: ${count}`;
+    elem.style.color = count > 0 ? "#f44336" : "#ffffff"; // Red if any active
+}
+
+    // ✅ Start updates after page is ready
+    document.addEventListener("DOMContentLoaded", () => {
+        trackFPS();
+        testInternetSpeed();
+        countPreparingOrders();
+
+        setInterval(() => {
+            testInternetSpeed();
+            countPreparingOrders();
+        }, 5000);
+    });
+
+    function setDailyQuote() {
+  const quotes = [
+    "Berniaga makanan dengan niat kerana Allah, maka setiap rezeki menjadi ibadah.",
+    "Hidangan yang halal membawa keberkatan dalam hidup dan perniagaan.",
+    "Jangan hanya jual makanan untuk kenyang, tetapi juga untuk menyuburkan jiwa dengan halal.",
+    "Keikhlasan dalam berniaga membuka pintu rezeki yang luas.",
+    "Makanan halal dan bersih adalah dakwah senyap seorang peniaga.",
+    "Barakah datang apabila niat perniagaan bukan hanya mencari untung, tetapi juga memberi manfaat.",
+    "Perniagaan makanan yang diberkati adalah yang menjaga halal dan toyyib.",
+    "Niat yang baik melahirkan rezeki yang baik.",
+    "Hidangkan makanan dengan doa, insyaAllah jadi penawar kepada pelanggan.",
+    "Dalam setiap suapan pelanggan, ada pahala buat peniaga yang amanah.",
+    "Jual makanan dengan jujur, Allah akan tambahkan rezeki.",
+    "Jangan kurangkan sukatan, kerana keberkatan akan berkurang.",
+    "Amanah dalam perniagaan lebih manis daripada keuntungan yang banyak.",
+    "Senyum peniaga adalah sebahagian daripada layanan yang ikhlas.",
+    "Allah mencintai peniaga yang jujur dan amanah.",
+    "Rezeki yang halal datang daripada perniagaan yang bersih daripada penipuan.",
+    "Jujur dalam perniagaan makanan lebih bernilai daripada promosi besar.",
+    "Menipu pelanggan dengan harga atau kualiti, sama dengan menggadai keberkatan.",
+    "Kejujuran dalam berniaga adalah iklan terbaik.",
+    "Rezeki yang sedikit tetapi berkat lebih bermakna daripada keuntungan yang banyak tetapi haram.",
+    "Pelanggan bukan sekadar pembeli, tetapi amanah yang Allah titipkan.",
+    "Setiap pelanggan yang kenyang adalah doa berjalan untuk perniagaan kita.",
+    "Layani pelanggan dengan adab, kerana akhlak lebih mengenyangkan hati.",
+    "Senyum kepada pelanggan adalah sedekah yang tidak pernah rugi.",
+    "Rezeki pelanggan datang bersama rezeki peniaga.",
+    "Jangan hanya jual makanan, tapi jual juga pengalaman yang baik.",
+    "Pelanggan yang dihormati akan kembali dengan rezeki yang berlipat kali.",
+    "Hidangkan makanan seperti anda hidangkan kepada keluarga sendiri.",
+    "Beri lebih daripada yang dijanjikan, nescaya pelanggan akan setia.",
+    "Doa pelanggan yang puas adalah promosi terbaik.",
+    "Rezeki bukan hanya pada wang, tetapi pada keberkatan masa dan kesihatan.",
+    "Berniaga dengan syukur menjadikan sedikit itu cukup.",
+    "Rezeki setiap orang sudah ditetapkan, berniagalah dengan tenang dan tawakkal.",
+    "Keuntungan yang halal adalah rezeki yang diberkati.",
+    "Jangan tamak mengejar untung, kerana rezeki Allah luas tanpa batas.",
+    "Syukur pada rezeki kecil, Allah akan gandakan dengan yang besar.",
+    "Makanan yang halal membawa rezeki yang suci.",
+    "Jangan iri pada perniagaan orang lain, kerana setiap rezeki ada bahagiannya.",
+    "Rezeki yang halal ibarat baja yang menyuburkan kehidupan.",
+    "Perniagaan yang diberkati ialah perniagaan yang disyukuri.",
+    "Berniaga makanan adalah seni menyebarkan kebaikan melalui rezeki halal.",
+    "Setiap hidangan adalah peluang untuk beramal.",
+    "Keletihan berniaga akan hilang, tetapi keberkatannya kekal.",
+    "Peniaga yang sabar dalam ujian akan Allah hadiahkan rezeki berganda.",
+    "Berniaga makanan bukan sekadar mencari untung, tetapi membina silaturrahim.",
+    "Dalam setiap masakan ada doa seorang peniaga kepada pelanggannya.",
+    "Perniagaan makanan yang bersih adalah sebahagian daripada iman.",
+    "Bern iaga adalah sunnah, berniaga makanan halal adalah ibadah.",
+    "Setiap sen yang diperoleh daripada makanan halal akan jadi cahaya dalam hidup.",
+    "Makanan yang baik menjadi sedekah kepada tubuh manusia.",
+    "Rasulullah ﷺ sendiri adalah peniaga yang jujur, ikutilah jejak baginda.",
+    "Perniagaan yang jujur akan bersama para nabi di akhirat.",
+    "Islam mengajar peniaga untuk berlaku adil dan ikhlas.",
+    "Jangan jual makanan haram, kerana ia membawa kepada murka Allah.",
+    "Allah mencintai hamba yang mencari rezeki halal dengan usaha sendiri.",
+    "Berniaga makanan adalah jihad mencari rezeki yang suci.",
+    "Peniaga yang amanah lebih mulia daripada ahli ibadah yang menipu.",
+    "Dalam perniagaan makanan, halal itu wajib, sedap itu bonus.",
+    "Setiap makanan halal yang terjual adalah saksi amal kita.",
+    "Peniaga yang baik menjadikan perniagaan sebagai jalan menuju syurga."
+  ];
+
+  // Pick quote based on day of the year
+  const today = new Date();
+  const dayOfYear = Math.floor(
+    (today - new Date(today.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24)
+  );
+
+  const quote = quotes[dayOfYear % quotes.length];
+  document.getElementById("daily-quote").textContent = `"${quote}"`;
+}
+
+// Run once when page loads
+setDailyQuote();
+
+</script>
+</html>

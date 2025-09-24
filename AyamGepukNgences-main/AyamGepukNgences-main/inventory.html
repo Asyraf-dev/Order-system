@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventory System</title>
+<style>
+/* ===== Global Styles ===== */
+body {
+  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: linear-gradient(135deg, #f4f7fb, #eef2f8);
+  color: #2c2c2c;
+  padding: 20px;
+  margin: 0;
+  line-height: 1.6;
+}
+
+h1 {
+  text-align: center;
+  color: #1d1d1d;
+  font-size: 2.4em;
+  font-weight: 700;
+  margin-bottom: 30px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+/* ===== Container ===== */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 35px;
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.container:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+}
+
+/* ===== Filter Section ===== */
+.filter-container {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 25px;
+  font-size: 0.95rem;
+  gap: 10px;
+}
+.filter-container label {
+  font-weight: 600;
+  color: #333;
+}
+.filter-container select {
+  padding: 8px 12px;
+  border: 1px solid #d0d7de;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background: #fff;
+  transition: all 0.3s ease;
+}
+.filter-container select:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0,123,255,0.2);
+  outline: none;
+}
+
+/* ===== Buttons ===== */
+.buttons {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.buttons button {
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #28a745, #218838);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  margin: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.12);
+}
+.buttons button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+}
+
+.buttons .copy-button { 
+  background: linear-gradient(135deg, #007bff, #0056b3); 
+}
+.buttons .print-button { 
+  background: linear-gradient(135deg, #ffc107, #e0a800); 
+  color: #333; 
+}
+.buttons .view-history-button { 
+  background: linear-gradient(135deg, #6c757d, #5a6268); 
+}
+
+/* ===== Scroll Button ===== */
+.scroll-btn {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  background: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 52px;
+  height: 52px;
+  font-size: 22px;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 999;
+}
+.scroll-btn:hover {
+  background: #0056b3;
+  transform: scale(1.12);
+}
+.scroll-btn.show-btn {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ===== Inventory Table ===== */
+.inventory-list {
+  margin: 35px 0;
+  border-collapse: collapse;
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 5px 16px rgba(0, 0, 0, 0.05);
+}
+.inventory-list th,
+.inventory-list td {
+  padding: 14px;
+  border-bottom: 1px solid #e6e6e6;
+  text-align: center;
+}
+.inventory-list th {
+  background: #f8f9fa;
+  font-weight: 700;
+  color: #333;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.inventory-list tr:nth-child(even) td { background: #fcfcfc; }
+.inventory-list tbody tr:hover {
+  background: #eef6ff;
+  cursor: pointer;
+  transition: background 0.25s ease;
+}
+
+/* ===== Checksheet ===== */
+.checksheet {
+  margin-top: 45px;
+  padding: 25px;
+  background-color: #f9fafc;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+.checksheet h2 {
+  font-size: 1.7em;
+  margin-bottom: 18px;
+  color: #1d1d1d;
+  border-bottom: 2px solid #e6e6e6;
+  padding-bottom: 8px;
+  font-weight: 700;
+}
+.checksheet p#timestamp {
+  display: inline-block;
+  background: #e9f5ff;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #007bff;
+  font-weight: 600;
+  margin-bottom: 18px;
+}
+.checksheet ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+.checksheet ul li {
+  padding: 14px 0;
+  font-size: 1.05em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e6e6e6;
+  transition: all 0.3s ease;
+}
+.checksheet li:last-child { border-bottom: none; }
+.checksheet li span { flex: 2; color: #444; font-weight: 500; }
+.checksheet li input[type="number"],
+.checksheet li select {
+  width: 110px;
+  padding: 7px;
+  margin-left: 10px;
+  font-size: 0.95em;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  outline: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.checksheet li input:focus,
+.checksheet li select:focus { 
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0,123,255,0.15);
+}
+
+/* ===== Remove Button ===== */
+.remove-btn {
+  background: none;
+  border: none;
+  color: #dc3545;
+  font-size: 1.3rem;
+  cursor: pointer;
+  margin-left: 12px;
+  transition: transform 0.2s ease, color 0.3s ease;
+}
+.remove-btn:hover { 
+  transform: scale(1.25); 
+  color: #b71c1c;
+}
+
+/* ===== Category Badges (Cleaned) ===== */
+.category-badge {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-right: 10px;
+  text-transform: uppercase;
+}
+.loading-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(255, 255, 255, 0.9);
+  display: none; /* hidden by default */
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  z-index: 9999;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #007bff;
+  backdrop-filter: blur(3px);
+}
+
+.car-container {
+  position: relative;
+  width: 200px;
+  height: 60px;
+  overflow: hidden;
+  margin-bottom: 15px;
+}
+
+.car {
+  font-size: 2.5rem;
+  position: absolute;
+  top: 0;
+  left: -60px;
+  animation: drive 2s linear infinite;
+}
+
+.road {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 6px;
+  background: repeating-linear-gradient(
+    to right,
+    #555 0,
+    #555 20px,
+    #ddd 20px,
+    #ddd 40px
+  );
+}
+
+@keyframes drive {
+  0% { left: -60px; }
+  100% { left: 220px; }
+}
+
+
+
+
+/* Vegetables */ .category-vegetables .category-badge { background: #d4f3d4; color: #2e7d32; }
+/* Spices */ .category-spices .category-badge { background: #ffe0e0; color: #c62828; }
+/* Staples */ .category-staples .category-badge { background: #fff3cd; color: #856404; }
+/* Dairy */ .category-dairy .category-badge { background: #e0f0ff; color: #0056b3; }
+/* Meats */ .category-meats .category-badge { background: #fde2e2; color: #b71c1c; }
+/* Seasoning */ .category-seasoning .category-badge { background: #efe0ff; color: #6a1b9a; }
+/* Nonfood */ .category-nonfood .category-badge { background: #e9ecef; color: #495057; }
+
+
+
+</style>
+
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+</head>
+<body>
+  <div class="container">
+    <h1>📦 Inventory System</h1>
+
+    <!-- Filter Section -->
+    <div class="filter-container">
+      <label for="categoryFilter">Filter by Category:</label>
+      <select id="categoryFilter" onchange="filterItems()">
+        <option value="all">All Items</option>
+        <option value="barang_pasaran">Barang Pasar 🥬</option>
+        <option value="barang_runcit">Barang Runcit 🛒</option>
+        <option value="barang_kering">Barang Kering 📦</option>
+      </select>
+    </div>
+
+    <!-- Inventory Table -->
+    <div class="card">
+      <h2>📝 Inventory List</h2>
+      <table class="inventory-list" id="inventoryTable">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Select</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Dynamic Inventory Items will be loaded here -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Checksheet Section -->
+    <div class="card checksheet">
+      <h2>✅ Checksheet Items for Today</h2>
+      <p id="timestamp"></p> <!-- Timestamp will be displayed here -->
+      <ul id="checksheetList">
+        <!-- Selected items with quantities will be listed here -->
+      </ul>
+    </div>
+
+<!-- Action Buttons -->
+<div class="buttons">
+  <button class="primary-btn" onclick="copyChecksheet()">📋 Copy</button>
+  <button class="secondary-btn" onclick="printChecksheet()">🖨️ Print</button>
+  <button id="saveBtn" class="success-btn" onclick="saveToFirebase()">💾 Save</button>
+  <button class="info-btn" onclick="window.location.href='inventoryhistory.html';">📜 View History</button>
+  <button class="warning-btn" onclick="window.location.href='display.html';">📊 Order View</button>
+</div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay">
+  <div class="car-container">
+    <div class="car">🚗</div>
+    <div class="road"></div>
+  </div>
+  <span>Saving To Firebase...</span>
+</div>
+
+
+
+  <!-- Scroll to Bottom Button -->
+  <button id="scrollBottomBtn" onclick="scrollToBottom()" class="scroll-btn">⬇️</button>
+
+
+
+  <script>
+    // Map items into finer categories with emoji + css class
+const categoryMap = {
+  Vegetables: ["Kobis","Timun","Limau","Daun Sup","Daun Pandan","Salad"],
+  Spices: ["Halia","Kunyit Hidup","Lengkuas","Serai","Serbuk Kunyit","Cili Padi","Cili Masak","Cili Padi Masak","Ketumbar","Buah Keras"],
+  Protein: ["Tempe","Daging","Bebola Bakso","Ayam"],
+  Staples: ["Gula","Garam","Beras","Tepung Gandung"],
+  Drinks: ["Susu","Sirap","Teh","Kopi","Sunquick","Nescaffe","Laici","Extra Mangga","Extra Anggur","Cincau"],
+  Seasoning: ["Ajinomoto","Tumix Pati Ayam","Maggi Cukup Rasa","Maggi","Kicap","Sos Cili","Selalsih"],
+  NonFood: ["Sabun Daia","Sabun Sunlight","Kertas C","Kertas D","Polistrine","Bowl Bakso","Sudu Plastik","Garfu Pelastik","Plastik 12x16","Plastik 16x19","Plastik 6x7","Plastik 7x8","Plastik Singlet 4.5","Plastik Kicap","Getah Belacan","Pen & Maker","Suun"]
+};
+
+const emojiMap = {
+  Vegetables: "🥦",
+  Spices: "🌶️",
+  Protein: "🍗",
+  Staples: "🍚",
+  Drinks: "🥛",
+  Seasoning: "🧂",
+  NonFood: "🧼"
+};
+
+const cssClassMap = {
+  Vegetables: "category-vegetables",
+  Spices: "category-spices",
+  Protein: "category-meats",
+  Staples: "category-staples",
+  Drinks: "category-dairy",
+  Seasoning: "category-seasoning",
+  NonFood: "category-nonfood"
+};
+
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyC8piEU-44jNKKaiWZlp2mEmDFwbO6FsrY",
+      authDomain: "inventory-change-1f2c9.firebaseapp.com",
+      databaseURL: "https://inventory-change-1f2c9-default-rtdb.firebaseio.com",
+      projectId: "inventory-change-1f2c9",
+      storageBucket: "inventory-change-1f2c9.firebasestorage.app",
+      messagingSenderId: "657658084944",
+      appId: "1:657658084944:web:77898bcda22fcddf275b55",
+      measurementId: "G-1BRQB0GFJX"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Inventory Data
+    const inventoryData = {
+      barang_pasaran: [
+        { name: "Kobis" },
+        { name: "Timun" },
+        { name: "Limau" },
+        { name: "Daun Sup" },
+        { name: "Daun Pandan" },
+        { name: "Salad" },
+        { name: "Halia" },
+        { name: "Kunyit Hidup" },
+        { name: "Lengkuas" },
+        { name: "Serai" },
+        { name: "Tempe" },
+        { name: "Serbuk Kunyit" },
+        { name: "Cili Padi" },
+        { name: "Cili Masak" },
+        { name: "Cili Padi Masak" },
+        { name: "Suun" },
+        { name: "Bawang Merah" },
+        { name: "Bawang Putih" },
+        { name: "Cincau" }
+      ],
+      barang_runcit: [
+        { name: "Gula" },
+        { name: "Susu" },
+        { name: "Garam" },
+        { name: "Ajinomoto" },
+        { name: "Tumix Pati Ayam" },
+        { name: "Maggi Cukup Rasa" },
+        { name: "Tepung Gandung" },
+        { name: "Sabun Daia" },
+        { name: "Sabun Sunlight" },
+        { name: "Beras" },
+        { name: "Maggi" },
+        { name: "Sirap" },
+        { name: "Teh" },
+        { name: "Kopi" },
+        { name: "Sunquick" },
+        { name: "Selalsih" },
+        { name: "Nescaffe" },
+        { name: "Laici" },
+        { name: "Extra Mangga" },
+        { name: "Extra Anggur" },
+        { name: "Ketumbar" },
+        { name: "Buah Keras" },
+        { name: "Kicap" },
+        { name: "Kertas C" },
+        { name: "Kertas D" },
+        { name: "Sos Cili" },
+        { name: "Polistrine" },
+        { name: "Bowl Bakso" },
+        { name: "Sudu Plastik" },
+        { name: "Garfu Pelastik" },
+        { name: "Plastik 12x16" },
+        { name: "Plastik 16x19" },
+        { name: "Plastik 6x7" },
+        { name: "Plastik 7x8" },
+        { name: "Plastik Singlet 4.5" },
+        { name: "Plastik Kicap" },
+        { name: "Getah Belacan" },
+        { name: "Pen & Maker" },
+        { name: "Plastik Sampah" },
+        { name: "Daging" }
+      ],
+      barang_kering: [
+        { name: "Bebola Bakso" },
+        { name: "Ayam" }
+      ]
+    };
+    
+      function scrollToBottom() {
+    window.scrollTo({
+      top: document.body.scrollHeight,
+      behavior: 'smooth'
+    });
+  }
+
+  // Function to handle scroll event and show the button when scrolled down
+  window.onscroll = function () {
+    const scrollBtn = document.getElementById("scrollBottomBtn");
+    if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) {
+      scrollBtn.classList.add("show-btn"); // Show button
+    } else {
+      scrollBtn.classList.remove("show-btn"); // Hide button
+    }
+  };
+
+
+    // Function to display the items in the table
+    function displayItems(category = 'all') {
+      const tableBody = document.getElementById("inventoryTable").getElementsByTagName("tbody")[0];
+      tableBody.innerHTML = ''; // Clear existing items
+
+      let filteredItems = [];
+      if (category === 'all') {
+        filteredItems = [
+          ...inventoryData.barang_pasaran,
+          ...inventoryData.barang_runcit,
+          ...inventoryData.barang_kering
+        ];
+      } else {
+        filteredItems = inventoryData[category];
+      }
+
+      filteredItems.forEach(item => {
+        const row = tableBody.insertRow();
+        const cell1 = row.insertCell(0);
+        cell1.textContent = item.name;
+
+        const cell2 = row.insertCell(1);
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.onclick = () => addToChecksheet(item.name);
+        cell2.appendChild(checkbox);
+      });
+    }
+
+// Function to add selected item to checksheet (3 groups only)
+function addToChecksheet(itemName) {
+  const checksheetList = document.getElementById("checksheetList");
+
+  // Prevent duplicates
+  if ([...checksheetList.querySelectorAll("li")].some(li => li.textContent.includes(itemName))) {
+    return;
+  }
+
+  // Decide which group this item belongs to
+  let group = "barang_kering"; // default
+  if (inventoryData.barang_pasaran.some(i => i.name === itemName)) {
+    group = "barang_pasaran";
+  } else if (inventoryData.barang_runcit.some(i => i.name === itemName)) {
+    group = "barang_runcit";
+  }
+
+  // Group headers with emoji
+  const groupMap = {
+    barang_pasaran: { title: "Barang Pasar", emoji: "🥬" },
+    barang_runcit: { title: "Barang Runcit", emoji: "🛒" },
+    barang_kering: { title: "Barang Kering", emoji: "📦" }
+  };
+
+  // Check if group section exists
+  let groupSection = document.getElementById(`${group}-section`);
+  if (!groupSection) {
+    groupSection = document.createElement("div");
+    groupSection.id = `${group}-section`;
+    groupSection.innerHTML = `<h3>${groupMap[group].emoji} ${groupMap[group].title}</h3><ul></ul>`;
+    checksheetList.appendChild(groupSection);
+  }
+
+  const ul = groupSection.querySelector("ul");
+
+  // Create list item
+  const li = document.createElement("li");
+
+  // Item label
+  const itemText = document.createElement("span");
+  itemText.textContent = itemName;
+  li.appendChild(itemText);
+
+  // Quantity input
+  const quantityInput = document.createElement("input");
+  quantityInput.type = "number";
+  quantityInput.value = 1;
+  li.appendChild(quantityInput);
+
+  // Unit dropdown
+  const unitSelect = document.createElement("select");
+  ["pcs","kg"].forEach(unit => {
+    const opt = document.createElement("option");
+    opt.value = unit;
+    opt.textContent = unit;
+    unitSelect.appendChild(opt);
+  });
+  li.appendChild(unitSelect);
+
+  // Remove button
+  const removeBtn = document.createElement("button");
+  removeBtn.textContent = "❌";
+  removeBtn.classList.add("remove-btn");
+  removeBtn.onclick = () => li.remove();
+  li.appendChild(removeBtn);
+
+  ul.appendChild(li);
+}
+
+
+  // Function to capitalize the first letter of each word in the string
+  function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  }
+
+    // Function to filter items by category
+    function filterItems() {
+      const category = document.getElementById("categoryFilter").value;
+      displayItems(category);
+    }
+
+    // Add timestamp
+    function addTimestamp() {
+      const timestamp = new Date().toLocaleString();
+      document.getElementById("timestamp").textContent = `Generated on: ${timestamp}`;
+    }
+
+    // Copy checksheet to clipboard with proper categorization
+  function copyChecksheet() {
+    const checksheetItems = [];
+    const checksheetList = document.getElementById("checksheetList").children;
+
+    // Loop through each category section and its items
+    for (let i = 0; i < checksheetList.length; i++) {
+      const categorySection = checksheetList[i];
+      const categoryTitle = categorySection.querySelector("h3").textContent;
+      const items = categorySection.querySelectorAll("li");
+
+      // Add category title to the list
+      checksheetItems.push(`${categoryTitle}:`);
+
+      // Loop through each item in the category
+      items.forEach(item => {
+        const itemName = item.children[0].textContent;
+        const quantity = item.children[1].value;
+        const unit = item.children[2].value;
+        checksheetItems.push(`${itemName} - ${quantity} ${unit}`);
+      });
+
+      checksheetItems.push(""); // Add an empty line between categories
+    }
+
+    // Add timestamp
+    const timestamp = new Date().toLocaleString();
+    checksheetItems.unshift(`Generated on: ${timestamp}\n`); // Add timestamp at the top
+    const checksheetText = checksheetItems.join("\n");
+
+    // Copy to clipboard
+    navigator.clipboard.writeText(checksheetText).then(() => {
+      alert('Checksheet copied to clipboard!');
+    });
+  }
+
+  // Print checksheet with proper categorization
+  function printChecksheet() {
+    const checksheetItems = [];
+    const checksheetList = document.getElementById("checksheetList").children;
+
+    // Loop through each category section and its items
+    for (let i = 0; i < checksheetList.length; i++) {
+      const categorySection = checksheetList[i];
+      const categoryTitle = categorySection.querySelector("h3").textContent;
+      const items = categorySection.querySelectorAll("li");
+
+      // Add category title to the list
+      checksheetItems.push(`<h3>${categoryTitle}</h3>`);
+
+      // Loop through each item in the category
+      items.forEach(item => {
+        const itemName = item.children[0].textContent;
+        const quantity = item.children[1].value;
+        const unit = item.children[2].value;
+        checksheetItems.push(`<p>${itemName} - ${quantity} ${unit}</p>`);
+      });
+
+      checksheetItems.push(""); // Add an empty line between categories
+    }
+
+    // Add timestamp
+    const timestamp = new Date().toLocaleString();
+    const printContent = `<html><head><title>Print Checksheet</title><style>
+                            body { font-family: Arial, sans-serif; padding: 20px; font-size: 16px; }
+                            h3 { margin-top: 20px; }
+                            p { margin-bottom: 5px; }
+                            .timestamp { text-align: center; font-size: 14px; margin-bottom: 20px; }
+                          </style></head><body>
+                          <h2>Checksheet Items for Today</h2>
+                          <p class="timestamp">Generated on: ${timestamp}</p>
+                          ${checksheetItems.join("")}
+                          </body></html>`;
+
+    // Open the print window and trigger print
+    const printWindow = window.open('', '', 'height=600,width=800');
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    printWindow.print();
+  }
+
+  // Save checksheet to Firebase with proper categorization
+function saveToFirebase() {
+  const saveBtn = document.getElementById("saveBtn");
+  const loadingOverlay = document.getElementById("loadingOverlay");
+
+  // Prevent double click
+  if (saveBtn.classList.contains("loading")) return;
+
+  // Show overlay + disable button
+  saveBtn.classList.add("loading");
+  loadingOverlay.style.display = "flex";
+
+  const checksheetItems = [];
+  const checksheetList = document.getElementById("checksheetList").children;
+
+  for (let i = 0; i < checksheetList.length; i++) {
+    const categorySection = checksheetList[i];
+    const categoryTitle = categorySection.querySelector("h3").textContent;
+    const items = categorySection.querySelectorAll("li");
+
+    items.forEach(item => {
+      const itemName = item.children[0].textContent;
+      const quantity = item.children[1].value;
+      const unit = item.children[2].value;
+
+      checksheetItems.push({
+        category: categoryTitle,
+        item: itemName,
+        quantity: quantity,
+        unit: unit
+      });
+    });
+  }
+
+  const today = new Date().toISOString().split('T')[0];
+  const ref = db.ref('checklists/' + today);
+
+  ref.once('value', (snapshot) => {
+    const existingItems = snapshot.val() ? snapshot.val().items : [];
+    const allItems = existingItems.concat(checksheetItems);
+
+    ref.update({ items: allItems }, (error) => {
+      // Hide overlay + enable button
+      saveBtn.classList.remove("loading");
+      loadingOverlay.style.display = "none";
+
+      if (error) {
+        alert('❌ Error saving to Firebase: ' + error);
+      } else {
+        alert('✅ Checksheet saved to Firebase successfully!');
+      }
+    });
+  });
+}
+
+
+
+    // Initialize the page by displaying all items and adding timestamp
+    window.onload = () => {
+      displayItems(); // Show all items on page load
+      addTimestamp(); // Add timestamp to the checksheet
+    };
+  </script>
+</body>
+</html>
