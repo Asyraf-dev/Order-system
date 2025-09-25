@@ -35,62 +35,56 @@ body {
   gap: 16px;
 }
 
-/* ===== Sidebar ===== */
-.sidebar {
-  width: 200px;
-  min-width: 120px;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 16px;
-  height: fit-content;
-  position: sticky;
-  top: 12px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
-}
-
-.sidebar h3 {
-  font-size: 1rem;
-  margin: 0 0 12px;
-  font-weight: 600;
-  color: #374151;
-}
-
-.filter-list {
+  /* ===== Sticky filter bar ===== */
+.filter-container {
+  position: sticky;   /* sticks inside its parent */
+  top: 0;             /* stay at very top */
+  z-index: 50;        /* above menu items */
+  background: var(--surface); /* same background so it looks clean */
+  padding: 10px 0;
+  margin-bottom: 20px;
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  overflow-x: auto;
+  gap: 10px;
+  scrollbar-width: none;
 }
-
-.filter-list label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  border: 1px solid #e5e7eb;
-  background: #fff;
-  transition: all 0.2s;
-}
-
-.filter-list label:hover {
-  background: #f9fafb;
-}
-
-.filter-list input[type="radio"] {
+.filter-container::-webkit-scrollbar {
   display: none;
 }
 
-.filter-list input[type="radio"]:checked + span {
-  background: var(--accent);
-  color: #fff;
-  border-radius: 6px;
-  padding: 2px 6px;
-  font-weight: 600;
-}
 
+  .filter-container label {
+    flex: 0 0 auto;
+    cursor: pointer;
+  }
+  .filter-chip {
+    display: inline-block;
+    padding: 8px 14px;
+    border: 1px solid #ccc;
+    border-radius: 25px;
+    font-size: 14px;
+    background: #fff;
+    color: #444;
+    transition: all 0.25s;
+    white-space: nowrap;
+  }
+  .filter-container input[type="radio"] {
+    display: none;
+  }
+  .filter-container input[type="radio"]:checked + .filter-chip {
+    background: #007bff;
+    border-color: #007bff;
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+
+  /* Responsive tweaks */
+  @media (max-width: 600px) {
+    .filter-chip {
+      font-size: 13px;
+      padding: 7px 12px;
+    }
+  }
 /* ===== Main ===== */
 .main {
   flex: 1;
@@ -273,24 +267,45 @@ h2 {
   cursor: pointer;
 }
 
+/* Cart footer layout */
 .cart-footer {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
   align-items: center;
   margin-top: 12px;
-  flex-wrap: wrap;
+  width: 100%;
 }
+
 .cart-footer .inputs {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  flex: 1; /* grow to fit */
 }
+
+/* General inputs inside cart */
 .cart-footer input[type="text"] {
+  flex: 1;                 /* expand/shrink with space */
+  min-width: 120px;        /* prevents being too small */
+  max-width: 200px;        /* keeps name/table neat */
   padding: 8px;
   border-radius: 8px;
   border: 1px solid #e6e9ee;
-  width: 180px;
 }
+
+/* Special Request box */
+#special-request {
+  flex: 1;                /* expand within container */
+  min-width: 0;           /* allow shrinking */
+  max-width: 100%;        /* never overflow */
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #e6e9ee;
+  box-sizing: border-box; /* include padding in width */
+}
+
+
 .submit-btn {
   background: var(--accent);
   color: white;
@@ -414,27 +429,116 @@ h2 {
   box-shadow: 0 2px 4px rgba(0,0,0,0.15);
   text-transform: uppercase;
 }
+/* Cart footer layout */
+.cart-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-top: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Input container */
+.cart-footer .inputs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex: 1; /* grow to fit */
+  min-width: 0; /* prevent pushing beyond parent */
+}
+
+/* General inputs inside cart */
+.cart-footer input[type="text"] {
+  flex: 1;
+  min-width: 120px;
+  max-width: 100%;   /* never overflow */
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #e6e9ee;
+  box-sizing: border-box;
+}
+
+/* Special Request box */
+#special-request {
+  flex: 1 1 100%;    /* take full row if needed */
+  min-width: 0;
+  max-width: 100%;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #e6e9ee;
+  box-sizing: border-box;
+}
+
+/* Cart item card */
+.cart-item-card {
+  display: flex;
+  flex-direction: column; /* stack neatly on mobile */
+  gap: 8px;
+  padding: 10px;
+  border-radius: 10px;
+  background: white;
+  border: 1px solid #eceff3;
+  box-sizing: border-box;
+  width: 100%;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Title and add-ons text */
+.cart-item-title,
+.cart-item-addons {
+  max-width: 100%;
+  white-space: normal; /* wrap text instead of overflow */
+}
+
+/* Controls + price row */
+.cart-item-card > div:last-child {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap; /* wrap buttons if needed */
+  gap: 8px;
+  width: 100%;
+}
+
 
 
 
   </style>
 </head>
 <body>
-  <div class="layout">
-  <!-- Sidebar -->
-  <aside class="sidebar">
-    <h3>📂 Categories</h3>
-    <div class="filter-list">
-      <label><input type="radio" name="filter" value="all" checked><span>📋 All</span></label>
-      <label><input type="radio" name="filter" value="food"><span>🍽️ Food</span></label>
-      <label><input type="radio" name="filter" value="Side Dish"><span>🧂 Side Dish</span></label>
-      <label><input type="radio" name="filter" value="Air Panas"><span>☕ Air Panas</span></label>
-      <label><input type="radio" name="filter" value="Air Sejuk"><span>🥤 Air Sejuk</span></label>
-      <label><input type="radio" name="filter" value="Little Ngences Food"><span>🍩 Little Ngences Food</span></label>
-      <label><input type="radio" name="filter" value="Little Ngences Drink"><span>🧋 Little Ngences Drink</span></label>
-    </div>
-  </aside>
-
+  <div class="filter-container">
+  <label>
+    <input type="radio" name="filter" value="all" checked>
+    <span class="filter-chip">📋 All</span>
+  </label>
+  <label>
+    <input type="radio" name="filter" value="food">
+    <span class="filter-chip">🍽️ Food</span>
+  </label>
+  <label>
+    <input type="radio" name="filter" value="Side Dish">
+    <span class="filter-chip">🧂 Side Dish</span>
+  </label>
+  <label>
+    <input type="radio" name="filter" value="Air Panas">
+    <span class="filter-chip">☕ Air Panas</span>
+  </label>
+  <label>
+    <input type="radio" name="filter" value="Air Sejuk">
+    <span class="filter-chip">🥤 Air Sejuk</span>
+  </label>
+  <label>
+    <input type="radio" name="filter" value="Little Ngences Food">
+    <span class="filter-chip">🍩 Little Ngences Food</span>
+  </label>
+  <label>
+    <input type="radio" name="filter" value="Little Ngences Drink">
+    <span class="filter-chip">🧋 Little Ngences Drink</span>
+  </label>
+</div>
   <!-- Main -->
   <div class="main">
     <header>
@@ -461,7 +565,7 @@ h2 {
           <input id="customer-name" type="text" placeholder="👤 Name" required>
           <input id="table-number" type="text" placeholder="🪑 Table No" required>
         </div>
-        <input id="special-request" type="text" placeholder="✏️ Special Request" style="min-width:240px;">
+        <input id="special-request" type="text" placeholder="✏️ Special Request" style="min-width:100px;">
         <button id="submit-button" class="submit-btn" onclick="submitOrder()">Submit Order</button>
       </div>
     </div>
