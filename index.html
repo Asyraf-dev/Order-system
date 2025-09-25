@@ -37,17 +37,20 @@ body {
 
   /* ===== Sticky filter bar ===== */
 .filter-container {
-  position: sticky;   /* sticks inside its parent */
-  top: 0;             /* stay at very top */
-  z-index: 50;        /* above menu items */
-  background: var(--surface); /* same background so it looks clean */
-  padding: 10px 0;
-  margin-bottom: 20px;
+  position: fixed;      /* ✅ stays on screen always */
+  top: 0;               /* stick to very top */
+  left: 0;
+  right: 0;
+  z-index: 100;         /* above everything else */
+  background: var(--surface);
+  padding: 10px 12px;
   display: flex;
   overflow-x: auto;
   gap: 10px;
   scrollbar-width: none;
+  border-bottom: 1px solid #e5e7eb; /* optional subtle divider */
 }
+
 .filter-container::-webkit-scrollbar {
   display: none;
 }
@@ -87,9 +90,9 @@ body {
   }
 /* ===== Main ===== */
 .main {
-  flex: 1;
-  min-width: 0; /* prevents overflow */
+  margin-top: 70px; /* adjust based on filter height */
 }
+
 
 header {
   text-align: center;
