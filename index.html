@@ -709,38 +709,53 @@ function renderMenuItem(id, item) {
       button.textContent = isOpen ? "+ Customize" : "- Hide Add-ons";
     };
 
-    // ---------- Add to cart ----------
-    window.addToCart = function(button) {
-      const card = button.closest(".menuItem");
-      if(!card) return;
-      const name = card.dataset.name;
-      const basePrice = Number(card.dataset.price) || 0;
-      const qtyInput = card.querySelector(".quantity");
-      const qty = Math.max(1, parseInt(qtyInput?.value||1));
 
-      // compute add-ons selected
-      const addOnEls = card.querySelectorAll(".addon-checkbox:checked");
-      let addonNames = [];
-      let addonExtra = 0;
-      addOnEls.forEach(el => {
-        const price = Number(el.dataset.price)||0;
-        const label = el.dataset.label || "(addon)";
-        addonNames.push(label);
-        addonExtra += price;
-      });
+// ---------- Add to cart ----------
+window.addToCart = function(button) {
+  const card = button.closest(".menuItem");
+  if (!card) return;
 
-      // Store item price per unit including add-ons
-      const unitPrice = basePrice + addonExtra;
+  const name = card.dataset.name;
+  const basePrice = Number(card.dataset.price) || 0;
+  const category = card.dataset.category || "Others"; // ✅ capture category
+  const qtyInput = card.querySelector(".quantity");
+  const qty = Math.max(1, parseInt(qtyInput?.value || 1));
 
-      cart.push({ item: name, price: unitPrice, quantity: qty, addOns: addonNames });
-      updateCartView();
-      updateCartCount();
+  // compute add-ons selected
+  const addOnEls = card.querySelectorAll(".addon-checkbox:checked");
+  let addonNames = [];
+  let addonExtra = 0;
+  addOnEls.forEach(el => {
+    const price = Number(el.dataset.price) || 0;
+    const label = el.dataset.label || "(addon)";
+    addonNames.push(label);
+    addonExtra += price;
+  });
 
-      // small UI feedback (brief)
-      button.textContent = "Added ✓";
-      button.disabled = true;
-      setTimeout(()=>{ button.textContent = "Add to Cart"; button.disabled = false; }, 900);
-    };
+  // Store item price per unit including add-ons
+  const unitPrice = basePrice + addonExtra;
+
+  // ✅ Push with category
+  cart.push({
+    item: name,
+    price: unitPrice,
+    quantity: qty,
+    category: category,   // ✅ now stored
+    addOns: addonNames
+  });
+
+  updateCartView();
+  updateCartCount();
+
+  // small UI feedback (brief)
+  button.textContent = "Added ✓";
+  button.disabled = true;
+  setTimeout(() => {
+    button.textContent = "Add to Cart";
+    button.disabled = false;
+  }, 900);
+};
+
 
     // ---------- Cart render & functions ----------
     function updateCartView(){
@@ -856,123 +871,155 @@ applyFilter("all");
     // ---------- Receipt (PDF) ----------
 function generateReceiptPDF(orderDetails) {
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
 
-  let y = 20;
+  // Create PDF with receipt size (80mm wide, expandable height)
+  const doc = new jsPDF({
+    unit: "mm",
+    format: [80, 400] // allow long receipts
+  });
 
-  // 🏪 Header text
+  let y = 10;
+
+  // 🏪 Header
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(16);
-  doc.text("Restoran Ayam Gepuk Ngences", 105, y, { align: "center" });
-  y += 8;
   doc.setFontSize(11);
+  doc.text("RESTORAN AYAM GEPUK NGENCES", 40, y, { align: "center" }); 
+  y += 5;
+
   doc.setFont("helvetica", "normal");
-  doc.text("39, Laluan BG Transit 2, Kampung Bendera,", 105, y, { align: "center" });
-  y += 6;
-  doc.text("30200 Batu Gajah, Perak", 105, y, { align: "center" });
+  doc.setFontSize(8);
+  doc.text("39, Laluan BG Transit 2,", 40, y, { align: "center" }); y += 4;
+  doc.text("Kampung Bendera, 30200 Batu Gajah", 40, y, { align: "center" }); y += 4;
+  doc.text("Tel: 011-3701 0631", 40, y, { align: "center" });
 
   // Divider
-  y += 8;
-  doc.line(20, y, 190, y);
-  y += 10;
+  y += 4;
+  doc.line(5, y, 75, y);
+  y += 4;
 
   // 📌 Order Info
   const orderDate = new Date(orderDetails.timestamp).toLocaleString();
-  doc.setFont("helvetica", "normal");
-  doc.text(`Order No: ${orderDetails.queueNumber}`, 20, y); y += 6;
-  doc.text(`Name: ${orderDetails.name}`, 20, y); y += 6;
-  doc.text(`Table: ${orderDetails.table}`, 20, y); y += 6;
-  doc.text(`Special Request: ${orderDetails.request || "None"}`, 20, y); y += 6;
-  doc.text(`Date: ${orderDate}`, 20, y);
+  doc.setFontSize(8);
+  doc.text(`Order No: ${orderDetails.queueNumber}`, 5, y); y += 4;
+  doc.text(`Name: ${orderDetails.name}`, 5, y); y += 4;
+  doc.text(`Table: ${orderDetails.table}`, 5, y); y += 4;
+  doc.text(`Request: ${orderDetails.request || "None"}`, 5, y); y += 4;
+  doc.text(`Date: ${orderDate}`, 5, y);
 
   // Divider
-  y += 8;
-  doc.line(20, y, 190, y);
-  y += 10;
+  y += 4;
+  doc.line(5, y, 75, y);
+  y += 5;
 
-  // 📂 Group items by category
+  // ✅ Normalize category names consistently
+  const categoryMap = {
+    "food": "Food", "Food": "Food",
+    "Side Dish": "Side Dish", "side dish": "Side Dish",
+    "Air Panas": "Air Panas", "air panas": "Air Panas",
+    "Air Sejuk": "Air Sejuk", "air sejuk": "Air Sejuk",
+    "Little Ngences Food": "Little Ngences Food",
+    "Little Ngences Drink": "Little Ngences Drink",
+    "others": "Others", "Others": "Others"
+  };
+
+  // Group items by normalized category
   const grouped = {};
   orderDetails.cart.forEach(item => {
-    const category = item.category || "Others";
-    if (!grouped[category]) grouped[category] = [];
-    grouped[category].push(item);
+    const rawCategory = item.category || "Others";
+    const normalized = categoryMap[rawCategory] || "Others";
+    if (!grouped[normalized]) grouped[normalized] = [];
+    grouped[normalized].push(item);
   });
 
+  // Category display order
   const categoryOrder = [
-    "food", "Side Dish", "Air Panas", "Air Sejuk",
+    "Food", "Side Dish", "Air Panas", "Air Sejuk",
     "Little Ngences Food", "Little Ngences Drink", "Others"
   ];
 
-  // Table Layout
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
+  doc.setFontSize(8);
 
   categoryOrder.forEach(category => {
     if (grouped[category]) {
-      // Section Title
-      doc.text(category.toUpperCase(), 20, y);
-      y += 8;
+      // 📝 Table Header with Category inline
+      doc.setFont("helvetica", "bold");
+      doc.text(`Item (${category.toUpperCase()})`, 5, y);
+      doc.text("Qty", 55, y, { align: "right" });
+      doc.text("Price", 75, y, { align: "right" });
+      y += 4;
 
-      // Table Header
-      doc.setFontSize(11);
-      doc.text("Item", 20, y);
-      doc.text("Qty", 120, y, { align: "right" });
-      doc.text("Price (RM)", 190, y, { align: "right" });
-      y += 6;
-
-      doc.setLineWidth(0.2);
-      doc.line(20, y, 190, y);
-      y += 6;
+      doc.line(5, y, 75, y); // divider under header
+      y += 4;
 
       // Items
       grouped[category].forEach(item => {
-        const addOns = item.addOns.length ? ` [${item.addOns.join(", ")}]` : "";
         doc.setFont("helvetica", "normal");
 
-        // Long item names wrap
+        const addOns = item.addOns?.length ? ` [${item.addOns.join(", ")}]` : "";
         let itemText = `${item.item}${addOns}`;
-        let splitText = doc.splitTextToSize(itemText, 90); // wrap long names
+        let splitText = doc.splitTextToSize(itemText, 45);
 
         splitText.forEach((line, index) => {
-          doc.text(line, 20, y);
+          doc.text(line, 5, y);
           if (index === 0) {
-            doc.text(`${item.quantity}`, 120, y, { align: "right" });
-            doc.text(`${(item.price * item.quantity).toFixed(2)}`, 190, y, { align: "right" });
+            doc.text(`${item.quantity}`, 55, y, { align: "right" });
+            doc.text(`${(item.price * item.quantity).toFixed(2)}`, 75, y, { align: "right" });
           }
-          y += 6;
+          y += 4;
         });
       });
 
-      y += 8; // space between groups
+      y += 4; // spacing between categories
     }
   });
 
   // Divider
-  doc.line(20, y, 190, y);
-  y += 10;
+  doc.line(5, y, 75, y);
+  y += 5;
 
   // 💰 Total
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(13);
-  doc.text(`TOTAL: RM ${orderDetails.totalPrice.toFixed(2)}`, 190, y, { align: "right" });
-  y += 15;
-
-  // Footer
-  doc.setFont("helvetica", "italic");
-  doc.setFontSize(11);
-  doc.text("✅ Thank you for dining with us!", 105, y, { align: "center" });
-  y += 8;
-  doc.text("Ayam Gepuk Ngences x Ngences Coffee", 105, y, { align: "center" });
-  y += 8;
-
-  // Programmer Credit
-  doc.setFont("courier", "normal");
   doc.setFontSize(10);
-  doc.text("System developed by: Muhammad Asyraf (Programmer)", 105, y, { align: "center" });
+  doc.text("TOTAL", 5, y);
+  doc.text(`RM ${orderDetails.totalPrice.toFixed(2)}`, 75, y, { align: "right" });
+  y += 6;
 
-  // Save file
+  doc.line(5, y, 75, y);
+  y += 6;
+
+  // ✅ Footer
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(8);
+  doc.text("Thank you for dining with us!", 40, y, { align: "center" }); y += 4;
+  doc.text("Ayam Gepuk Ngences x Ngences Coffee", 40, y, { align: "center" }); y += 4;
+
+  // 📍 Google Maps link (short form)
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(0, 102, 204);
+  doc.textWithLink("Find us on Google Maps", 40, y, { align: "center", url: "https://share.google/2WBLBsO7mE3WQjJBb" });
+  y += 5;
+
+  // 📷 Instagram
+  doc.setTextColor(193, 53, 132);
+  doc.textWithLink("@ngencescoffee", 40, y, { align: "center", url: "https://www.instagram.com/ngencescoffee?igsh=MWZhZmM4YXcyc2Fraw==" });
+  y += 6;
+
+  // 💻 Programmer Quotes
+  const quotes = [
+    "Ater Komer Moh Ler try Sini"
+  ];
+  const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(7);
+  doc.setTextColor(0, 0, 0);
+  doc.text(`"${randomQuote}"`, 40, y, { align: "center" });
+
+  // Save PDF
   doc.save(`Receipt_${orderDetails.queueNumber}.pdf`);
 }
+
+
 
 
     // ---------- Submit order ----------
