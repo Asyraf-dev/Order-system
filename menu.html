@@ -199,26 +199,29 @@
     }
 
     function parseAddons(text){
-      const out={};
-      const lines=text.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
-      for(const line of lines){
-        const parts=line.split(/[:\-\|]/).map(p=>p.trim()).filter(Boolean);
-        if(parts.length>=2){
-          const key=sanitizeKey(parts[0]);
-          let price=parseFloat(parts[1]); if(isNaN(price)) price=0;
-          if(key) out[key]=Number(price);
-        } else {
-          const key=sanitizeKey(line);
-          if(key) out[key]=0;
-        }
-      }
-      return out;
+  const out = {};
+  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  for(const line of lines){
+    const parts = line.split(/[:\-\|]/).map(p => p.trim());
+    if(parts.length >= 2){
+      const label = parts[0]; // keep as typed
+      let price = parseFloat(parts[1]);
+      if(isNaN(price)) price = 0;
+      out[label] = Number(price);
+    } else {
+      out[line] = 0; // no price, still keep raw text
     }
+  }
+  return out;
+}
 
     function addonsToText(obj){
-      if(!obj) return "";
-      return Object.entries(obj).map(([k,v])=>`${k.replace(/_/g,' ')}:${Number(v).toFixed(2)}`).join("\\n");
-    }
+  if(!obj) return "";
+  return Object.entries(obj)
+    .map(([label, price]) => `${label}:${Number(price).toFixed(2)}`)
+    .join("\n");
+}
+
 
     function fillForm(id,data){
       editingId=id;
@@ -266,10 +269,18 @@
       meta.className="item-meta";
       meta.innerText=`RM ${Number(data.price||0).toFixed(2)} • ${data.category||"Others"}`;
 
-      const addonsBrief=document.createElement("div");
-      addonsBrief.className="small-muted";
-      const addons=data.addOns?Object.keys(data.addOns).map(k=>k.replace(/_/g,' ')):[];
-      addonsBrief.innerText=addons.length?`Add-ons: ${addons.join(", ")}`:"";
+      const addonsBrief = document.createElement("div");
+addonsBrief.className = "small-muted";
+
+if (data.addOns) {
+  const addonList = Object.entries(data.addOns).map(
+    ([label, price]) => `${label} (RM${Number(price).toFixed(2)})`
+  );
+  addonsBrief.innerText = addonList.length
+    ? `Add-ons: ${addonList.join(", ")}`
+    : "";
+}
+
 
       const controls=document.createElement("div");
       controls.className="item-controls";
