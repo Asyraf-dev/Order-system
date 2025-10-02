@@ -547,6 +547,16 @@ h2 {
     <header>
       <h1>🍽️ Restoran Ayam Gepuk Ngences</h1>
       <h2>- Pilih menu & hantar pesanan -</h2>
+
+      <!-- ✅ Daily Quote -->
+  <div id="quotes-box" style="margin-top:15px; padding:12px; background:#f9fafb; border-left:4px solid var(--accent); border-radius:8px;">
+    <p id="quote-text" style="margin:0; font-style:italic; color:#374151; font-size:0.95rem;">
+      "Loading..."
+    </p>
+    <p style="margin:4px 0 0; text-align:right; font-size:0.85rem; color:#6b7280;">
+      – Ikhlas dari Kami Restoran Ayam Gepuk Ngences
+    </p>
+  </div>
     </header>
 
 
@@ -755,6 +765,47 @@ window.addToCart = function(button) {
     button.disabled = false;
   }, 900);
 };
+
+// ---------- Daily Quote ----------
+const quotes = [
+    "Pray for Sumud Flotilla 🍉🍉",
+    "Hidangan ini disajikan dengan penuh kasih sayang.",
+    "Setiap suapan adalah doa kecil agar anda sentiasa bahagia.",
+    "Makanan enak, hati tenang.",
+    "Kami hidang dengan ikhlas, anda nikmati dengan senyuman.",
+    "Rezeki yang halal membawa keberkatan.",
+    "Setiap hidangan adalah tanda penghargaan untuk anda.",
+    "Nikmatilah momen ini bersama yang tersayang.",
+    "Kami percaya makanan bukan sekadar isi perut, tapi isi hati.",
+    "Selamat menjamu selera, semoga hari anda seindah hidangan ini.",
+    "Anda bukan sekadar pelanggan, anda adalah keluarga kami.",
+    "Setiap kunjungan anda adalah kebahagiaan bagi kami.",
+    "Semoga hidangan ini mengukir senyuman di wajah anda.",
+    "Kami hidang dengan cinta, anda rasa dengan jiwa.",
+    "Hidangan kecil, makna besar.",
+    "Setiap pelanggan istimewa adalah anugerah buat kami.",
+    "Nikmatilah, kerana setiap rasa datang dari hati kami.",
+    "Doa kami, setiap hidangan ini membawa ketenangan jiwa anda.",
+    "Bersyukur kerana dapat berkongsi rezeki ini dengan anda.",
+    "Hidangan penuh rasa, untuk pelanggan penuh makna.",
+    "Makanan ini disediakan dengan ikhlas, untuk anda yang istimewa.",
+    "Semoga setiap suapan membawa ketenangan dalam hati.",
+    "Kami tidak hanya menjamu selera, kami berkongsi bahagia.",
+    "Selamat menikmati hidangan, semoga ia jadi kenangan indah.",
+    "Makanan yang baik menyatukan hati yang jauh.",
+    "Pelanggan seperti anda membuat hari kami lebih indah.",
+    "Semoga setiap rasa ini memberi semangat baru untuk anda.",
+    "Anda datang sebagai pelanggan, pulang sebagai sahabat.",
+    "Hidangan ini lahir dari doa dan kerja ikhlas.",
+    "Semoga hidangan ini menjadi penyejuk hati dan penguat jiwa.",
+    "Kehadiran anda di sini adalah rezeki besar buat kami."
+    
+];
+
+const today = new Date();
+const dayIndex = today.getDate() % quotes.length;
+
+document.getElementById("quote-text").textContent = `"${quotes[dayIndex]}"`;
 
 
     // ---------- Cart render & functions ----------
