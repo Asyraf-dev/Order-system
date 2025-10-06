@@ -329,229 +329,100 @@ button.copy { background: linear-gradient(135deg, #607d8b, #455a64); }
         const db = getDatabase(app);
         const ordersRef = ref(db, 'orders/');
 
+// Global variable to hold menu categories
+let categoryLookup = {};
+
+// --- Load categories dynamically from Firebase ---
+const menuRef = ref(db, "menuItems/");
+onValue(menuRef, snapshot => {
+  categoryLookup = {}; // reset before repopulating
+  snapshot.forEach(childSnap => {
+    const item = childSnap.val();
+    if (item.name && item.category) {
+      categoryLookup[item.name] = item.category;
+    }
+  });
+  console.log("✅ Categories loaded from Firebase:", categoryLookup);
+});
+
+// --- Display Order Function ---
 function displayOrder(order, orderId) {
-    const orderContainer = document.getElementById("orders");
-    const orderDiv = document.createElement("div");
+  const orderContainer = document.getElementById("orders");
+  const orderDiv = document.createElement("div");
 
-    // === Normalize statuses (empty if not set yet) ===
-    const foodStatus = order.foodStatus || "";
-    const drinkStatus = order.drinkStatus || "";
+  // Normalize statuses
+  const foodStatus = order.foodStatus || "";
+  const drinkStatus = order.drinkStatus || "";
+  const safeFoodStatus = (foodStatus || "").replace(/\s+/g, "-");
+  const safeDrinkStatus = (drinkStatus || "").replace(/\s+/g, "-");
 
-    const safeFoodStatus = (foodStatus || "").replace(/\s+/g, "-");   // e.g. food-preparing
-    const safeDrinkStatus = (drinkStatus || "").replace(/\s+/g, "-"); // e.g. drink-ready
+  orderDiv.classList.add("order");
+  if (safeFoodStatus) orderDiv.classList.add(safeFoodStatus);
+  if (safeDrinkStatus) orderDiv.classList.add(safeDrinkStatus);
+  orderDiv.id = `order-${orderId}`;
 
-    orderDiv.classList.add("order");
-    if (safeFoodStatus) orderDiv.classList.add(safeFoodStatus);
-    if (safeDrinkStatus) orderDiv.classList.add(safeDrinkStatus);
-    orderDiv.id = `order-${orderId}`;
+  // Determine overall state
+  const foodReady = safeFoodStatus === "food-ready";
+  const drinkReady = safeDrinkStatus === "drink-ready";
+  const foodPreparing = safeFoodStatus === "food-preparing";
+  const drinkPreparing = safeDrinkStatus === "drink-preparing";
 
-    // === Determine overall state ===
-    const foodReady = safeFoodStatus === "food-ready";
-    const drinkReady = safeDrinkStatus === "drink-ready";
-    const foodPreparing = safeFoodStatus === "food-preparing";
-    const drinkPreparing = safeDrinkStatus === "drink-preparing";
+  let overallBadgeClass = "badge new-order";
+  let overallBadgeText = "🆕 New Order";
+  let orderClass = "received";
 
-    let overallBadgeClass = "badge new-order";
-    let overallBadgeText = "🆕 New Order";
-    let orderClass = "received";
+  if (foodReady && drinkReady) {
+    overallBadgeClass = "badge ready";
+    overallBadgeText = "All Ready";
+    orderClass = "ready";
+  } else if (foodPreparing || drinkPreparing || foodReady || drinkReady) {
+    overallBadgeClass = "badge preparing";
+    overallBadgeText = "Preparing";
+    orderClass = "preparing";
+  }
 
-    if (foodReady && drinkReady) {
-        overallBadgeClass = "badge ready";
-        overallBadgeText = "All Ready";
-        orderClass = "ready";
-    } else if (foodPreparing || drinkPreparing || foodReady || drinkReady) {
-        overallBadgeClass = "badge preparing";
-        overallBadgeText = "Preparing";
-        orderClass = "preparing";
-    }
+  orderDiv.classList.add(orderClass);
 
-    // apply main status class (this controls the left accent bar via CSS)
-    orderDiv.classList.add(orderClass);
-
-    // Manually define category lookup by item name
-    const categoryLookup = {
-        "Original Peha(Sambal Kacang)": "food",
-        "Original Kepak (Sambal Kacang)": "food",
-        "Signiture Peha": "food",
-        "Signiture Kepak": "food",
-        "Set Lele": "food",
-        "Set Daging Balado": "food",
-        "Bakso": "food",
-        "Bakso Beranak Telur": "food",
-        "Bakso Mercun": "food",
-        "Bakso Special": "food",
-
-
-        "Ayam Sahaja": "Side Dish",
-        "Lele Sahaja": "Side Dish",
-        "Daging Sahaja": "Side Dish",
-        "Bakso Kosong": "Side Dish",
-        "Sambal Gepuk": "Side Dish",
-        "Sambal Balado": "Side Dish",
-
-
-
-        "Teh O Panas": "Air Panas",
-        "Kopi O Panas": "Air Panas",
-        "Nescafe O Panas": "Air Panas",
-        "Teh Panas": "Air Panas",
-        "Kopi Panas": "Air Panas",
-        "Nescafe Panas": "Air Panas",
-        "Sirap Panas": "Air Panas",
-        "Sirap Selasih Panas": "Air Panas",
-        "Sirap Limau Panas": "Air Panas",
-        "Sirap Laici Panas": "Air Panas",
-        "Teh O Limau Panas": "Air Panas",
-        "Teh O Laici Panas": "Air Panas",
-        "Sirap Bandung Panas": "Air Panas",
-        "Sirap Bandung Cincau Panas": "Air Panas",
-        "Teh Cincau Panas": "Air Panas",
-        "Limau Panas": "Air Panas",
-        "Sanquick Panas": "Air Panas",
-        "Sanquick Laici Panas": "Air Panas",
-        "Laici Panas": "Air Panas",
-        "Air Panas": "Air Panas",
-       
-
-
-
-
-        "Es Buah": "Air Sejuk",
-        "Teh O Ais": "Air Sejuk",
-        "Kopi O Ais": "Air Sejuk",
-        "Nescafe O Ais": "Air Sejuk",
-        "Teh Ais": "Air Sejuk",
-        "Kopi Ais": "Air Sejuk",
-        "Nescafe Ais": "Air Sejuk",
-        "Sirap Ais": "Air Sejuk",
-        "Sirap Selasih Ais": "Air Sejuk",
-        "Sirap Limau Ais": "Air Sejuk",
-        "Sirap Laici Ais": "Air Sejuk",
-        "Teh O Limau Ais": "Air Sejuk",
-        "Teh O Laici Ais": "Air Sejuk",
-        "Sirap Bandung Ais": "Air Sejuk",
-        "Sirap Bandung Cincau Ais": "Air Sejuk",
-        "Teh Cincau Ais": "Air Sejuk",
-        "Limau Ais": "Air Sejuk",
-        "Sanquick Ais": "Air Sejuk",
-        "Sanquick Laici Ais": "Air Sejuk",
-        "Laici Ais": "Air Sejuk",
-        "ExtraJoss Anggur Susu": "Air Sejuk",
-        "ExtraJoss Anggur": "Air Sejuk",
-        "ExtraJoss Mangga Susu": "Air Sejuk",
-        "ExtraJoss Mangga Gula": "Air Sejuk",
-        "Air Kosong": "Air Sejuk",
-        
-
-
-        "Buttermilk Chicken with rice": "Little Ngences Food",
-        "Sweet Chilli Chicken with rice": "Little Ngences Food",
-        "Soy Garlic Chicken with rice": "Little Ngences Food",
-        "Teriyaki Chicken with rice": "Little Ngences Food",
-        "Spaghetti Samyang Chicken": "Little Ngences Food",
-        "Spaghetti Tomyam Chicken": "Little Ngences Food",
-        "Spaghetti Buttermilk Chicken": "Little Ngences Food",
-        "Spaghetti Carbonara Chicken": "Little Ngences Food",
-        "Crispy Chicken Burger": "Little Ngences Food",
-        "Beef Burger": "Little Ngences Food",
-        "Baby Pancake": "Little Ngences Food",
-        "Croissant @ Croffle": "Little Ngences Food",
-        "Teobokki": "Little Ngences Food",
-        "Chicken Popcorn": "Little Ngences Food",
-        "Fries": "Little Ngences Food",
-        "Cheezy Fries": "Little Ngences Food",
-        "Mee Sedap": "Little Ngences Food",
-        "Mee Tomyam": "Little Ngences Food",
-        "Chicken Burger": "Little Ngences Food",
-        
-        
-
-
-
-        "Ngences Latte": "Little Ngences Drink",
-        "Caramel Macchiato": "Little Ngences Drink",
-        "Vanilla Latte": "Little Ngences Drink",
-        "Caffe Latte": "Little Ngences Drink",
-        "Caffe Mocha": "Little Ngences Drink",
-        "Caffe Americano": "Little Ngences Drink",
-        "Oatmilk Latte": "Little Ngences Drink",
-        "Oatmilk Mocha": "Little Ngences Drink",
-        "Chocoa Latte": "Little Ngences Drink",
-        "Dirty Matcha Latte": "Little Ngences Drink",
-        "Matchogato": "Little Ngences Drink",
-        "Fruity Milk": "Little Ngences Drink",
-        "Fruity Sparkling": "Little Ngences Drink",
-        "Ngences Coffe": "Little Ngences Drink",
-        "Mocha": "Little Ngences Drink",
-        "Mocha Chip": "Little Ngences Drink",
-        "Chocolate Cream": "Little Ngences Drink",
-        "Chocolate Cream Chip": "Little Ngences Drink",
-        "Matcha Cream": "Little Ngences Drink",
-        "Matcha Cream Chip": "Little Ngences Drink",
-        "Vanilla Cream": "Little Ngences Drink",
-        "Brown Sugar Latte": "Little Ngences Drink",
-        "Chocolate Macchiato": "Little Ngences Drink",
-        "Dirty Taro Latte": "Little Ngences Drink",
-        "Dirty Strawberry Latte": "Little Ngences Drink",
-        "Cloudy Coffe": "Little Ngences Drink",
-        "Taro Latte": "Little Ngences Drink",
-        "Strawberry Latte": "Little Ngences Drink",
-        "Cocoa Matcha Latte": "Little Ngences Drink",
-        "Taro Matcha Latte": "Little Ngences Drink",
-        "Strawberry Matcha Latte": "Little Ngences Drink",
-        "Passion Tea": "Little Ngences Drink",
-        "Black Tea": "Little Ngences Drink",
-        "Cloudy Cocoa": "Little Ngences Drink",
-        "Cloudy Taro": "Little Ngences Drink",
-        "Cloudy Strawberry": "Little Ngences Drink",
-        "Cloudy Matcha": "Little Ngences Drink",
-        "Taro Cream": "Little Ngences Drink",
-        "Taro Cream Chip": "Little Ngences Drink",
-        "Strawberry Cream": "Little Ngences Drink",
-        "Strawberry Cream Chip": "Little Ngences Drink",
-
-
-
-        "Latte": "Little Ngences Drink",
-        "Cappuccino": "Little Ngences Drink",
-        "Mini Waffle": "Little Ngences Food",
-        "Chicken Nugget": "Little Ngences Food"
-        // Add more items as needed
-    };
-
-    const grouped = {};
-    if (Array.isArray(order.cart)) {
-        order.cart.forEach(item => {
-            const category = categoryLookup[item.item] || "Others";
-            if (!grouped[category]) grouped[category] = [];
-            grouped[category].push(item);
-        });
-    }
-
-    // Render grouped items
-    const categoryOrder = ["food", "Side Dish", "Air Panas", "Air Sejuk", "Little Ngences Food", "Little Ngences Drink", "Others"];
-    let groupedItemsHTML = "";
-    categoryOrder.forEach(category => {
-        if (grouped[category]) {
-            groupedItemsHTML += `
-                <div style="margin-top:10px; margin-bottom:10px;">
-                    <strong>${category.toUpperCase()}</strong>
-                    <ul style="margin-left:10px; margin-top:5px;">
-            `;
-            grouped[category].forEach(item => {
-                const addOns = item.addOns?.length ? item.addOns.join(", ") : "Tiada";
-                groupedItemsHTML += `
-                    <li>
-                        ${item.item} x ${item.quantity}<br>
-                        AddOn: (${addOns}) - RM${((item.price || 0) * (item.quantity || 0)).toFixed(2)}
-                    </li>
-                `;
-            });
-            groupedItemsHTML += `</ul><hr></div>`;
-        }
+  // --- Dynamic Category Grouping ---
+  const grouped = {};
+  if (Array.isArray(order.cart)) {
+    order.cart.forEach(item => {
+      const category = categoryLookup[item.item] || "Others";
+      if (!grouped[category]) grouped[category] = [];
+      grouped[category].push(item);
     });
+  }
 
-    // === Build card ===
+  const categoryOrder = [
+    "food",
+    "Side Dish",
+    "Air Panas",
+    "Air Sejuk",
+    "Little Ngences Food",
+    "Little Ngences Drink",
+    "Others"
+  ];
+
+  let groupedItemsHTML = "";
+  categoryOrder.forEach(category => {
+    if (grouped[category]) {
+      groupedItemsHTML += `
+        <div style="margin-top:10px; margin-bottom:10px;">
+          <strong>${category.toUpperCase()}</strong>
+          <ul style="margin-left:10px; margin-top:5px;">
+      `;
+      grouped[category].forEach(item => {
+        const addOns = item.addOns?.length ? item.addOns.join(", ") : "Tiada";
+        groupedItemsHTML += `
+          <li>${item.item} x ${item.quantity}<br>
+          AddOn: (${addOns}) - RM${((item.price || 0) * (item.quantity || 0)).toFixed(2)}</li>
+        `;
+      });
+      groupedItemsHTML += `</ul><hr></div>`;
+    }
+  });
+
+  // === Build card ===
     orderDiv.innerHTML = `
         <div class="order-header">
             <div class="status-circles">
@@ -620,10 +491,6 @@ function displayOrder(order, orderId) {
 
     orderContainer.prepend(orderDiv);
 }
-
-
-
-
 
 
         function exportToCSV() {
