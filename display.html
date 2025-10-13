@@ -835,17 +835,21 @@ function printOrder(orderId) {
   const Price = orderDiv.querySelector('.order-total');
   const orderReceive = orderDiv.querySelector('.order-time');
 
-  // ✅ Define formatter here so main page can access it
+  // ✅ Format order items into clean aligned text
   function formatOrderItems(rawText) {
-    const lines = rawText.trim().split('\n').filter(line => line.trim());
-    return lines.map(line => {
-      if (!line.includes('-')) return line; // category or plain item
-      const parts = line.split('-');
-      const left = parts[0].trim();
-      const right = parts[1].trim();
-      const spaces = 32 - left.length - right.length;
-      return left + ' '.repeat(Math.max(2, spaces)) + right;
-    }).join('\n');
+    const lines = rawText
+      .trim()
+      .split('\n')
+      .filter(line => line.trim().length > 0);
+
+    return lines
+      .map(line => {
+        if (!line.includes('-')) return line;
+        const [left, right] = line.split('-');
+        const spaces = 32 - left.trim().length - right.trim().length;
+        return left.trim() + ' '.repeat(Math.max(spaces, 2)) + right.trim();
+      })
+      .join('\n');
   }
 
   const formattedItems = formatOrderItems(orderItems.innerText);
@@ -866,8 +870,8 @@ function printOrder(orderId) {
 
         body {
           font-family: 'Courier New', monospace;
-          font-size: 10px;
-          line-height: 1.3;
+          font-size: 8px;              /* 👈 smaller font to match preview */
+          line-height: 1.2;
           padding: 5px;
           width: 58mm;
           box-sizing: border-box;
@@ -875,61 +879,50 @@ function printOrder(orderId) {
         }
 
         .center { text-align: center; }
-        .line { border-top: 1px dashed #000; margin: 4px 0; }
-
-        .header {
-          text-align: center;
-          margin-bottom: 5px;
+        .line { 
+          border-top: 1px dashed #000; 
+          margin: 3px 0; 
         }
 
-        .details {
-          text-align: left;
-          margin-top: 5px;
-        }
-
-        .order-list {
-          text-align: left;
-          white-space: pre-wrap;
-          margin: 5px 0;
+        pre {
+          font-family: 'Courier New', monospace;
+          font-size: 8px;
+          margin: 0;
+          padding: 0;
+          white-space: pre;
         }
 
         .footer {
           text-align: center;
-          margin-top: 10px;
-          font-size: 9px;
+          margin-top: 5px;
+          font-size: 7px;
         }
 
         .footer i {
-          display: block;
-          font-size: 8px;
-          margin-top: 4px;
+          font-size: 6px;
         }
       </style>
     </head>
     <body>
-      <div class="header">
+      <div class="center">
         <b>RESTORAN AYAM GEPUK NGENCES</b><br>
         39, Laluan BG Transit 2,<br>
         Kampung Bendera, 30200 Batu Gajah, Perak<br>
-        <div class="line"></div>
       </div>
-
-      <div class="details">
-        Order Time : ${orderReceive.innerHTML}<br>
-        Order No.   : ${orderQuery.innerHTML}<br>
-        Name        : ${orderName.innerHTML}<br>
-        Table       : ${Table.innerHTML}<br>
-        Request     : ${Request.innerHTML || 'None'}<br>
-      </div>
-
+      <div class="line"></div>
+      <pre>
+Order Time : ${orderReceive.innerHTML}
+Order No.   : ${orderQuery.innerHTML}
+Name        : ${orderName.innerHTML}
+Table       : ${Table.innerHTML}
+Request     : ${Request.innerHTML || 'None'}
+      </pre>
       <div class="line"></div>
       <div class="center"><b>ORDER LIST</b></div>
-      <div class="order-list">${formattedItems}</div>
-
+      <pre>${formattedItems}</pre>
       <div class="line"></div>
       <div class="center"><b>Total:</b> ${Price.innerHTML}</div>
       <div class="line"></div>
-
       <div class="footer">
         Terima kasih!<br>
         Ayam Gepuk Ngences X Ngences Coffee<br>
@@ -945,6 +938,7 @@ function printOrder(orderId) {
   printWindow.print();
 }
 </script>
+
 
 
 
