@@ -835,6 +835,21 @@ function printOrder(orderId) {
   const Price = orderDiv.querySelector('.order-total');
   const orderReceive = orderDiv.querySelector('.order-time');
 
+  // ✅ Define formatter here so main page can access it
+  function formatOrderItems(rawText) {
+    const lines = rawText.trim().split('\n').filter(line => line.trim());
+    return lines.map(line => {
+      if (!line.includes('-')) return line; // category or plain item
+      const parts = line.split('-');
+      const left = parts[0].trim();
+      const right = parts[1].trim();
+      const spaces = 32 - left.length - right.length;
+      return left + ' '.repeat(Math.max(2, spaces)) + right;
+    }).join('\n');
+  }
+
+  const formattedItems = formatOrderItems(orderItems.innerText);
+
   const printWindow = window.open('', '_blank', 'width=300,height=600');
   printWindow.document.write(`
     <html>
@@ -846,72 +861,47 @@ function printOrder(orderId) {
             size: 58mm auto;
             margin: 0;
           }
-          body {
-            margin: 0;
-          }
+          body { margin: 0; }
         }
 
         body {
-          font-family: monospace;
+          font-family: 'Courier New', monospace;
           font-size: 10px;
-          padding: 6px;
+          line-height: 1.3;
+          padding: 5px;
           width: 58mm;
           box-sizing: border-box;
           color: #000;
         }
+
+        .center { text-align: center; }
+        .line { border-top: 1px dashed #000; margin: 4px 0; }
 
         .header {
           text-align: center;
           margin-bottom: 5px;
         }
 
-        .header b {
-          font-size: 11px;
-        }
-
-        .line {
-          border-top: 1px dashed #000;
-          margin: 4px 0;
-        }
-
-        .section {
-          margin: 4px 0;
-        }
-
         .details {
           text-align: left;
-          font-size: 10px;
-        }
-
-        ul {
-          padding-left: 0;
-          list-style: none;
-          margin: 0;
-        }
-
-        ul li {
-          display: flex;
-          justify-content: space-between;
-          font-size: 10px;
-          margin: 2px 0;
-        }
-
-        .total {
-          font-weight: bold;
-          font-size: 10px;
-          text-align: right;
           margin-top: 5px;
+        }
+
+        .order-list {
+          text-align: left;
+          white-space: pre-wrap;
+          margin: 5px 0;
         }
 
         .footer {
           text-align: center;
-          margin-top: 8px;
+          margin-top: 10px;
           font-size: 9px;
         }
 
         .footer i {
-          font-size: 8px;
           display: block;
+          font-size: 8px;
           margin-top: 4px;
         }
       </style>
@@ -933,29 +923,29 @@ function printOrder(orderId) {
       </div>
 
       <div class="line"></div>
-      <div class="section">
-        <b>Order List</b>
-        <ul>${orderItems.innerHTML}</ul>
-      </div>
+      <div class="center"><b>ORDER LIST</b></div>
+      <div class="order-list">${formattedItems}</div>
 
       <div class="line"></div>
-      <div class="total">Total: ${Price.innerHTML}</div>
-
+      <div class="center"><b>Total:</b> ${Price.innerHTML}</div>
       <div class="line"></div>
+
       <div class="footer">
         Terima kasih!<br>
         Ayam Gepuk Ngences X Ngences Coffee<br>
-        Powered by electricaltechnologymy<br>
+        Powered by electricaltechnologymy
         <i>This receipt prints automatically by the ordering system.</i>
       </div>
     </body>
     </html>
   `);
+
   printWindow.document.close();
   printWindow.focus();
   printWindow.print();
 }
 </script>
+
 
 
 <script>
