@@ -506,6 +506,94 @@ h2 {
   width: 100%;
 }
 
+/* ===== Footer Section ===== */
+footer {
+  margin-top: 60px;
+  background: linear-gradient(180deg, #ffffff 0%, #f3f4f6 100%);
+  color: #374151;
+  text-align: center;
+  padding: 30px 20px;
+  border-top: 1px solid #e5e7eb;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+footer .footer-logo {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+footer .footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+footer .footer-links a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.25s;
+}
+
+footer .footer-links a:hover {
+  color: var(--green);
+}
+
+footer .social-icons {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin: 12px 0;
+}
+
+footer .social-icons a {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  color: var(--accent);
+  text-decoration: none;
+  transition: all 0.3s;
+  font-size: 1.1rem;
+}
+
+footer .social-icons a:hover {
+  background: var(--accent);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+}
+
+footer .footer-bottom {
+  margin-top: 15px;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+/* ===== Small Screen Optimization ===== */
+@media (max-width: 600px) {
+  footer {
+    font-size: 0.85rem;
+    padding: 24px 14px;
+  }
+  footer .footer-links {
+    gap: 10px;
+  }
+  footer .social-icons a {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+  }
+}
+
 
 
 
@@ -1168,5 +1256,34 @@ function generateReceiptPDF(orderDetails) {
     });
 
   </script>
+  <footer>
+  <div class="footer-logo">🍗 Restoran Ayam Gepuk Ngences</div>
+  <div>Authentic Indonesian Taste — Made with Love ❤️</div>
+  <div>"Sekali Rasa Pasti Nak Lagi"</div>
+
+  <div class="footer-links">
+    <a href="#">Home</a>
+    <a href="customer.html">Track Order</a>
+    <a href="https://www.tiktok.com/@little.ngences.co?_t=8nzZDYmHXhg&_r=1">TikTok</a>
+    <a href="https://batugajahdev.wixstudio.io/little-ngences">Visit Ngences Coffee</a>
+  </div>
+
+  <div class="social-icons">
+    <a href="https://www.facebook.com/share/17NwutonVw/?mibextid=wwXIfr" target="_blank" aria-label="Facebook">📘</a>
+    <a href="https://www.instagram.com/littlengencescoffee?igsh=MWZhZmM4YXcyc2Fraw==" target="_blank" aria-label="Instagram">📸</a>
+    <a href="https://wa.me/60123456789" target="_blank" aria-label="WhatsApp">💬</a>
+  </div>
+
+  <div class="footer-bottom">
+    © <span id="year"></span> Restoran Ayam Gepuk Ngences. All rights reserved.
+  </div>
+  
+</footer>
+
+<script>
+  // Auto update footer year
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+
 </body>
 </html>
