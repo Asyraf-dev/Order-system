@@ -822,94 +822,93 @@ updateDashboard();
             });
     }
 </script>
-<script>
-function printOrder(orderId) {
-  const orderDiv = document.getElementById(`order-${orderId}`);
-  if (!orderDiv) return;
+    <script>
+        function printOrder(orderId) {
+    const orderDiv = document.getElementById(`order-${orderId}`);
+    if (!orderDiv) return;
 
-  const orderItems = orderDiv.querySelector('.order-items')?.innerText || "";
-  const orderQuery = orderDiv.querySelector('.order-number')?.innerText || "";
-  const orderName = orderDiv.querySelector('.order-name')?.innerText || "";
-  const Table = orderDiv.querySelector('.order-table')?.innerText || "";
-  const Request = orderDiv.querySelector('.order-request')?.innerText || "None";
-  const Price = orderDiv.querySelector('.order-total')?.innerText || "";
-  const orderReceive = orderDiv.querySelector('.order-time')?.innerText || "";
+    const orderItems = orderDiv.querySelector('.order-items');
+    const orderQuery = orderDiv.querySelector('.order-number');
+    const orderName = orderDiv.querySelector('.order-name');
+    const Table = orderDiv.querySelector('.order-table');
+    const Request = orderDiv.querySelector('.order-request');
+    const Price = orderDiv.querySelector('.order-total');
+    const orderReceive = orderDiv.querySelector('.order-time');
 
-  const receiptHTML = `
-    <html>
-    <head>
-      <title>Receipt - RESTORAN AYAM GEPUK NGENCES</title>
-      <meta charset="UTF-8">
-      <style>
-        @page {
-          size: 58mm auto;
-          margin: 0;
-        }
-        body {
-          width: 58mm;
-          margin: 0;
-          padding: 5px;
-          font-family: monospace;
-          font-size: 10px;
-          text-align: center;
-          box-sizing: border-box;
-        }
-        .line {
-          border-top: 1px dashed #000;
-          margin: 5px 0;
-        }
-        .footer {
-          margin-top: 10px;
-          font-size: 10px;
-        }
-        .left {
-          text-align: left;
-          white-space: pre-wrap;
-          word-wrap: break-word;
-        }
-      </style>
-    </head>
-    <body>
-      <b>RESTORAN AYAM GEPUK NGENCES</b><br>
-      39, Laluan BG Transit 2,<br>
-      Kampung Bendera, 30200 Batu Gajah, Perak<br>
-      <div class="line"></div>
-      Order at: ${orderReceive}<br>
-      Order No: ${orderQuery}<br>
-      Name: ${orderName}<br>
-      Table: ${Table}<br>
-      Special Request: ${Request}<br>
-      <div class="line"></div>
-      <b>Order List:</b><br>
-      <div class="left">${orderItems.replace(/\n/g, "<br>")}</div>
-      <div class="line"></div>
-      <b>Total:</b> ${Price}<br>
-      <div class="line"></div>
-      <div class="footer">
-        Terima kasih!<br>
-        Ayam Gepuk Ngences X Ngences Coffee<br>
-        Powered by electricaltechnologymy<br><br>
-        <i>This receipt prints automatically by the ordering system.</i>
-      </div>
-    </body>
-    </html>
-  `;
-
-  const printWindow = window.open("about:blank", "_blank", "width=300,height=600");
-  printWindow.document.write(receiptHTML);
-  printWindow.document.close();
-
-  // Wait for rendering before printing (important for Sunmi)
-  printWindow.onload = () => {
+    const printWindow = window.open('', '_blank', 'width=300,height=600');
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>Receipt - RESTORAN AYAM GEPUK NGENCES</title>
+            <style>
+                @media print {
+                    @page {
+                        size: 58mm auto; 
+                        margin: 0;
+                    }
+                    body {
+                        margin: 0;
+                    }
+                }
+                body {
+                    font-family: monospace;
+                    font-size: 10px;
+                    padding: 5px;
+                    width: 58mm;
+                    box-sizing: border-box;
+                    text-align: center;
+                }
+                .logo {
+                    width: 100px;
+                    display: block;
+                    margin: 0 auto 5px;
+                }
+                .line {
+                    border-top: 1px dashed #000;
+                    margin: 5px 0;
+                }
+                .footer {
+                    text-align: center;
+                    margin-top: 8px;
+                    font-size: 10px;
+                }
+                ul {
+                    padding-left: 0;
+                    list-style: none;
+                    text-align: left;
+                }
+            </style>
+        </head>
+        <body>
+            <b>RESTORAN AYAM GEPUK NGENCES</b><br>
+            39, Laluan BG Transit 2, Kampung Bendera, 30200 Batu Gajah, Perak<br>
+            <div class="line"></div>
+            Order at: ${orderReceive.innerHTML}<br>
+            Order No: ${orderQuery.innerHTML}<br>
+            Name: ${orderName.innerHTML}<br>
+            Table: ${Table.innerHTML}<br>
+            Special Request: ${Request.innerHTML || 'None'}<br>
+            _______________________________ <br>
+            <b>Order List:</b><br>
+            <ul>${orderItems.innerHTML}</ul>
+            _______________________________ <br>
+            <b>Total:</b> ${Price.innerHTML}<br>
+            _______________________________ <br>
+            <div class="footer">
+                Terima kasih!<br>
+                Ayam Gepuk Ngences X Ngences Coffee<br>
+                Powered by electricaltechnologymy <br><br>
+                <i>This receipt prints automatically by the ordering system.</i><br>
+            </div>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
     printWindow.focus();
     printWindow.print();
-    setTimeout(() => {
-      printWindow.close();
-    }, 1000);
-  };
 }
-</script>
 
+        </script>
 
 <script>
     function copyOrderToClipboard(orderId) {
