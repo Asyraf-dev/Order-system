@@ -62,6 +62,12 @@
     .small-muted{font-size:12px;color:var(--muted)}
     .danger-small{background:transparent;border:1px solid rgba(239,68,68,0.12);color:var(--danger);padding:6px 8px;border-radius:8px}
 
+    /* Category availability UI */
+    .category-list{display:flex;flex-direction:column;gap:8px}
+    .category-row{display:flex;align-items:center;justify-content:space-between;padding:8px;border-radius:8px;border:1px solid #eef2f6;background:#fff}
+    .category-name{font-weight:700;color:#0f172a}
+    .category-note{font-size:12px;color:var(--muted)}
+
     #notice{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;padding:10px 14px;border-radius:10px;background:#111827;color:white;display:none;z-index:9999}
   </style>
 </head>
@@ -128,9 +134,19 @@
       </div>
     </div>
 
-    <!-- right: items list -->
+    <!-- right: category availability + items list -->
     <div class="card">
       <h3>Menu Items</h3>
+
+      <!-- Category Availability panel (NEW) -->
+      <div class="card" style="margin-bottom:12px;padding:10px">
+        <h4 style="margin:0 0 8px 0;color:var(--accent)">Category Availability</h4>
+        <div id="category-availability" class="category-list">
+          <!-- dynamically populated -->
+        </div>
+        <div class="muted" style="margin-top:8px">Toggles are saved — changing a category toggle will set all items in that category to available/unavailable.</div>
+      </div>
+
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
         <label for="filter" style="font-size:14px;color:var(--muted)">Filter:</label>
         <select id="filter" style="padding:6px 8px;border-radius:8px;border:1px solid #e5e7eb;font-size:14px">
@@ -144,6 +160,7 @@
           <option value="Others">Others</option>
         </select>
       </div>
+
       <div id="items-list" aria-live="polite"></div>
     </div>
   </div>
@@ -171,6 +188,17 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const itemsRef = ref(db, "menuItems");
+    const categoryStatusRef = ref(db, "categoryStatus"); // NEW: store per-category availability
+
+    const categories = [
+      "food",
+      "Side Dish",
+      "Air Panas",
+      "Air Sejuk",
+      "Little Ngences Food",
+      "Little Ngences Drink",
+      "Others"
+    ];
 
     const itemsList = document.getElementById("items-list");
     const nameEl = document.getElementById("name");
@@ -184,8 +212,10 @@
     const formTitle = document.getElementById("form-title");
     const notice = document.getElementById("notice");
     const filterEl = document.getElementById("filter");
+    const categoryAvailabilityEl = document.getElementById("category-availability");
 
     let editingId = null;
+    let currentCategoryStatus = {}; // cached from Firebase
 
     function showNotice(msg,time=2500){
       notice.innerText = msg;
@@ -199,29 +229,28 @@
     }
 
     function parseAddons(text){
-  const out = {};
-  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-  for(const line of lines){
-    const parts = line.split(/[:\-\|]/).map(p => p.trim());
-    if(parts.length >= 2){
-      const label = parts[0]; // keep as typed
-      let price = parseFloat(parts[1]);
-      if(isNaN(price)) price = 0;
-      out[label] = Number(price);
-    } else {
-      out[line] = 0; // no price, still keep raw text
+      const out = {};
+      const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      for(const line of lines){
+        const parts = line.split(/[:\-\|]/).map(p => p.trim());
+        if(parts.length >= 2){
+          const label = parts[0]; // keep as typed
+          let price = parseFloat(parts[1]);
+          if(isNaN(price)) price = 0;
+          out[label] = Number(price);
+        } else {
+          out[line] = 0; // no price, still keep raw text
+        }
+      }
+      return out;
     }
-  }
-  return out;
-}
 
     function addonsToText(obj){
-  if(!obj) return "";
-  return Object.entries(obj)
-    .map(([label, price]) => `${label}:${Number(price).toFixed(2)}`)
-    .join("\n");
-}
-
+      if(!obj) return "";
+      return Object.entries(obj)
+        .map(([label, price]) => `${label}:${Number(price).toFixed(2)}`)
+        .join("\n");
+    }
 
     function fillForm(id,data){
       editingId=id;
@@ -270,17 +299,16 @@
       meta.innerText=`RM ${Number(data.price||0).toFixed(2)} • ${data.category||"Others"}`;
 
       const addonsBrief = document.createElement("div");
-addonsBrief.className = "small-muted";
+      addonsBrief.className = "small-muted";
 
-if (data.addOns) {
-  const addonList = Object.entries(data.addOns).map(
-    ([label, price]) => `${label} (RM${Number(price).toFixed(2)})`
-  );
-  addonsBrief.innerText = addonList.length
-    ? `Add-ons: ${addonList.join(", ")}`
-    : "";
-}
-
+      if (data.addOns) {
+        const addonList = Object.entries(data.addOns).map(
+          ([label, price]) => `${label} (RM${Number(price).toFixed(2)})`
+        );
+        addonsBrief.innerText = addonList.length
+          ? `Add-ons: ${addonList.join(", ")}`
+          : "";
+      }
 
       const controls=document.createElement("div");
       controls.className="item-controls";
@@ -347,7 +375,7 @@ if (data.addOns) {
         if(!grouped[category]) grouped[category]=[];
         grouped[category].push({id,item});
       });
-      const categoryOrder=["food","Side Dish","Air Panas","Air Sejuk","Little Ngences Food","Little Ngences Drink","Others"];
+      const categoryOrder=categories;
       const selected=filterEl.value;
       categoryOrder.forEach(cat=>{
         if(grouped[cat]){
@@ -358,6 +386,15 @@ if (data.addOns) {
           header.style.color="var(--accent)";
           header.style.borderBottom="1px solid #e5e7eb";
           header.style.paddingBottom="4px";
+          // show category status next to header
+          const statusSpan=document.createElement("span");
+          statusSpan.style.fontSize="13px";
+          statusSpan.style.marginLeft="8px";
+          statusSpan.style.color="var(--muted)";
+          const catStatus = currentCategoryStatus[cat];
+          statusSpan.innerText = (catStatus === false) ? " (Category: Unavailable)" : " (Category: Available)";
+          header.appendChild(statusSpan);
+
           itemsList.appendChild(header);
           grouped[cat].sort((a,b)=>(a.item.name||"").localeCompare(b.item.name||"")).forEach(({id,item})=>{
             const row=renderItemRow(id,item);
@@ -367,7 +404,103 @@ if (data.addOns) {
       });
     }
 
-    onValue(itemsRef,(snap)=>{renderItems(snap.val()||{});});
+    // Render category availability toggles into the Category Availability panel
+    function renderCategoryAvailabilityUI(){
+      categoryAvailabilityEl.innerHTML = "";
+      categories.forEach(cat=>{
+        const row = document.createElement("div");
+        row.className = "category-row";
+
+        const left = document.createElement("div");
+        left.style.display = "flex";
+        left.style.flexDirection = "column";
+        left.style.gap = "2px";
+
+        const name = document.createElement("div");
+        name.className = "category-name";
+        name.innerText = cat;
+
+        const note = document.createElement("div");
+        note.className = "category-note";
+        note.innerText = currentCategoryStatus[cat] === false ? "Currently: Unavailable — items in this category are hidden" : "Currently: Available — items in this category are visible";
+
+        left.appendChild(name);
+        left.appendChild(note);
+
+        const toggleWrap = document.createElement("div");
+        toggleWrap.className = "toggle-switch";
+        const switchEl = document.createElement("span");
+        switchEl.className = "switch " + (currentCategoryStatus[cat] !== false ? "on" : "");
+        switchEl.title = currentCategoryStatus[cat] !== false ? "Category available" : "Category unavailable";
+        const knob = document.createElement("span"); knob.className = "knob";
+        switchEl.appendChild(knob);
+        toggleWrap.appendChild(switchEl);
+
+        // When category toggle is clicked:
+        switchEl.addEventListener("click", async (e) => {
+          e.stopPropagation();
+          // compute new status (if undefined or true => set false; if false => set true)
+          const newStatus = !(currentCategoryStatus[cat] !== false);
+          // update categoryStatus in DB and update all menuItems in that category
+          try {
+            // 1) set categoryStatus/{cat} = newStatus
+            const updates = {};
+            updates[`categoryStatus/${sanitizeKey(cat)}`] = newStatus;
+            // 2) set menuItems/*/visible = newStatus for items in this category
+            const snap = await get(itemsRef);
+            const data = snap.val() || {};
+            let affected = 0;
+            Object.keys(data).forEach(id => {
+              const item = data[id] || {};
+              if ((item.category||"") === cat) {
+                updates[`menuItems/${id}/visible`] = newStatus;
+                affected++;
+              }
+            });
+            // Apply bulk update
+            await update(ref(db), updates);
+            showNotice(`${affected} item(s) in "${cat}" set to ${newStatus ? "available" : "unavailable"}`);
+            // update local cache immediately (will also be updated by onValue listener)
+            currentCategoryStatus[cat] = newStatus;
+            renderCategoryAvailabilityUI();
+          } catch (err) {
+            console.error(err);
+            showNotice("Failed to update category");
+          }
+        });
+
+        row.appendChild(left);
+        row.appendChild(toggleWrap);
+        categoryAvailabilityEl.appendChild(row);
+      });
+    }
+
+    // Listen to menu items and categoryStatus so UI stays in sync
+    onValue(itemsRef, (snap) => {
+      renderItems(snap.val() || {});
+    });
+
+    // Listen to categoryStatus (saved toggles)
+    onValue(categoryStatusRef, (snap) => {
+      // categoryStatus stored by sanitized key; map back to original category names
+      const raw = snap.val() || {};
+      const mapped = {};
+      categories.forEach(cat => {
+        const key = sanitizeKey(cat);
+        if (Object.prototype.hasOwnProperty.call(raw, key)) {
+          mapped[cat] = raw[key];
+        } else {
+          mapped[cat] = true; // default to available if not set
+        }
+      });
+      currentCategoryStatus = mapped;
+      renderCategoryAvailabilityUI();
+
+      // also re-render items header statuses (calls renderItems with current items cached via onValue)
+      // To ensure header statuses reflect new currentCategoryStatus, fetch current items and re-render
+      get(itemsRef).then(s=> renderItems(s.val() || {})).catch(()=>{});
+    });
+
     filterEl.addEventListener("change",async()=>{
       const snap=await get(itemsRef);
       renderItems(snap.val()||{});
@@ -396,6 +529,7 @@ if (data.addOns) {
       catch(err){console.error(err); showNotice("Delete failed");}
     });
 
+    // initialize
     resetForm();
   </script>
 </body>
