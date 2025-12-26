@@ -1,1254 +1,1743 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Received Orders</title>
-<style>
-/* ===== Base ===== */
-body {
-  font-family: 'Poppins', Arial, sans-serif;
-  background: linear-gradient(135deg, #f9fbfd, #eef3f8);
-  margin: 0;
-  padding: 20px;
-  color: #333;
-}
-
-/* ===== Container ===== */
-.container {
-  width: 90%;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-/* ===== Headings ===== */
-h2 {
-  text-align: center;
-  margin-bottom: 25px;
-  color: #222;
-  font-weight: 700;
-  font-size: 28px;
-}
-
-.active-orders {
-  text-align: center;
-  margin-bottom: 35px;
-  font-size: 20px;
-  font-weight: 600;
-  color: #555;
-}
-
-/* ===== Orders Grid ===== */
-.orders-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 24px;
-  justify-content: center;
-  animation: fadeIn 1s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(15px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* ===== Order Card ===== */
-.order {
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-  padding: 18px;
-  width: 100%;
-  max-width: 360px;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  animation: slideIn 0.4s ease;
-}
-
-@keyframes slideIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.order:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 12px 28px rgba(0,0,0,0.15);
-}
-
-/* Left Accent Bar */
-.order::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 6px;
-  height: 100%;
-  border-radius: 12px 0 0 12px;
-  background: linear-gradient(to bottom, #03a9f4, #00e5ff);
-  transition: background 0.6s ease-in-out;
-}
-
-.order.received::before { background: linear-gradient(to bottom, #03a9f4, #00e5ff); }
-.order.preparing::before { background: linear-gradient(to bottom, #ffa726, #fb8c00); }
-.order.ready::before     { background: linear-gradient(to bottom, #66bb6a, #43a047); }
-
-/* ===== Header ===== */
-.order-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 6px;
-}
-
-/* Status Circles */
-.status-circles {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.status-circle {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  display: inline-block;
-  box-shadow: 0 0 4px rgba(0,0,0,0.3);
-}
-
-.food-preparing.food-circle { background: #ff9800; }
-.food-ready.food-circle     { background: #4caf50; }
-.drink-preparing.drink-circle { background: #ff9800; }
-.drink-ready.drink-circle     { background: #4caf50; }
-
-/* ===== Sections ===== */
-.order .section {
-  border-bottom: 1px dashed #ddd;
-  padding-bottom: 6px;
-  margin-bottom: 8px;
-}
-.order .section:last-of-type { border-bottom: none; }
-
-/* ===== Items ===== */
-.order-items {
-  margin: 8px 0;
-  padding: 0;
-  list-style: none;
-}
-
-.order-items li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #f9fafb;
-  padding: 6px 10px;
-  border-radius: 6px;
-  margin-bottom: 5px;
-  font-size: 13px;
-}
-
-.order-items .item-name { font-weight: 600; }
-.order-items .item-qty { color: #666; font-size: 12px; }
-.order-items .item-price { font-weight: 600; color: #333; }
-
-/* ===== Status Badge ===== */
-.badge {
-  padding: 3px 10px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #fff;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-}
-
-.badge.new-order {
-  background: #2196f3;
-  animation: pulseNew 1.2s infinite;
-}
-
-.badge.preparing { background: #fb8c00; }
-.badge.ready     { background: #43a047; }
-
-@keyframes pulseNew {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.1); opacity: 0.75; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-/* ===== Delete Button ===== */
-.delete-btn {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: linear-gradient(135deg, #f44336, #d32f2f);
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  font-size: 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  transition: all 0.25s ease;
-}
-.delete-btn:hover {
-  background: linear-gradient(135deg, #d32f2f, #b71c1c);
-  transform: scale(1.05);
-}
-
-/* ===== Order Action Buttons ===== */
-.order-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 8px;
-}
-
-.order-actions button {
-  flex: 1 1 calc(50% - 10px);
-  border: none;
-  padding: 10px 12px;
-  border-radius: 8px;
-  font-size: 13px;
-  cursor: pointer;
-  color: #fff;
-  font-weight: 600;
-  transition: all 0.25s ease;
-  text-align: center;
-}
-
-.order-actions button:hover {
-  opacity: 0.9;
-  transform: translateY(-2px);
-}
-
-/* Button Variants */
-button.food-ready { background: linear-gradient(135deg, #43a047, #2e7d32); }
-button.food-preparing { background: linear-gradient(135deg, #fb8c00, #ef6c00); }
-button.drink-ready { background: linear-gradient(135deg, #1e88e5, #1565c0); }
-button.drink-preparing { background: linear-gradient(135deg, #ff7043, #e64a19); }
-button.print { background: linear-gradient(135deg, #9e9e9e, #616161); }
-button.copy { background: linear-gradient(135deg, #607d8b, #455a64); }
-
-/* ===== Top Custom Buttons ===== */
-.custom-btn {
-  padding: 10px 18px;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  background: linear-gradient(135deg, #007bff, #0056d2);
-  color: #fff;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
-}
-
-.custom-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 12px rgba(0,0,0,0.2);
-}
-
-.custom-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* Danger variation */
-.danger-btn {
-  background: linear-gradient(135deg, #ff4d4d, #cc0000);
-}
-
-.danger-btn:hover:not(:disabled) {
-  box-shadow: 0 5px 12px rgba(255,0,0,0.25);
-}
-
-/* Spinner */
-.spinner {
-  width: 16px;
-  height: 16px;
-  border: 3px solid rgba(255,255,255,0.3);
-  border-top: 3px solid #fff;
-  border-radius: 50%;
-  display: inline-block;
-  animation: spin 1s linear infinite;
-  vertical-align: middle;
-  margin-right: 6px;
-}
-
-@keyframes spin {
-  100% { transform: rotate(360deg); }
-}
-
-/* ===== Daily Quote ===== */
-#daily-quote {
-  white-space: pre-wrap;
-  max-width: 600px;
-  font-size: 13px;
-  font-style: italic;
-  margin: 20px auto;
-  color: #555;
-  text-align: center;
-}
-
-/* ===== Responsive ===== */
-@media (min-width: 600px) {
-  .orders-container { justify-content: flex-start; }
-  .order { width: calc(50% - 24px); }
-}
-
-@media (min-width: 992px) {
-  .order { width: calc(33.33% - 24px); }
-}
-
-</style>
-
-
-
-    
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getDatabase, ref, onChildAdded, update, onValue, remove } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
-
-        const firebaseConfig = {
-  apiKey: "AIzaSyAUO2ZoVhSFEtAyJAP5r5zxu3kGqoIAyQ4",
-  authDomain: "ordersystem-d710a.firebaseapp.com",
-  databaseURL: "https://ordersystem-d710a-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "ordersystem-d710a",
-  storageBucket: "ordersystem-d710a.firebasestorage.app",
-  messagingSenderId: "741444965493",
-  appId: "1:741444965493:web:9991535a9105035c80943c",
-  measurementId: "G-4P6YQDH0LL"
-};
-
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const ordersRef = ref(db, 'orders/');
-
-// Global variable to hold menu categories
-let categoryLookup = {};
-
-// --- Load categories dynamically from Firebase ---
-const menuRef = ref(db, "menuItems/");
-onValue(menuRef, snapshot => {
-  categoryLookup = {}; // reset before repopulating
-  snapshot.forEach(childSnap => {
-    const item = childSnap.val();
-    if (item.name && item.category) {
-      categoryLookup[item.name] = item.category;
-    }
-  });
-  console.log("✅ Categories loaded from Firebase:", categoryLookup);
-});
-
-// --- Display Order Function ---
-function displayOrder(order, orderId) {
-  const orderContainer = document.getElementById("orders");
-  const orderDiv = document.createElement("div");
-
-  // Normalize statuses
-  const foodStatus = order.foodStatus || "";
-  const drinkStatus = order.drinkStatus || "";
-  const safeFoodStatus = (foodStatus || "").replace(/\s+/g, "-");
-  const safeDrinkStatus = (drinkStatus || "").replace(/\s+/g, "-");
-
-  orderDiv.classList.add("order");
-  if (safeFoodStatus) orderDiv.classList.add(safeFoodStatus);
-  if (safeDrinkStatus) orderDiv.classList.add(safeDrinkStatus);
-  orderDiv.id = `order-${orderId}`;
-
-  // Determine overall state
-  const foodReady = safeFoodStatus === "food-ready";
-  const drinkReady = safeDrinkStatus === "drink-ready";
-  const foodPreparing = safeFoodStatus === "food-preparing";
-  const drinkPreparing = safeDrinkStatus === "drink-preparing";
-
-  let overallBadgeClass = "badge new-order";
-  let overallBadgeText = "🆕 New Order";
-  let orderClass = "received";
-
-  if (foodReady && drinkReady) {
-    overallBadgeClass = "badge ready";
-    overallBadgeText = "All Ready";
-    orderClass = "ready";
-  } else if (foodPreparing || drinkPreparing || foodReady || drinkReady) {
-    overallBadgeClass = "badge preparing";
-    overallBadgeText = "Preparing";
-    orderClass = "preparing";
-  }
-
-  orderDiv.classList.add(orderClass);
-
-  // --- Dynamic Category Grouping ---
-  const grouped = {};
-  if (Array.isArray(order.cart)) {
-    order.cart.forEach(item => {
-      const category = categoryLookup[item.item] || "Others";
-      if (!grouped[category]) grouped[category] = [];
-      grouped[category].push(item);
-    });
-  }
-
-  const categoryOrder = [
-    "food",
-    "Side Dish",
-    "Air Panas",
-    "Air Sejuk",
-    "Little Ngences Food",
-    "Little Ngences Drink",
-    "Others"
-  ];
-
-  let groupedItemsHTML = "";
-  categoryOrder.forEach(category => {
-    if (grouped[category]) {
-      groupedItemsHTML += `
-        <div style="margin-top:10px; margin-bottom:10px;">
-          <strong>${category.toUpperCase()}</strong>
-          <ul style="margin-left:10px; margin-top:5px;">
-      `;
-      grouped[category].forEach(item => {
-        const addOns = item.addOns?.length ? item.addOns.join(", ") : "Tiada";
-        groupedItemsHTML += `
-          <li>${item.item} x ${item.quantity}<br>
-          AddOn: (${addOns}) - RM${((item.price || 0) * (item.quantity || 0)).toFixed(2)}</li>
-        `;
-      });
-      groupedItemsHTML += `</ul><hr></div>`;
-    }
-  });
-
-  // === Build card ===
-    orderDiv.innerHTML = `
-        <div class="order-header">
-            <div class="status-circles">
-                <span>🍴</span>
-                <span class="status-circle food-circle ${safeFoodStatus}" title="Food Status"></span>
-                <span>🥤</span>
-                <span class="status-circle drink-circle ${safeDrinkStatus}" title="Drink Status"></span>
-                <span class="${overallBadgeClass}" data-field="overall">${overallBadgeText}</span>
-            </div>
-            <button class="delete-btn" onclick="confirmDelete('${orderId}')">❌</button>
-        </div>
-
-        <div class="section"><strong><i class="fas fa-receipt"></i> Order Number:</strong>
-            <span class="order-number">${order.queueNumber ?? "N/A"}</span>
-        </div>
-
-        <div class="section"><strong><i class="fas fa-user"></i> Name:</strong>
-            <span class="order-name">${order.name ?? "-"}</span>
-        </div>
-
-        <div class="section"><strong><i class="fas fa-chair"></i> Table:</strong>
-            <span class="order-table">${order.table ?? "-"}</span>
-        </div>
-
-        <div class="section"><strong><i class="fas fa-clipboard-list"></i> Special Request:</strong>
-            <span class="order-request">${order.request ?? "-"}</span>
-        </div>
-
-        <strong><i class="fas fa-shopping-basket"></i> Items:</strong>
-        <ul class="order-items">${groupedItemsHTML || "<em>No items</em>"}</ul>
-
-        <div class="section"><strong><i class="fas fa-coins"></i> Total Harga:</strong>
-            <span class="order-total">RM${(order.totalPrice ?? 0).toFixed(2)}</span>
-        </div>
-
-        <div class="section"><strong><i class="fas fa-clock"></i> Time:</strong>
-            <span class="order-time">${order.timestamp ? new Date(order.timestamp).toLocaleString() : "-"}</span>
-        </div>
-
-        <!-- Update buttons -->
-        <div class="order-actions grouped">
-            <button class="food-ready" onclick="updateStatus('${orderId}', 'food ready', 'foodStatus')">
-                <i class="fas fa-check-circle"></i> Food Ready
-            </button>
-            <button class="food-preparing" onclick="updateStatus('${orderId}', 'food preparing', 'foodStatus')">
-                <i class="fas fa-fire"></i> Food Preparing
-            </button>
-            <button class="drink-ready" onclick="updateStatus('${orderId}', 'drink ready', 'drinkStatus')">
-                <i class="fas fa-check-circle"></i> Drink Ready
-            </button>
-            <button class="drink-preparing" onclick="updateStatus('${orderId}', 'drink preparing', 'drinkStatus')">
-                <i class="fas fa-fire"></i> Drink Preparing
-            </button>
-        </div>
-
-        <!-- Extra actions -->
-        <div class="order-actions grouped">
-            <button class="print" onclick="printOrder('${orderId}')">
-                <i class="fas fa-print"></i> Print
-            </button>
-            <button class="copy" onclick="copyOrderToClipboard('${orderId}')">
-                <i class="fas fa-copy"></i> Copy
-            </button>
-        </div>
-    `;
-
-    orderContainer.prepend(orderDiv);
-}
-
-
-        function exportToCSV() {
-    let orders = [];
-
-    document.querySelectorAll(".order").forEach(orderDiv => {
-        const name = orderDiv.querySelector(".order-name")?.textContent.trim() || "";
-        const table = orderDiv.querySelector(".order-table")?.textContent.trim() || "";
-        const request = orderDiv.querySelector(".order-request")?.textContent.replace(/\s+/g, " ").trim() || "";
-        // ✅ Multiline items
-        const items = Array.from(orderDiv.querySelectorAll(".order-items li"))
-        .map(li => li.innerText.trim())
-        .join("\n");
-
-
-        const totalPrice = orderDiv.querySelector(".order-total")?.textContent.trim() || "";
-        const rawTime = orderDiv.querySelector(".order-time")?.textContent.trim() || "";
-        const status = orderDiv.querySelector(".order-status")?.textContent.trim() || "";
-
-        const [date, time] = new Date(rawTime).toLocaleString().split(", ");
-        orders.push({ date, time, name, table, request, items, totalPrice, status, timestamp: new Date(rawTime) });
-    });
-
-    orders.sort((a, b) => b.timestamp - a.timestamp);
-
-    let csvContent = "data:text/csv;charset=utf-8,Date,Time,Name,Table,Special Request,Items,Total Price,Status\n";
-    orders.forEach(order => {
-        csvContent += `${order.date},${order.time},${order.name},${order.table},"${order.request.replace(/\s+/g, ' ').replace(/"/g, '""')}","${order.items.replace(/"/g, '""')}",${order.totalPrice},${order.status}\n`;
-    });
-
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "orders_multiline.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-}
-
-        document.addEventListener("DOMContentLoaded", () => {
-    const exportBtn = document.createElement("button");
-    exportBtn.innerHTML = "📁 Export to CSV";
-    exportBtn.onclick = () => exportWithSpinner(exportBtn);
-    exportBtn.classList.add("custom-btn");
-
-    const removeAllQueueBtn = document.createElement("button");
-    removeAllQueueBtn.textContent = "🗑️ Remove All Queue Numbers";
-    removeAllQueueBtn.onclick = removeAllQueueNumbers;
-    removeAllQueueBtn.classList.add("custom-btn", "danger-btn");
-
-    const buttonContainer = document.createElement("div");
-    buttonContainer.style.display = "flex";
-    buttonContainer.style.justifyContent = "center";
-    buttonContainer.style.gap = "10px";
-    buttonContainer.style.marginBottom = "20px";
-
-    buttonContainer.appendChild(exportBtn);
-    buttonContainer.appendChild(removeAllQueueBtn);
-
-    document.querySelector(".container").prepend(buttonContainer);
-});
-
-// New wrapper function
-function exportWithSpinner(button) {
-    const originalText = button.innerHTML;
-    button.innerHTML = `<span class="spinner"></span> Exporting...`;
-    button.disabled = true;
-
-    // Simulate a short loading (since export is quick)
-    setTimeout(() => {
-        exportToCSV();
-        button.innerHTML = originalText;
-        button.disabled = false;
-    }, 500); // 0.5 second spinner effect
-}
-
-
-async function removeAllQueueNumbers() {
-    const confirmation = confirm("Are you sure you want to REMOVE all order numbers?");
-    if (!confirmation) return;
-
-    const ordersRef = ref(db, "orders/");
-
-    onValue(ordersRef, (snapshot) => {
-        snapshot.forEach((childSnapshot) => {
-            const queueNumberPath = ref(db, `orders/${childSnapshot.key}/queueNumber`);
-            remove(queueNumberPath)
-                .then(() => {
-                    console.log(`Removed queueNumber from order: ${childSnapshot.key}`);
-                })
-                .catch((error) => {
-                    console.error(`Error removing queueNumber:`, error);
-                });
-        });
-
-        // After finishing all removals, update the DOM
-        document.querySelectorAll(".order-number").forEach(span => {
-            span.textContent = "N/A";
-        });
-
-        alert("✅ All queue numbers removed successfully.");
-    }, { onlyOnce: true });
-}
-        
-
-   function updateActiveOrders() {
-    onValue(ordersRef, snapshot => {
-        let activeCount = 0;
-        let preparingCount = 0;
-        let readyCount = 0;
-
-        snapshot.forEach(childSnapshot => {
-            const order = childSnapshot.val();
-            if (order.status !== "ready") {
-                activeCount++;
-                if (order.status.includes("preparing")) preparingCount++;
-            } else {
-                readyCount++;
-            }
-        });
-
-        const activeOrdersEl = document.getElementById("active-orders");
-        if (activeOrdersEl) {
-            activeOrdersEl.textContent = `Active Orders (${activeCount}) | Preparing: ${preparingCount} | Ready: ${readyCount}`;
-        }
-    });
-}
-
-
-
-
-
-        onChildAdded(ordersRef, snapshot => {
-    const order = snapshot.val();
-    const orderId = snapshot.key;
-
-    // If status is missing, update to 'received order'
-    if (!order.status) {
-        const orderRef = ref(db, `orders/${orderId}`);
-        update(orderRef, { status: 'received order' });
-        order.status = 'received order'; // Ensure correct display immediately
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Orders Display — Restoran Ayam Gepuk Ngences</title>
+
+  <style>
+    :root{
+      --bg: #f5f7fb;
+      --card: rgba(255,255,255,.92);
+      --text: #0f172a;
+      --muted: #64748b;
+
+      --primary: #2563eb;
+      --primary2: #1d4ed8;
+      --ring: rgba(37,99,235,.16);
+
+      --success: #16a34a;
+      --danger: #ef4444;
+      --warn: #f59e0b;
+
+      --border: #e7ecf3;
+      --shadow: 0 14px 36px rgba(2, 6, 23, 0.08);
+      --shadowSoft: 0 10px 24px rgba(2, 6, 23, 0.06);
+      --radius: 18px;
+
+      --safeTop: env(safe-area-inset-top);
+      --safeBottom: env(safe-area-inset-bottom);
     }
 
-    displayOrder(order, orderId);
-    updateActiveOrders();
-});
-
-
-window.updateStatus = function(orderId, status, field = "status") {
-    const orderRef = ref(db, `orders/${orderId}`);
-    const payload = { [field]: status };
-
-    // Write to Firebase
-    update(orderRef, payload).catch(err => console.error("Firebase update error:", err));
-
-    const orderDiv = document.getElementById(`order-${orderId}`);
-    if (!orderDiv) return;
-
-    const safeStatus = (status || "").replace(/\s+/g, "-");
-
-    // Update food/drink circles
-    if (field === "foodStatus") {
-        const circle = orderDiv.querySelector(".status-circle.food-circle");
-        if (circle) circle.className = `status-circle food-circle ${safeStatus}`;
-    } else if (field === "drinkStatus") {
-        const circle = orderDiv.querySelector(".status-circle.drink-circle");
-        if (circle) circle.className = `status-circle drink-circle ${safeStatus}`;
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color: var(--text);
+      background:
+        radial-gradient(900px 520px at 16% 6%, rgba(37,99,235,.12), transparent 60%),
+        radial-gradient(900px 520px at 94% 16%, rgba(245,158,11,.10), transparent 60%),
+        var(--bg);
+      padding: 14px 14px calc(92px + var(--safeBottom));
     }
 
-    // Check overall state
-    const foodReady = orderDiv.querySelector(".status-circle.food-circle")?.classList.contains("food-ready");
-    const drinkReady = orderDiv.querySelector(".status-circle.drink-circle")?.classList.contains("drink-ready");
-    const foodPreparing = orderDiv.querySelector(".status-circle.food-circle")?.classList.contains("food-preparing");
-    const drinkPreparing = orderDiv.querySelector(".status-circle.drink-circle")?.classList.contains("drink-preparing");
-
-    const overallBadge = orderDiv.querySelector('.badge[data-field="overall"]');
-
-    if (overallBadge) {
-        if (foodReady && drinkReady) {
-            overallBadge.textContent = "All Ready";
-            overallBadge.className = "badge ready";
-            orderDiv.classList.remove("received", "preparing");
-            orderDiv.classList.add("ready");
-        } else if (foodPreparing || drinkPreparing || foodReady || drinkReady) {
-            overallBadge.textContent = "Preparing";
-            overallBadge.className = "badge preparing";
-            orderDiv.classList.remove("received", "ready");
-            orderDiv.classList.add("preparing");
-        } else {
-            overallBadge.textContent = "🆕 New Order";
-            overallBadge.className = "badge new-order";
-            orderDiv.classList.remove("preparing", "ready");
-            orderDiv.classList.add("received");
-        }
+    /* ---------- Top App Bar ---------- */
+    .topbar{
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      padding-top: calc(10px + var(--safeTop));
+      margin: -14px -14px 12px;
+      padding-left: 14px;
+      padding-right: 14px;
+      padding-bottom: 12px;
+      background: linear-gradient(180deg, rgba(245,247,251,.92), rgba(245,247,251,.68));
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(231,236,243,.9);
     }
 
-    // Refresh counter if exists
-    try { updateActiveOrders(); } catch (e) {}
-
-    // Auto-remove queue number when all ready
-    if (foodReady && drinkReady) {
-        setTimeout(() => {
-            update(ref(db, `orders/${orderId}`), { queueNumber: null })
-                .then(() => {
-                    const q = orderDiv.querySelector(".order-number");
-                    if (q) q.textContent = "N/A";
-                })
-                .catch(err => console.error("Error removing queueNumber:", err));
-        }, 100000);
+    .brandRow{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width: 220px;
+    }
+    .logo{
+      width: 38px;
+      height: 38px;
+      border-radius: 14px;
+      display:grid;
+      place-items:center;
+      color: white;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--primary), #60a5fa);
+      box-shadow: var(--shadowSoft);
+      user-select:none;
+    }
+    .brand h1{
+      margin:0;
+      font-size: 16px;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+    .brand p{
+      margin: 2px 0 0;
+      font-size: 12px;
+      color: var(--muted);
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    function resetQueueNumbersAtMidnight() {
-    const now = new Date();
-    const hours = now.getHours();
-    const minutes = now.getMinutes();
-
-    // Kalau tepat pukul 00:00
-    if (hours === 0 && minutes === 0) {
-        onValue(ordersRef, snapshot => {
-            snapshot.forEach(childSnapshot => {
-                const orderId = childSnapshot.key;
-                // Update queueNumber jadi null
-                update(ref(db, "orders/" + orderId), {
-                    queueNumber: null
-                });
-            });
-        }, { onlyOnce: true });
-    }
-}
-
-// Check setiap 1 minit
-setInterval(resetQueueNumbersAtMidnight, 60000);
-
-};
-function updateDashboard() {
-  onValue(ordersRef, snapshot => {
-    let totalOrders = 0;
-    let activeOrders = 0;
-    let itemCount = {};
-
-    snapshot.forEach(childSnapshot => {
-      const order = childSnapshot.val();
-      const orderDate = new Date(order.timestamp).toISOString().split('T')[0];
-      const today = new Date().toISOString().split('T')[0];
-
-      // ✅ Count total orders for today
-      if (orderDate === today) {
-        totalOrders++;
-
-        // ✅ Loop through the cart items
-        if (order.cart) {
-          order.cart.forEach(cartItem => {
-            const itemName = cartItem.item;
-            const qty = cartItem.quantity || 1;
-            itemCount[itemName] = (itemCount[itemName] || 0) + qty;
-          });
-        }
-      }
-
-      // ✅ Count active orders (not ready/cancelled)
-      if (order.status !== "ready" && order.status !== "cancelled") {
-        activeOrders++;
-      }
-    });
-
-    // ✅ Find top selling item
-    let topItem = "-";
-    if (Object.keys(itemCount).length > 0) {
-      topItem = Object.keys(itemCount).reduce((a, b) => itemCount[a] > itemCount[b] ? a : b);
+    .actions{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      flex-wrap: wrap;
+      justify-content:flex-end;
     }
 
-    // ✅ Update Live Stats panel
-    document.getElementById("total-orders-today").textContent = `Total Orders Today: ${totalOrders}`;
-    document.getElementById("active-orders-count").textContent = `Active Orders: ${activeOrders}`;
-    document.getElementById("top-item").textContent = `Top Item: ${topItem}🔝🔥`;
-  });
-}
+    .btn{
+      border: none;
+      cursor: pointer;
+      font-weight: 900;
+      border-radius: 14px;
+      padding: 10px 12px;
+      font-size: 13px;
+      transition: transform .05s, box-shadow .18s, background .18s, opacity .18s;
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      user-select:none;
+    }
+    .btn:active{transform: translateY(1px)}
+    .btn-primary{
+      color:white;
+      background: linear-gradient(180deg, var(--primary), var(--primary2));
+      box-shadow: 0 12px 22px rgba(37,99,235,.20);
+    }
+    .btn-ghost{
+      background: rgba(255,255,255,.86);
+      border: 1px solid var(--border);
+      color: var(--text);
+      box-shadow: 0 1px 0 rgba(255,255,255,.9) inset;
+    }
+    .btn-danger{
+      color:white;
+      background: linear-gradient(180deg, #ef4444, #dc2626);
+      box-shadow: 0 12px 22px rgba(239,68,68,.18);
+    }
+    .btn:disabled{opacity:.55; cursor:not-allowed}
 
-updateDashboard();
+    /* ---------- Controls ---------- */
+    .controls{
+      margin-top: 10px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    @media (min-width: 720px){
+      .controls{grid-template-columns: 1.2fr .8fr .8fr;}
+    }
 
+    .input, select{
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      padding: 12px 12px;
+      font-size: 14px;
+      background: rgba(255,255,255,.92);
+      outline:none;
+      box-shadow: 0 1px 0 rgba(255,255,255,.92) inset;
+      transition: box-shadow .15s, border-color .15s;
+    }
+    .input:focus, select:focus{
+      border-color: rgba(37,99,235,.55);
+      box-shadow: 0 0 0 4px var(--ring);
+    }
 
+    .seg{
+      display:flex;
+      gap: 8px;
+      padding: 6px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.86);
+      box-shadow: 0 1px 0 rgba(255,255,255,.92) inset;
+    }
+    .seg button{
+      flex:1;
+      border:none;
+      padding: 10px 10px;
+      border-radius: 12px;
+      font-weight: 900;
+      cursor:pointer;
+      background: transparent;
+      color: var(--muted);
+      transition: background .15s, color .15s;
+      font-size: 13px;
+    }
+    .seg button.active{
+      background: rgba(37,99,235,.10);
+      color: var(--primary);
+    }
 
+    /* ---------- Layout ---------- */
+    .container{max-width: 1180px; margin: 0 auto;}
+    .statsRow{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    .stat{
+      flex: 1 1 140px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      box-shadow: var(--shadowSoft);
+      backdrop-filter: blur(8px);
+    }
+    .stat .k{font-size:12px;color:var(--muted);font-weight:900;text-transform:uppercase;letter-spacing:.08em}
+    .stat .v{margin-top:4px;font-size:18px;font-weight:1000;letter-spacing:-0.02em}
+    .stat .s{margin-top:2px;font-size:12px;color:var(--muted)}
 
-    </script>
-    <script type="module">
-    import { getDatabase, ref, remove } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+    /* ---------- Orders Grid ---------- */
+    .orders{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    @media (min-width: 780px){
+      .orders{grid-template-columns: repeat(2, 1fr);}
+    }
+    @media (min-width: 1080px){
+      .orders{grid-template-columns: repeat(3, 1fr);}
+    }
 
-    const dbr = getDatabase();
+    /* ---------- Card ---------- */
+    .order{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      overflow:hidden;
+      position:relative;
+      display:flex;
+      flex-direction:column;
+      min-height: 210px;
+    }
+    .order::before{
+      content:'';
+      position:absolute;
+      left:0; top:0;
+      width: 6px; height: 100%;
+      background: linear-gradient(180deg, #60a5fa, #2563eb);
+    }
+    .order.preparing::before{ background: linear-gradient(180deg, #fbbf24, #f59e0b); }
+    .order.ready::before{ background: linear-gradient(180deg, #34d399, #16a34a); }
 
-    window.confirmDelete = function(orderId) {
-        const confirmation = confirm("Are you sure you want to delete this data?");
-        if (confirmation) {
-            deleteOrder(orderId);
-        }
+    .orderHead{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 10px;
+      padding: 12px 12px 10px 14px;
+    }
+
+    .queue{
+      display:flex;
+      align-items:baseline;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .qNum{
+      font-size: 26px;
+      font-weight: 1000;
+      letter-spacing:-0.03em;
+      line-height: 1;
+    }
+    .qLabel{
+      font-size: 12px;
+      font-weight: 900;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .10em;
+    }
+
+    .pillRow{
+      display:flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content:flex-end;
+      align-items:center;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 12px;
+      border: 1px solid rgba(231,236,243,.95);
+      background: rgba(255,255,255,.86);
+      color: var(--text);
+      box-shadow: 0 1px 0 rgba(255,255,255,.92) inset;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .pill-new{ border-color: rgba(37,99,235,.22); color: var(--primary); background: rgba(37,99,235,.06); }
+    .pill-prep{ border-color: rgba(245,158,11,.25); color: #b45309; background: rgba(245,158,11,.10); }
+    .pill-ready{ border-color: rgba(22,163,74,.22); color: var(--success); background: rgba(22,163,74,.08); }
+    .pill-danger{ border-color: rgba(239,68,68,.25); color: #dc2626; background: rgba(239,68,68,.08); }
+
+    .iconDot{width:10px;height:10px;border-radius:999px;background:#e5e7eb}
+    .dot-ok{background: var(--success)}
+    .dot-warn{background: var(--warn)}
+    .dot-off{background: var(--danger)}
+
+    .metaRow{
+      padding: 0 12px 10px 14px;
+      display:grid;
+      gap: 6px;
+    }
+    .meta{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .meta strong{color: var(--text)}
+    .meta .val{
+      color: var(--text);
+      font-weight: 900;
+      text-align:right;
+      max-width: 65%;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
+    .divider{height:1px;background: rgba(231,236,243,.95);}
+
+    .itemsWrap{padding: 10px 12px 12px 14px;}
+    details summary{
+      list-style:none;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      font-weight: 1000;
+      padding: 10px 10px;
+      border-radius: 14px;
+      border: 1px solid rgba(231,236,243,.95);
+      background: rgba(255,255,255,.86);
+    }
+    details summary::-webkit-details-marker{display:none}
+    .itemsCount{font-size: 12px; color: var(--muted); font-weight: 900;}
+    .itemsList{
+      margin: 10px 0 0;
+      padding: 0;
+      list-style: none;
+      display:flex;
+      flex-direction:column;
+      gap: 8px;
+    }
+    .itemLine{
+      border: 1px solid rgba(231,236,243,.95);
+      background: rgba(255,255,255,.86);
+      border-radius: 14px;
+      padding: 10px 10px;
+      font-size: 13px;
+      display:flex;
+      flex-direction:column;
+      gap: 6px;
+    }
+    .itemTop{display:flex;align-items:flex-start;justify-content:space-between;gap: 10px;}
+    .itemTop .name{font-weight: 1000; color: var(--text)}
+    .itemTop .qty{color: var(--muted); font-weight: 900; white-space:nowrap}
+    .itemAdd{font-size: 12px; color: var(--muted);}
+    .itemPrice{font-weight: 1000;}
+
+    .actionsRow{
+      padding: 10px 12px 12px 14px;
+      display:grid;
+      gap: 10px;
+      grid-template-columns: 1fr 1fr;
+    }
+    .aBtn{
+      border:none;
+      border-radius: 14px;
+      padding: 11px 10px;
+      font-weight: 1000;
+      cursor:pointer;
+      font-size: 13px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 8px;
+      transition: transform .05s, box-shadow .18s, opacity .18s, background .18s;
+      user-select:none;
+    }
+    .aBtn:active{transform: translateY(1px)}
+    .aFoodPrep{background: rgba(245,158,11,.12); color:#b45309; border:1px solid rgba(245,158,11,.22)}
+    .aFoodReady{background: rgba(22,163,74,.10); color: var(--success); border:1px solid rgba(22,163,74,.20)}
+    .aDrinkPrep{background: rgba(37,99,235,.08); color: var(--primary); border:1px solid rgba(37,99,235,.20)}
+    .aDrinkReady{background: rgba(22,163,74,.10); color: var(--success); border:1px solid rgba(22,163,74,.20)}
+    .aPrint{background: rgba(100,116,139,.08); color: #334155; border:1px solid rgba(100,116,139,.18)}
+    .aCopy{background: rgba(71,85,105,.10); color:#0f172a; border:1px solid rgba(71,85,105,.16)}
+    .aDelete{background: rgba(239,68,68,.10); color:#dc2626; border:1px solid rgba(239,68,68,.20)}
+    .aAllReady{background: rgba(22,163,74,.12); color: var(--success); border:1px solid rgba(22,163,74,.22)}
+    .aBtn:hover{opacity:.95}
+
+    .footerRow{
+      padding: 0 12px 12px 14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .elapsed{
+      font-weight: 1000;
+      color: #0f172a;
+    }
+    .late{color: #b45309;}
+    .veryLate{color: #dc2626;}
+
+    /* Bottom bar */
+    .bottomBar{
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 60;
+      padding: 10px 14px calc(10px + var(--safeBottom));
+      background: linear-gradient(180deg, rgba(245,247,251,.65), rgba(245,247,251,.92));
+      backdrop-filter: blur(12px);
+      border-top: 1px solid rgba(231,236,243,.95);
+    }
+    .bottomInner{
+      max-width: 1180px;
+      margin: 0 auto;
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .statusMini{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .toast{
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: calc(80px + var(--safeBottom));
+      z-index: 100;
+      display:none;
+      background: rgba(2, 6, 23, 0.88);
+      border: 1px solid rgba(255,255,255,.12);
+      color: white;
+      padding: 10px 14px;
+      border-radius: 14px;
+      box-shadow: 0 12px 28px rgba(2,6,23,.22);
+      font-weight: 900;
+      max-width: calc(100vw - 32px);
+      text-align:center;
+    }
+
+    /* Live Stats Drawer */
+    .drawer{
+      position: fixed;
+      right: 14px;
+      bottom: calc(80px + var(--safeBottom));
+      z-index: 70;
+      width: min(360px, calc(100vw - 28px));
+      background: rgba(2, 6, 23, 0.86);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 16px;
+      color: #fff;
+      box-shadow: 0 18px 40px rgba(2,6,23,.35);
+      overflow:hidden;
+      display:none;
+    }
+    .drawerHead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      background: rgba(255,255,255,.06);
+      font-weight: 1000;
+    }
+    .drawerBody{
+      padding: 10px 12px 12px;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .drawerBody .mut{opacity:.85}
+    .drawerBody hr{border:none;border-top:1px solid rgba(255,255,255,.16); margin:10px 0;}
+    .drawerBtn{
+      border:none;
+      border-radius: 12px;
+      padding: 8px 10px;
+      cursor:pointer;
+      font-weight: 1000;
+      background: rgba(255,255,255,.14);
+      color:#fff;
+    }
+
+    /* Quote */
+    .quote{
+      margin: 10px auto 12px;
+      max-width: 1180px;
+      background: rgba(255,255,255,.80);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadowSoft);
+      padding: 12px 14px;
+      color: #334155;
+      font-size: 13px;
+      font-style: italic;
+      line-height: 1.5;
+    }
+
+    /* Empty state */
+    .empty{
+      background: rgba(255,255,255,.86);
+      border: 1px dashed rgba(148,163,184,.55);
+      border-radius: var(--radius);
+      padding: 18px 14px;
+      color: var(--muted);
+      text-align:center;
+      box-shadow: 0 10px 22px rgba(2,6,23,.05);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+    <div class="brandRow">
+      <div class="brand">
+        <div class="logo">O</div>
+        <div>
+          <h1>Orders Display</h1>
+          <p>Fast kitchen view — tap a card to expand items.</p>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="inventoryBtn" class="btn btn-ghost" type="button">📦 Inventory</button>
+        <button id="exportBtn" class="btn btn-primary" type="button">📁 Export CSV</button>
+        <button id="removeQueueBtn" class="btn btn-danger" type="button">🗑️ Clear Queue</button>
+        <button id="statsToggleBtn" class="btn btn-ghost" type="button">📊 Stats</button>
+      </div>
+    </div>
+
+    <div class="controls">
+      <input id="searchInput" class="input" type="text" placeholder='Search… (ex: #12, table:5, name:ali, item:kopi, status:ready, "ayam gepuk")' />
+      <select id="sortSelect">
+        <option value="newest">Sort: Newest</option>
+        <option value="oldest">Sort: Oldest</option>
+        <option value="queue">Sort: Queue Number</option>
+        <option value="totalHigh">Sort: Total (High → Low)</option>
+        <option value="totalLow">Sort: Total (Low → High)</option>
+      </select>
+
+      <div class="seg" role="tablist" aria-label="Order filter">
+        <button id="tabAll" class="active" type="button">All</button>
+        <button id="tabActive" type="button">Active</button>
+        <button id="tabReady" type="button">Ready</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="statsRow" id="statsRow">
+      <div class="stat">
+        <div class="k">Active Orders</div>
+        <div class="v" id="activeOrders">0</div>
+        <div class="s" id="prepSummary">Preparing: 0 • Ready: 0</div>
+      </div>
+      <div class="stat">
+        <div class="k">Today</div>
+        <div class="v" id="totalOrdersToday">0</div>
+        <div class="s" id="topItem">Top item: -</div>
+      </div>
+      <div class="stat">
+        <div class="k">Connection</div>
+        <div class="v" id="onlineStatus">…</div>
+        <div class="s" id="speedLine">Speed: … • FPS: …</div>
+      </div>
+    </div>
+
+    <div class="quote" id="dailyQuote"></div>
+
+    <div id="orders" class="orders" aria-live="polite"></div>
+    <div id="emptyState" class="empty" style="display:none;">No orders match your filter.</div>
+  </div>
+
+  <div class="bottomBar">
+    <div class="bottomInner">
+      <div class="statusMini">
+        <span id="miniOnlineDot" class="iconDot"></span>
+        <span id="miniOnlineText">Status: …</span>
+        <span>•</span>
+        <span id="miniCount">Showing 0</span>
+      </div>
+      <div class="statusMini">
+        <span>Tip: tap “All Ready” to finish order quickly.</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <div id="statsDrawer" class="drawer" aria-live="polite">
+    <div class="drawerHead">
+      <div>📊 Live Stats</div>
+      <button id="drawerClose" class="drawerBtn" type="button">Close</button>
+    </div>
+    <div class="drawerBody">
+      <div class="mut" id="drawerOnline">Status: …</div>
+      <div class="mut" id="drawerSpeed">Speed: …</div>
+      <div class="mut" id="drawerFps">FPS: …</div>
+      <div class="mut" id="drawerPreparing">Preparing Orders: …</div>
+      <hr>
+      <div id="drawerTotalToday">Total Orders Today: 0</div>
+      <div id="drawerActive">Active Orders: 0</div>
+      <div id="drawerTop">Top Item: -</div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import {
+      getDatabase, ref, onValue, onChildAdded, update, remove, set, get
+    } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+
+    // ---------- Firebase ----------
+    const firebaseConfig = {
+      apiKey: "AIzaSyAUO2ZoVhSFEtAyJAP5r5zxu3kGqoIAyQ4",
+      authDomain: "ordersystem-d710a.firebaseapp.com",
+      databaseURL: "https://ordersystem-d710a-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "ordersystem-d710a",
+      storageBucket: "ordersystem-d710a.firebasestorage.app",
+      messagingSenderId: "741444965493",
+      appId: "1:741444965493:web:9991535a9105035c80943c",
+      measurementId: "G-4P6YQDH0LL"
     };
 
-    function deleteOrder(orderId) {
-        const orderRef = ref(dbr, `orders/${orderId}`);
-        remove(orderRef)
-            .then(() => {
-                const orderDiv = document.getElementById(`order-${orderId}`);
-                if (orderDiv) {
-                    orderDiv.remove();
-                }
-                alert("Order deleted successfully.");
-            })
-            .catch(error => {
-                console.error("Error deleting order:", error);
-                alert("Failed to delete order.");
-            });
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const ordersRef = ref(db, "orders");
+    const menuRef = ref(db, "menuItems");
+    const statsVisibleRef = ref(db, "settings/liveStatsVisible");
+
+    // ---------- UI refs ----------
+    const ordersEl = document.getElementById("orders");
+    const emptyStateEl = document.getElementById("emptyState");
+    const toastEl = document.getElementById("toast");
+
+    const searchInput = document.getElementById("searchInput");
+    const sortSelect = document.getElementById("sortSelect");
+    const tabAll = document.getElementById("tabAll");
+    const tabActive = document.getElementById("tabActive");
+    const tabReady = document.getElementById("tabReady");
+
+    const inventoryBtn = document.getElementById("inventoryBtn");
+    const exportBtn = document.getElementById("exportBtn");
+    const removeQueueBtn = document.getElementById("removeQueueBtn");
+    const statsToggleBtn = document.getElementById("statsToggleBtn");
+
+    const miniOnlineDot = document.getElementById("miniOnlineDot");
+    const miniOnlineText = document.getElementById("miniOnlineText");
+    const miniCount = document.getElementById("miniCount");
+
+    const activeOrdersEl = document.getElementById("activeOrders");
+    const prepSummaryEl = document.getElementById("prepSummary");
+    const totalOrdersTodayEl = document.getElementById("totalOrdersToday");
+    const topItemEl = document.getElementById("topItem");
+    const onlineStatusEl = document.getElementById("onlineStatus");
+    const speedLineEl = document.getElementById("speedLine");
+
+    const quoteEl = document.getElementById("dailyQuote");
+
+    const drawer = document.getElementById("statsDrawer");
+    const drawerClose = document.getElementById("drawerClose");
+    const drawerOnline = document.getElementById("drawerOnline");
+    const drawerSpeed = document.getElementById("drawerSpeed");
+    const drawerFps = document.getElementById("drawerFps");
+    const drawerPreparing = document.getElementById("drawerPreparing");
+    const drawerTotalToday = document.getElementById("drawerTotalToday");
+    const drawerActive = document.getElementById("drawerActive");
+    const drawerTop = document.getElementById("drawerTop");
+
+    // ---------- State ----------
+    let menuById = {};
+    let menuByName = {};
+    let ordersMap = {};   // {orderId: orderObject}
+    let currentTab = "all";  // all | active | ready
+    let fps = 0;
+    let lastSpeedMbps = null;
+
+    // ---------- Helpers ----------
+    function showToast(msg, ms=2200){
+      toastEl.textContent = msg;
+      toastEl.style.display = "block";
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(()=> toastEl.style.display = "none", ms);
     }
-</script>
-    <script>
-        function printOrder(orderId) {
-    const orderDiv = document.getElementById(`order-${orderId}`);
-    if (!orderDiv) return;
 
-    const orderItems = orderDiv.querySelector('.order-items');
-    const orderQuery = orderDiv.querySelector('.order-number');
-    const orderName = orderDiv.querySelector('.order-name');
-    const Table = orderDiv.querySelector('.order-table');
-    const Request = orderDiv.querySelector('.order-request');
-    const Price = orderDiv.querySelector('.order-total');
-    const orderReceive = orderDiv.querySelector('.order-time');
+    function setActiveTab(tab){
+      currentTab = tab;
+      tabAll.classList.toggle("active", tab==="all");
+      tabActive.classList.toggle("active", tab==="active");
+      tabReady.classList.toggle("active", tab==="ready");
+      render();
+    }
 
-    const printWindow = window.open('', '_blank', 'width=300,height=600');
-    printWindow.document.write(`
+    function safeText(v){
+      return (v === null || v === undefined) ? "" : String(v);
+    }
+
+    function getItemName(ci){
+      return ci?.name || ci?.item || "Item";
+    }
+    function getItemQty(ci){
+      const q = Number(ci?.quantity ?? 1);
+      return Number.isFinite(q) && q > 0 ? q : 1;
+    }
+    function getItemPrice(ci){
+      const p = Number(ci?.price ?? 0);
+      return Number.isFinite(p) ? p : 0;
+    }
+    function getAddOns(ci){
+      const a = ci?.addOns;
+      if(Array.isArray(a) && a.length) return a.map(x => String(x)).join(", ");
+      return "Tiada";
+    }
+    function fmtMoney(n){
+      return `RM${Number(n || 0).toFixed(2)}`;
+    }
+    function fmtTime(ts){
+      if(!ts) return "-";
+      try{ return new Date(ts).toLocaleString(); }catch{ return "-"; }
+    }
+
+    function statusKey(s){
+      return (s || "").toString().trim().toLowerCase().replace(/\s+/g, "-");
+    }
+    function isReadyKey(k){ return k === "food-ready" || k === "drink-ready"; }
+    function isPreparingKey(k){ return k === "food-preparing" || k === "drink-preparing"; }
+
+    function computeOverall(order){
+      const foodKey = statusKey(order.foodStatus);
+      const drinkKey = statusKey(order.drinkStatus);
+
+      const foodReady = foodKey === "food-ready";
+      const drinkReady = drinkKey === "drink-ready";
+      const foodPrep = foodKey === "food-preparing";
+      const drinkPrep = drinkKey === "drink-preparing";
+
+      if(foodReady && drinkReady) return { overall:"ready", pillClass:"pill-ready", label:"All Ready" };
+      if(foodPrep || drinkPrep || foodReady || drinkReady) return { overall:"preparing", pillClass:"pill-prep", label:"Preparing" };
+      return { overall:"received", pillClass:"pill-new", label:"New Order" };
+    }
+
+    function normalizeStr(s){
+      // Normalize to improve search accuracy:
+      // - lowercase
+      // - remove diacritics
+      // - replace non-alphanumerics with spaces
+      // - collapse spaces
+      return String(s ?? "")
+        .toLowerCase()
+        .normalize("NFKD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function tokenizeQuery(q){
+      // Support quoted phrases: "ayam gepuk"
+      const raw = String(q ?? "").trim();
+      if(!raw) return { tokens: [], phrases: [], raw: "" };
+
+      const phrases = [];
+      const withoutPhrases = raw.replace(/"([^"]+)"/g, (_, p1) => {
+        const ph = normalizeStr(p1);
+        if(ph) phrases.push(ph);
+        return " ";
+      });
+
+      const tokens = normalizeStr(withoutPhrases).split(" ").filter(Boolean);
+      return { tokens, phrases, raw };
+    }
+
+    function parseSearchOperators(raw){
+      // Field operators:
+      // queue:12 | q:12 | #12
+      // table:5 | t:5
+      // name:ali | n:ali
+      // item:kopi
+      // addon:cheese
+      // id:abc
+      // status:ready / preparing / new
+      const out = { fields: {}, free: raw };
+
+      // #123 shorthand
+      const hash = raw.match(/(^|\s)#(\d+)(\s|$)/);
+      if(hash){
+        out.fields.queue = (out.fields.queue || []).concat([hash[2]]);
+        out.free = out.free.replace(hash[0], " ");
+      }
+
+      // key:value patterns
+      const reKV = /(^|\s)(queue|q|table|t|name|n|item|addon|id|status)\s*:\s*([^\s]+)(?=\s|$)/gi;
+      out.free = out.free.replace(reKV, (_, sp, k, v) => {
+        const key = k.toLowerCase();
+        const val = String(v || "").trim();
+        if(val){
+          const mapped =
+            (key === "q" ? "queue" :
+             key === "t" ? "table" :
+             key === "n" ? "name" : key);
+          out.fields[mapped] = (out.fields[mapped] || []).concat([val]);
+        }
+        return " ";
+      });
+
+      out.free = out.free.trim();
+      return out;
+    }
+
+    function matchAllTokens(haystackNorm, tokens){
+      // Require all tokens to appear (AND search) for better accuracy.
+      for(const t of tokens){
+        if(!haystackNorm.includes(t)) return false;
+      }
+      return true;
+    }
+
+    function matchAllPhrases(haystackNorm, phrases){
+      // AND phrases
+      for(const p of phrases){
+        if(!haystackNorm.includes(p)) return false;
+      }
+      return true;
+    }
+
+    function matchFilter(order, orderId, query){
+      const rawQ = String(query ?? "").trim();
+      if(!rawQ) return true;
+
+      const ops = parseSearchOperators(rawQ);
+
+      // Build searchable fields (normalized)
+      const queue = normalizeStr(order.queueNumber ?? "");
+      const name = normalizeStr(order.name ?? "");
+      const table = normalizeStr(order.table ?? "");
+      const request = normalizeStr(order.request ?? "");
+      const oid = normalizeStr(orderId ?? "");
+
+      const cart = Array.isArray(order.cart) ? order.cart : [];
+      const itemNames = cart.map(ci => normalizeStr(getItemName(ci))).join(" ");
+      const addOnText = cart.map(ci => normalizeStr(getAddOns(ci))).join(" ");
+
+      const overall = computeOverall(order).overall; // received / preparing / ready
+      const overallNorm =
+        overall === "received" ? "new received" :
+        overall === "preparing" ? "preparing" :
+        overall === "ready" ? "ready completed" : normalizeStr(overall);
+
+      // Helper to evaluate field requirements
+      const fieldMatch = (fieldName, hayNorm) => {
+        const values = ops.fields[fieldName];
+        if(!values || !values.length) return true;
+
+        // For numeric fields like queue/table: if user searches table:1, it should NOT match 10/11/12.
+        const isNumericField = (fieldName === "queue" || fieldName === "table");
+
+        for(const v of values){
+          const { tokens, phrases } = tokenizeQuery(v);
+          if(tokens.length === 0 && phrases.length === 0) continue;
+
+          // If query value is numeric and field is numeric -> require exact match
+          if(isNumericField){
+            const numericTokens = tokens.filter(t => /^\d+$/.test(t));
+            const hasOnlyNumericTokens = numericTokens.length === tokens.length && phrases.length === 0;
+
+            if(hasOnlyNumericTokens && numericTokens.length === 1){
+              if(hayNorm !== numericTokens[0]) return false;
+              continue;
+            }
+          }
+
+          // Default behavior: AND tokens + AND phrases (substring over normalized haystack)
+          if(!matchAllTokens(hayNorm, tokens)) return false;
+          if(!matchAllPhrases(hayNorm, phrases)) return false;
+        }
+        return true;
+      };
+
+      // Numeric convenience: searching "12" matches queue/table EXACTLY (so "1" won't match "10/11/12")
+      const numericOnly = rawQ.match(/^\d+$/);
+      if(numericOnly){
+        const digits = rawQ.trim();
+        if(queue === digits) return true;
+        if(table === digits) return true;
+      }
+
+
+      // Apply operator filters (AND across groups)
+      if(!fieldMatch("queue", queue)) return false;
+      if(!fieldMatch("table", table)) return false;
+      if(!fieldMatch("name", name)) return false;
+      if(!fieldMatch("id", oid)) return false;
+      if(!fieldMatch("item", itemNames)) return false;
+      if(!fieldMatch("addon", addOnText)) return false;
+      if(!fieldMatch("status", overallNorm)) return false;
+
+      // Free text
+      const { tokens, phrases } = tokenizeQuery(ops.free);
+      if(tokens.length === 0 && phrases.length === 0) return true;
+
+      const hay = [queue, name, table, request, oid, itemNames, addOnText, overallNorm]
+        .join(" ")
+        .replace(/\s+/g, " ")
+        .trim();
+
+      if(!matchAllTokens(hay, tokens)) return false;
+      if(!matchAllPhrases(hay, phrases)) return false;
+      return true;
+    }
+
+
+    function sortOrders(list, mode){
+      const parseTimestamp = (ts) => {
+        // Supports:
+        // - number (ms since epoch)
+        // - ISO/date string
+        // - Firebase Timestamp-like object: { seconds, nanoseconds } or { seconds }
+        if(ts === null || ts === undefined) return 0;
+        if(typeof ts === "number"){
+          return Number.isFinite(ts) ? ts : 0;
+        }
+        if(typeof ts === "string"){
+          // Try numeric string first
+          const asNum = Number(ts);
+          if(Number.isFinite(asNum) && asNum > 0) return asNum;
+          const parsed = Date.parse(ts);
+          return Number.isFinite(parsed) ? parsed : 0;
+        }
+        if(typeof ts === "object"){
+          // {seconds, nanoseconds}
+          if(typeof ts.seconds === "number"){
+            const ms = ts.seconds * 1000 + (typeof ts.nanoseconds === "number" ? Math.floor(ts.nanoseconds/1e6) : 0);
+            return Number.isFinite(ms) ? ms : 0;
+          }
+        }
+        return 0;
+      };
+      const getTs = (o) => parseTimestamp(o.order.timestamp);
+      const getQueue = (o) => {
+        const v = o.order.queueNumber;
+        const n = parseInt(v, 10);
+        return Number.isFinite(n) ? n : 999999;
+      };
+      const getTotal = (o) => Number(o.order.totalPrice || 0);
+
+      const sorted = [...list];
+
+      // IMPORTANT:
+      // "Newest" / "Oldest" should be pure time order so new orders ALWAYS appear at the top.
+      // (Previously we ranked Preparing above Received, which could push a NEW received order below older preparing ones.)
+      if(mode === "oldest"){
+        sorted.sort((a,b) => getTs(a) - getTs(b) || getQueue(a) - getQueue(b));
+        return sorted;
+      }
+      if(mode === "newest"){
+        sorted.sort((a,b) => getTs(b) - getTs(a) || getQueue(a) - getQueue(b));
+        return sorted;
+      }
+
+      // Other modes: keep a helpful status grouping, then apply the selected sort inside the group.
+      // For the Active tab, many kitchens prefer to see newly received orders first (Received -> Preparing),
+      // while the All tab keeps Preparing above Received.
+      const rank = (overall) => {
+        if(currentTab === "active"){
+          // Active tab shows: Received -> Preparing -> Ready (ready normally filtered out)
+          return overall==="received" ? 0 : overall==="preparing" ? 1 : 2;
+        }
+        // Default: Preparing -> Received -> Ready
+        return overall==="preparing" ? 0 : overall==="received" ? 1 : 2;
+      };
+
+      sorted.sort((a,b) => {
+        const oa = computeOverall(a.order).overall;
+        const ob = computeOverall(b.order).overall;
+
+        if(rank(oa) !== rank(ob)) return rank(oa) - rank(ob);
+
+        switch(mode){
+          case "queue": return getQueue(a) - getQueue(b);
+          case "totalHigh": return getTotal(b) - getTotal(a);
+          case "totalLow": return getTotal(a) - getTotal(b);
+          default: return getTs(b) - getTs(a);
+        }
+      });
+
+      return sorted;
+    }
+
+
+    function computeElapsed(ts){
+      if(!ts) return { text:"-", cls:"" };
+      const ms = Date.now() - Number(ts);
+      if(!Number.isFinite(ms) || ms < 0) return { text:"-", cls:"" };
+
+      const mins = Math.floor(ms / 60000);
+      const hrs = Math.floor(mins / 60);
+      const mm = mins % 60;
+
+      const text = hrs > 0 ? `${hrs}h ${mm}m` : `${mm}m`;
+      // Highlight: >20m late, >35m very late
+      if(mins >= 35) return { text, cls:"veryLate" };
+      if(mins >= 20) return { text, cls:"late" };
+      return { text, cls:"" };
+    }
+
+    // ---------- Rendering ----------
+    function render(){
+      const query = searchInput.value.trim();
+      const sortMode = sortSelect.value;
+
+      let list = Object.entries(ordersMap).map(([id, order]) => ({ id, order }));
+
+      // Tab filter
+      list = list.filter(({order}) => {
+        const overall = computeOverall(order).overall;
+        if(currentTab === "active") return overall !== "ready";
+        if(currentTab === "ready") return overall === "ready";
+        return true;
+      });
+
+      // Search filter
+      list = list.filter(({id, order}) => matchFilter(order, id, query));
+
+      // Sort
+      list = sortOrders(list, sortMode);
+
+      ordersEl.innerHTML = "";
+      if(list.length === 0){
+        emptyStateEl.style.display = "block";
+      } else {
+        emptyStateEl.style.display = "none";
+      }
+
+      for(const {id, order} of list){
+        ordersEl.appendChild(renderCard(id, order));
+      }
+
+      miniCount.textContent = `Showing ${list.length}`;
+      updateStatsPanels();
+    }
+
+    function renderCard(orderId, order){
+      const card = document.createElement("div");
+      const { overall, pillClass, label } = computeOverall(order);
+      card.className = `order ${overall === "ready" ? "ready" : (overall === "preparing" ? "preparing" : "received")}`;
+      card.id = `order-${orderId}`;
+
+      const q = (order.queueNumber ?? "N/A");
+      const name = order.name ?? "-";
+      const table = order.table ?? "-";
+      const request = order.request ?? "-";
+      const total = fmtMoney(order.totalPrice ?? 0);
+      const time = fmtTime(order.timestamp);
+
+      const foodKey = statusKey(order.foodStatus);
+      const drinkKey = statusKey(order.drinkStatus);
+
+      const foodDot = (foodKey === "food-ready") ? "dot-ok" : (foodKey === "food-preparing" ? "dot-warn" : "");
+      const drinkDot = (drinkKey === "drink-ready") ? "dot-ok" : (drinkKey === "drink-preparing" ? "dot-warn" : "");
+
+      const elapsed = computeElapsed(order.timestamp);
+
+      const cart = Array.isArray(order.cart) ? order.cart : [];
+      const countItems = cart.reduce((acc, ci) => acc + getItemQty(ci), 0);
+
+      // Build grouped items
+      const grouped = {};
+      for(const ci of cart){
+        const menuId = ci?.menuId;
+        const nm = getItemName(ci);
+        const cat =
+          (menuId && menuById?.[menuId]?.category) ||
+          (menuByName?.[nm]?.category) ||
+          "Others";
+
+        if(!grouped[cat]) grouped[cat] = [];
+        grouped[cat].push(ci);
+      }
+
+      const categoryOrder = [
+        "food","Side Dish","Air Panas","Air Sejuk",
+        "Little Ngences Food","Little Ngences Drink","Others"
+      ];
+
+      const itemsList = document.createElement("ul");
+      itemsList.className = "itemsList";
+
+      categoryOrder.forEach(cat => {
+        const items = grouped[cat];
+        if(!items || !items.length) return;
+
+        // category header as a subtle line
+        const catLi = document.createElement("li");
+        catLi.className = "itemLine";
+        catLi.style.background = "rgba(255,255,255,.74)";
+        catLi.style.borderStyle = "dashed";
+        catLi.innerHTML = `<div style="font-weight:1000;color:#334155;letter-spacing:.08em;text-transform:uppercase;font-size:12px;">${cat}</div>`;
+        itemsList.appendChild(catLi);
+
+        for(const ci of items){
+          const li = document.createElement("li");
+          li.className = "itemLine";
+          const nm = getItemName(ci);
+          const qty = getItemQty(ci);
+          const price = getItemPrice(ci) * qty;
+          const addons = getAddOns(ci);
+
+          li.innerHTML = `
+            <div class="itemTop">
+              <div class="name">${escapeHtml(nm)}</div>
+              <div class="qty">x ${qty} <span class="itemPrice">• ${fmtMoney(price)}</span></div>
+            </div>
+            <div class="itemAdd">Add-on: ${escapeHtml(addons)}</div>
+          `;
+          itemsList.appendChild(li);
+        }
+      });
+
+      const details = document.createElement("details");
+      details.innerHTML = `
+        <summary>
+          <span>🧾 Items</span>
+          <span class="itemsCount">${countItems} item(s)</span>
+        </summary>
+      `;
+      details.appendChild(itemsList);
+
+      card.innerHTML = `
+        <div class="orderHead">
+          <div class="queue">
+            <div>
+              <div class="qLabel">Order No.</div>
+              <div class="qNum">${escapeHtml(q)}</div>
+            </div>
+          </div>
+
+          <div class="pillRow">
+            <span class="pill ${pillClass}">${label}</span>
+            <span class="pill"><span class="iconDot ${foodDot}"></span>🍴 ${niceStatus(order.foodStatus)}</span>
+            <span class="pill"><span class="iconDot ${drinkDot}"></span>🥤 ${niceStatus(order.drinkStatus)}</span>
+          </div>
+        </div>
+
+        <div class="metaRow">
+          <div class="meta"><strong>Name</strong> <span class="val" title="${escapeHtml(name)}">${escapeHtml(name)}</span></div>
+          <div class="meta"><strong>Table</strong> <span class="val">${escapeHtml(table)}</span></div>
+          <div class="meta"><strong>Request</strong> <span class="val" title="${escapeHtml(request)}">${escapeHtml(request)}</span></div>
+          <div class="meta"><strong>Total</strong> <span class="val">${total}</span></div>
+          <div class="meta"><strong>Time</strong> <span class="val" title="${escapeHtml(time)}">${escapeHtml(time)}</span></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="itemsWrap"></div>
+
+        <div class="actionsRow">
+          <button class="aBtn aFoodPrep" type="button" data-act="foodPrep">🔥 Food Preparing</button>
+          <button class="aBtn aFoodReady" type="button" data-act="foodReady">✅ Food Ready</button>
+          <button class="aBtn aDrinkPrep" type="button" data-act="drinkPrep">🔥 Drink Preparing</button>
+          <button class="aBtn aDrinkReady" type="button" data-act="drinkReady">✅ Drink Ready</button>
+
+          <button class="aBtn aAllReady" type="button" data-act="allReady">✅ All Ready</button>
+          <button class="aBtn aDelete" type="button" data-act="delete">🗑️ Delete</button>
+
+          <button class="aBtn aPrint" type="button" data-act="print">🖨️ Print</button>
+          <button class="aBtn aCopy" type="button" data-act="copy">📋 Copy</button>
+        </div>
+
+        <div class="footerRow">
+          <div>Elapsed: <span class="elapsed ${elapsed.cls}">${elapsed.text}</span></div>
+          <div style="font-weight:900;">ID: <span style="font-weight:900;color:#0f172a;">${escapeHtml(orderId.slice(-6))}</span></div>
+        </div>
+      `;
+
+      // Insert items details
+      card.querySelector(".itemsWrap").appendChild(details);
+
+      // Button handlers
+      card.querySelector('[data-act="foodPrep"]').addEventListener("click", (e) => {
+        e.stopPropagation();
+        updateStatus(orderId, "food preparing", "foodStatus");
+      });
+      card.querySelector('[data-act="foodReady"]').addEventListener("click", (e) => {
+        e.stopPropagation();
+        updateStatus(orderId, "food ready", "foodStatus");
+      });
+      card.querySelector('[data-act="drinkPrep"]').addEventListener("click", (e) => {
+        e.stopPropagation();
+        updateStatus(orderId, "drink preparing", "drinkStatus");
+      });
+      card.querySelector('[data-act="drinkReady"]').addEventListener("click", (e) => {
+        e.stopPropagation();
+        updateStatus(orderId, "drink ready", "drinkStatus");
+      });
+      card.querySelector('[data-act="allReady"]').addEventListener("click", async (e) => {
+        e.stopPropagation();
+        await updateStatus(orderId, "food ready", "foodStatus", { silent:true });
+        await updateStatus(orderId, "drink ready", "drinkStatus", { silent:true });
+        showToast("Marked Food + Drink as READY");
+      });
+      card.querySelector('[data-act="delete"]').addEventListener("click", (e) => {
+        e.stopPropagation();
+        confirmDelete(orderId);
+      });
+      card.querySelector('[data-act="print"]').addEventListener("click", (e) => {
+        e.stopPropagation();
+        printOrder(orderId);
+      });
+      card.querySelector('[data-act="copy"]').addEventListener("click", (e) => {
+        e.stopPropagation();
+        copyOrderToClipboard(orderId);
+      });
+
+      return card;
+    }
+
+    function niceStatus(s){
+      const k = statusKey(s);
+      if(k === "food-ready" || k === "drink-ready") return "Ready";
+      if(k === "food-preparing" || k === "drink-preparing") return "Preparing";
+      return "—";
+    }
+
+    function escapeHtml(str){
+      return String(str ?? "").replace(/[&<>"']/g, m => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+      }[m]));
+    }
+
+    // ---------- Actions ----------
+    async function updateStatus(orderId, status, field="status", opts={}){
+      const orderRef = ref(db, `orders/${orderId}`);
+      try{
+        await update(orderRef, { [field]: status });
+        // Update local map for instant UI feedback
+        ordersMap[orderId] = { ...(ordersMap[orderId] || {}), [field]: status };
+        render();
+        if(!opts.silent) showToast(`Updated ${field}: ${status}`);
+      }catch(err){
+        console.error("Firebase update error:", err);
+        showToast("Update failed");
+      }
+
+      // Optional: clear queueNumber later when all ready (like your old behavior)
+      try{
+        const o = ordersMap[orderId] || {};
+        const foodReady = statusKey(o.foodStatus) === "food-ready";
+        const drinkReady = statusKey(o.drinkStatus) === "drink-ready";
+        if(foodReady && drinkReady){
+          // Shorter than previous 100000ms. 25s is more practical for kitchen flow.
+          setTimeout(async () => {
+            try{
+              await update(ref(db, `orders/${orderId}`), { queueNumber: null });
+              if(ordersMap[orderId]) ordersMap[orderId].queueNumber = null;
+              render();
+            }catch(e){}
+          }, 25000);
+        }
+      }catch(e){}
+    }
+    window.updateStatus = updateStatus;
+
+    function confirmDelete(orderId){
+      const ok = confirm("Delete this order?");
+      if(!ok) return;
+      deleteOrder(orderId);
+    }
+    window.confirmDelete = confirmDelete;
+
+    async function deleteOrder(orderId){
+      try{
+        await remove(ref(db, `orders/${orderId}`));
+        delete ordersMap[orderId];
+        render();
+        showToast("Order deleted");
+      }catch(err){
+        console.error(err);
+        showToast("Delete failed");
+      }
+    }
+
+    // Print (58mm style)
+    function printOrder(orderId){
+      const order = ordersMap[orderId];
+      if(!order) return;
+
+      const cart = Array.isArray(order.cart) ? order.cart : [];
+      const lines = cart.map(ci => {
+        const nm = getItemName(ci);
+        const qty = getItemQty(ci);
+        const addons = getAddOns(ci);
+        const price = getItemPrice(ci) * qty;
+        return `${nm} x ${qty}\nAddOn: (${addons}) - ${fmtMoney(price)}`;
+      }).join("\n\n");
+
+      const printWindow = window.open("", "_blank", "width=320,height=640");
+      printWindow.document.write(`
         <html>
         <head>
-            <title>Receipt - RESTORAN AYAM GEPUK NGENCES</title>
-            <style>
-                @media print {
-                    @page {
-                        size: 58mm auto; 
-                        margin: 0;
-                    }
-                    body {
-                        margin: 0;
-                    }
-                }
-                body {
-                    font-family: monospace;
-                    font-size: 10px;
-                    padding: 5px;
-                    width: 58mm;
-                    box-sizing: border-box;
-                    text-align: center;
-                }
-                .logo {
-                    width: 100px;
-                    display: block;
-                    margin: 0 auto 5px;
-                }
-                .line {
-                    border-top: 1px dashed #000;
-                    margin: 5px 0;
-                }
-                .footer {
-                    text-align: center;
-                    margin-top: 10px;
-                    font-size: 6px;
-                }
-                ul {
-                    padding-left: 0;
-                    list-style: none;
-                    text-align: left;
-                }
-            </style>
+          <title>Receipt - RESTORAN AYAM GEPUK NGENCES</title>
+          <style>
+            @media print {
+              @page { size: 58mm auto; margin: 0; }
+              body { margin: 0; }
+            }
+            body{
+              font-family: monospace;
+              font-size: 10px;
+              padding: 6px;
+              width: 58mm;
+              box-sizing: border-box;
+              text-align: center;
+            }
+            .line{border-top:1px dashed #000;margin:6px 0;}
+            .left{text-align:left; white-space:pre-wrap;}
+            .footer{margin-top:10px;font-size:7px;opacity:.9;}
+          </style>
         </head>
         <body>
-            <b>RESTORAN AYAM GEPUK NGENCES</b><br>
-            39, Laluan BG Transit 2, Kampung Bendera, 30200 Batu Gajah, Perak<br>
-            <div class="line"></div>
-            Order at: ${orderReceive.innerHTML}<br>
-            Order No: ${orderQuery.innerHTML}<br>
-            Name: ${orderName.innerHTML}<br>
-            Table: ${Table.innerHTML}<br>
-            Special Request: ${Request.innerHTML || 'None'}<br>
-            ____________________________ <br>
-            <b>Order List:</b><br>
-            <ul>${orderItems.innerHTML}</ul>
-            ____________________________ <br>
-            <b>Total:</b> ${Price.innerHTML}<br>
-            ____________________________ <br>
-            <div class="footer">
-                Terima kasih!<br>
-                Ayam Gepuk X Ngences Coffee<br>
-                Credit to electricaltechnologymy <br>
-                <i>This receipt print automatically <br> by the ordering system.</i><br>
-            </div>
-        </body>
-        </html>
-    `);
-    printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
-}
+          <b>RESTORAN AYAM GEPUK NGENCES</b><br>
+          39, Laluan BG Transit 2, Kampung Bendera, 30200 Batu Gajah, Perak<br>
+          <div class="line"></div>
+          Order at: ${escapeHtml(fmtTime(order.timestamp))}<br>
+          Order No: ${escapeHtml(order.queueNumber ?? "N/A")}<br>
+          Name: ${escapeHtml(order.name ?? "-")}<br>
+          Table: ${escapeHtml(order.table ?? "-")}<br>
+          Special Request: ${escapeHtml(order.request ?? "None")}<br>
+          <div class="line"></div>
+          <b>Order List</b>
+          <div class="left">${escapeHtml(lines)}</div>
+          <div class="line"></div>
+          <b>Total:</b> ${escapeHtml(fmtMoney(order.totalPrice ?? 0))}<br>
+          <div class="line"></div>
+          <div class="footer">
+            Terima kasih!<br>
+            Ayam Gepuk X Ngences Coffee<br>
+            <i>This receipt printed by the ordering system.</i>
+          </div>
+        </body></html>
+      `);
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
+    }
+    window.printOrder = printOrder;
 
-        </script>
+    function copyOrderToClipboard(orderId){
+      const order = ordersMap[orderId];
+      if(!order) return;
 
-<script>
-    function copyOrderToClipboard(orderId) {
-        const orderDiv = document.getElementById(`order-${orderId}`);
-        if (!orderDiv) return;
+      const cart = Array.isArray(order.cart) ? order.cart : [];
+      const lines = cart.map(ci => {
+        const nm = getItemName(ci);
+        const qty = getItemQty(ci);
+        const addons = getAddOns(ci);
+        const price = getItemPrice(ci) * qty;
+        return `${nm} x ${qty}\nAddOn: (${addons}) - ${fmtMoney(price)}`;
+      }).join("\n\n");
 
-        const orderItems = orderDiv.querySelector('.order-items');
-        const orderQuery = orderDiv.querySelector('.order-number');
-        const orderName = orderDiv.querySelector('.order-name');
-        const Table = orderDiv.querySelector('.order-table');
-        const Request = orderDiv.querySelector('.order-request');
-        const Price = orderDiv.querySelector('.order-total');
-        const orderReceive = orderDiv.querySelector('.order-time');
-
-        const textContent = `
+      const text = `
 RESTORAN AYAM GEPUK NGENCES
 39, Laluan BG Transit 2, Kampung Bendera, 30200 Batu Gajah, Perak
 
-Order at: ${orderReceive.innerHTML}
-Order No: ${orderQuery.innerHTML}
-Name: ${orderName.innerHTML}
-Table: ${Table.innerHTML}
-Special Request: ${Request.innerHTML || 'None'}
+Order at: ${fmtTime(order.timestamp)}
+Order No: ${order.queueNumber ?? "N/A"}
+Name: ${order.name ?? "-"}
+Table: ${order.table ?? "-"}
+Special Request: ${order.request ?? "None"}
 ----------------------------------------
 Order List:
-${orderItems.innerText}
+${lines}
 ----------------------------------------
-Total: ${Price.innerHTML}
+Total: ${fmtMoney(order.totalPrice ?? 0)}
 ----------------------------------------
+`.trim();
 
-Terima kasih!
-Ayam Gepuk Ngences X Ngences Coffee
-Powered by electricaltechnologymy
-
-(This receipt was copied from the system)
-        `.trim();
-
-        navigator.clipboard.writeText(textContent).then(() => {
-            alert("Order copied to clipboard!");
-        }).catch(err => {
-            alert("Failed to copy: " + err);
-        });
+      navigator.clipboard.writeText(text)
+        .then(()=> showToast("Copied to clipboard"))
+        .catch(err => { console.error(err); showToast("Copy failed"); });
     }
-
-    // ✅ Make it global
     window.copyOrderToClipboard = copyOrderToClipboard;
-    
-</script>
-</head>
-<body>
 
-<!-- Live Stats Display -->
-<div id="live-stats" style="
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: rgba(0,0,0,0.85); /* Solid when showing */
-    color: #fff;
-    padding: 10px 15px;
-    border-radius: 12px;
-    font-size: 13px;
-    line-height: 1.4;
-    z-index: 9999;
-    min-width: 240px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-    transition: background 0.3s ease; /* Smooth fade */
-">
-    <!-- Header row with button -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-        <strong>📊 Live Stats</strong>
-        <button id="toggle-stats" style="
-            background: rgba(255,255,255,0.15);
-            border: none;
-            color: #fff;
-            font-size: 11px;
-            padding: 2px 8px;
-            border-radius: 6px;
-            cursor: pointer;
-        ">Hide</button>
-    </div>
+    // Export CSV (from in-memory ordersMap for accuracy)
+    function exportToCSV(){
+      const rows = [];
+      const today = new Date().toISOString().split("T")[0];
 
-    <div id="stats-content">
-        <div id="online-status">Status: ...</div>
-        <div id="speed">Speed: ...</div>
-        <div id="fps">FPS: ...</div>
-        <div id="preparing-count">Preparing Orders: ...</div>
-        <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.2); margin: 8px 0;">
-        <div id="total-orders-today">Total Orders Today: 0</div>
-        <div id="active-orders-count">Active Orders: 0</div>
-        <div id="top-item">Top Item: -</div>
-    </div>
-</div>
+      for(const [orderId, order] of Object.entries(ordersMap)){
+        if(!order?.timestamp) continue;
+        const d = new Date(order.timestamp);
+        const date = d.toISOString().split("T")[0];
+        // export all orders (not only today). If you want only today, uncomment:
+        // if(date !== today) continue;
 
-<script type="module">
-import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+        const cart = Array.isArray(order.cart) ? order.cart : [];
+        const items = cart.map(ci => {
+          const nm = getItemName(ci);
+          const qty = getItemQty(ci);
+          const addons = getAddOns(ci);
+          const price = getItemPrice(ci) * qty;
+          return `${nm} x ${qty} | AddOn: (${addons}) | ${fmtMoney(price)}`;
+        }).join("\n");
 
-// ✅ Firebase reference
-const dbs = getDatabase();
-const statsStateRef = ref(dbs, "settings/liveStatsVisible");
+        const overall = computeOverall(order).label;
 
-// Elements
-const liveStats = document.getElementById("live-stats");
-const toggleBtn = document.getElementById("toggle-stats");
-const statsContent = document.getElementById("stats-content");
+        rows.push({
+          timestamp: Number(order.timestamp || 0),
+          date: d.toLocaleDateString(),
+          time: d.toLocaleTimeString(),
+          queue: order.queueNumber ?? "",
+          name: order.name ?? "",
+          table: order.table ?? "",
+          request: (order.request ?? "").toString().replace(/\s+/g, " ").trim(),
+          items,
+          total: fmtMoney(order.totalPrice ?? 0),
+          status: overall,
+          id: orderId
+        });
+      }
 
-// ✅ Apply UI state helper
-function applyState(isVisible) {
-    statsContent.style.display = isVisible ? "block" : "none";
-    toggleBtn.textContent = isVisible ? "Hide" : "Show";
-    liveStats.style.background = isVisible ? "rgba(0,0,0,0.85)" : "rgba(0,0,0,0.4)";
-}
+      rows.sort((a,b)=> b.timestamp - a.timestamp);
 
-// ✅ Live sync with Firebase
-onValue(statsStateRef, snapshot => {
-    if (snapshot.exists()) {
-        applyState(snapshot.val());
-    } else {
-        // Default = visible
-        set(statsStateRef, true);
-        applyState(true);
+      const header = ["Date","Time","Queue","Name","Table","Special Request","Items","Total Price","Status","OrderId"];
+      const lines = [header.join(",")];
+
+      for(const r of rows){
+        const row = [
+          r.date,
+          r.time,
+          csvEscape(r.queue),
+          csvEscape(r.name),
+          csvEscape(r.table),
+          csvEscape(r.request),
+          csvEscape(r.items),
+          csvEscape(r.total),
+          csvEscape(r.status),
+          csvEscape(r.id)
+        ].join(",");
+        lines.push(row);
+      }
+
+      const csv = lines.join("\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "orders.csv";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     }
-});
 
-// ✅ Button click event
-toggleBtn.addEventListener("click", () => {
-    const isHidden = statsContent.style.display === "none";
-    const newState = isHidden ? true : false;
+    function csvEscape(v){
+      const s = String(v ?? "");
+      // Wrap all values that may contain commas/newlines/quotes
+      const escaped = s.replace(/"/g, '""');
+      return `"${escaped}"`;
+    }
 
-    // Apply instantly
-    applyState(newState);
+    async function exportWithSpinner(){
+      const original = exportBtn.textContent;
+      exportBtn.disabled = true;
+      exportBtn.textContent = "⏳ Exporting…";
+      try{
+        // Small delay for UX
+        await new Promise(r => setTimeout(r, 250));
+        exportToCSV();
+      }finally{
+        exportBtn.textContent = original;
+        exportBtn.disabled = false;
+      }
+    }
 
-    // ✅ Save to Firebase
-    set(statsStateRef, newState);
-});
-</script>
+    async function removeAllQueueNumbers(){
+      const ok = confirm("Remove ALL queue numbers?");
+      if(!ok) return;
 
-
-
-
-
-    <div class="container">
-    <div class="buttons" style="display: flex; justify-content: center; gap: 15px;">
-
-  <!-- New button to go to inventory -->
-  <button onclick="window.location.href='inventory.html';" style="
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 12px 25px;
-    font-size: 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  ">
-    Go to Inventory
-  </button>
-</div>
-
-        
-  <h2>Received Orders</h2>
-  <div class="active-orders" id="active-orders">Active Orders (0)</div>
-  <!-- Daily Quote Section -->
-  <div id="daily-quote"
-       style="margin-top:20px;
-              padding:12px;
-              background:#f9f9f9;
-              border-left:4px solid #4CAF50;
-              border-radius:6px;
-              font-style:italic;">
-  </div>
-  <div class="orders-container" id="orders"></div>
-
-  
-</div>
-
-
-
-</body>
-<script>
-    // ✅ Internet Speed Test
-    async function testInternetSpeed() {
-    const imageUrl = "https://upload.wikimedia.org/wikipedia/commons/3/3f/Fronalpstock_big.jpg"; // ~400KB
-    const fileSizeInBits = 400_000 * 8;
-    const speedElem = document.getElementById("speed");
-
-    const startTime = performance.now();
-
-    try {
-        const response = await fetch(imageUrl + "?nocache=" + Math.random(), {
-            cache: "no-store",
-            mode: "no-cors"
+      try{
+        const snap = await get(ordersRef);
+        const updates = {};
+        snap.forEach(ch => {
+          const id = ch.key;
+          updates[`${id}/queueNumber`] = null;
         });
 
-        const endTime = performance.now();
-        const duration = (endTime - startTime) / 1000;
-        const speedMbps = (fileSizeInBits / duration / 1_000_000).toFixed(2);
-
-        speedElem.textContent = `Speed: ${speedMbps} Mbps`;
-        speedElem.style.color = speedMbps < 10 ? "#f44336" : "#ffffff"; // 🔴 Red if < 10 Mbps
-    } catch (e) {
-        speedElem.textContent = "Speed: offline";
-        speedElem.style.color = "#f44336"; // Always red when offline
-        console.error("Speed test failed:", e);
-    }
-}
-
-
-
-    // ✅ FPS Display
-    function trackFPS() {
-    const fpsElem = document.getElementById("fps");
-    let lastFrame = performance.now();
-    let frames = 0;
-
-    function update(now) {
-        frames++;
-        if (now - lastFrame >= 1000) {
-            fpsElem.textContent = `FPS: ${frames}`;
-            fpsElem.style.color = frames < 30 ? "#f44336" : "#ffffff"; // Red if low FPS
-            frames = 0;
-            lastFrame = now;
+        // Update as one multi-location update
+        await update(ordersRef, updates);
+        // Also update local
+        for(const id of Object.keys(ordersMap)){
+          ordersMap[id].queueNumber = null;
         }
-        requestAnimationFrame(update);
+        render();
+        showToast("All queue numbers cleared");
+      }catch(err){
+        console.error(err);
+        showToast("Failed to clear queue");
+      }
     }
 
-    requestAnimationFrame(update);
-}
+    // ---------- Dashboard stats ----------
+    function updateStatsPanels(){
+      let active = 0;
+      let preparing = 0;
+      let ready = 0;
 
+      const today = new Date().toISOString().split("T")[0];
+      let totalToday = 0;
+      const itemCount = {};
 
-    function updateOnlineStatus() {
-    const statusEl = document.getElementById("online-status");
-    if (!statusEl) return;
-    const isOnline = navigator.onLine;
-    statusEl.textContent = isOnline ? "Status: 🌐 Online" : "Status: ❌ Offline";
-    statusEl.style.color = isOnline ? "#8bc34a" : "#f44336";
-}
+      for(const order of Object.values(ordersMap)){
+        const o = computeOverall(order).overall;
+        if(o !== "ready"){
+          active++;
+          if(o === "preparing") preparing++;
+        } else {
+          ready++;
+        }
 
-// Update on load
-document.addEventListener("DOMContentLoaded", () => {
+        // Today summary & top item
+        if(order?.timestamp){
+          const d = new Date(order.timestamp).toISOString().split("T")[0];
+          if(d === today){
+            totalToday++;
+            const cart = Array.isArray(order.cart) ? order.cart : [];
+            for(const ci of cart){
+              const nm = getItemName(ci);
+              const qty = getItemQty(ci);
+              itemCount[nm] = (itemCount[nm] || 0) + qty;
+            }
+          }
+        }
+      }
+
+      let topItem = "-";
+      if(Object.keys(itemCount).length){
+        topItem = Object.keys(itemCount).reduce((a,b)=> itemCount[a] > itemCount[b] ? a : b);
+      }
+
+      activeOrdersEl.textContent = String(active);
+      prepSummaryEl.textContent = `Preparing: ${preparing} • Ready: ${ready}`;
+      totalOrdersTodayEl.textContent = String(totalToday);
+      topItemEl.textContent = `Top item: ${topItem}`;
+
+      drawerTotalToday.textContent = `Total Orders Today: ${totalToday}`;
+      drawerActive.textContent = `Active Orders: ${active}`;
+      drawerTop.textContent = `Top Item: ${topItem}${topItem !== "-" ? " 🔝🔥" : ""}`;
+
+      // Preparing count in drawer
+      drawerPreparing.textContent = `Preparing Orders: ${preparing}`;
+    }
+
+    // ---------- Online/FPS/Speed ----------
+    function updateOnlineStatus(){
+      const isOnline = navigator.onLine;
+      const txt = isOnline ? "🌐 Online" : "❌ Offline";
+      onlineStatusEl.textContent = txt;
+      drawerOnline.textContent = `Status: ${txt}`;
+
+      miniOnlineText.textContent = `Status: ${isOnline ? "Online" : "Offline"}`;
+      miniOnlineDot.className = `iconDot ${isOnline ? "dot-ok" : "dot-off"}`;
+    }
+
+    function trackFPS(){
+      let last = performance.now();
+      let frames = 0;
+
+      function loop(now){
+        frames++;
+        if(now - last >= 1000){
+          fps = frames;
+          frames = 0;
+          last = now;
+          speedLineEl.textContent = `Speed: ${lastSpeedMbps ?? "…"} • FPS: ${fps}`;
+          drawerFps.textContent = `FPS: ${fps}`;
+        }
+        requestAnimationFrame(loop);
+      }
+      requestAnimationFrame(loop);
+    }
+
+    async function testInternetSpeed(){
+      const imageUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Fronalpstock_big.jpg/320px-Fronalpstock_big.jpg";
+      const approxBytes = 120_000; // smaller thumbnail
+      const bits = approxBytes * 8;
+
+      const start = performance.now();
+      try{
+        await fetch(imageUrl + "?nocache=" + Math.random(), { cache: "no-store", mode: "no-cors" });
+        const end = performance.now();
+        const sec = Math.max((end - start) / 1000, 0.001);
+        const mbps = (bits / sec / 1_000_000).toFixed(2);
+        lastSpeedMbps = `${mbps} Mbps`;
+      }catch(err){
+        lastSpeedMbps = "offline";
+      }
+
+      speedLineEl.textContent = `Speed: ${lastSpeedMbps ?? "…"} • FPS: ${fps || "…"}`;
+      drawerSpeed.textContent = `Speed: ${lastSpeedMbps ?? "…"}`;
+    }
+
+    // ---------- Daily quote ----------
+    function setDailyQuote(){
+      const quotes = [
+        "Berniaga makanan dengan niat kerana Allah, maka setiap rezeki menjadi ibadah.",
+        "Hidangan yang halal membawa keberkatan dalam hidup dan perniagaan.",
+        "Keikhlasan dalam berniaga membuka pintu rezeki yang luas.",
+        "Amanah dalam perniagaan lebih manis daripada keuntungan yang banyak.",
+        "Senyum kepada pelanggan adalah sedekah yang tidak pernah rugi.",
+        "Dalam setiap suapan pelanggan, ada pahala buat peniaga yang amanah.",
+        "Rezeki yang sedikit tetapi berkat lebih bermakna daripada keuntungan yang banyak tetapi haram.",
+        "Beri lebih daripada yang dijanjikan, nescaya pelanggan akan setia.",
+        "Jual makanan dengan jujur, Allah akan tambahkan rezeki.",
+        "Perniagaan makanan yang diberkati ialah perniagaan yang disyukuri."
+      ];
+      const today = new Date();
+      const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
+      const quote = quotes[dayOfYear % quotes.length];
+      quoteEl.textContent = `“${quote}”`;
+    }
+
+    // ---------- Live Stats Drawer visibility (synced via Firebase) ----------
+    function openDrawer(){
+      drawer.style.display = "block";
+    }
+    function closeDrawer(){
+      drawer.style.display = "none";
+    }
+
+    onValue(statsVisibleRef, (snap) => {
+      const isVisible = snap.exists() ? !!snap.val() : true;
+      if(!snap.exists()){
+        set(statsVisibleRef, true);
+      }
+      if(isVisible) openDrawer(); else closeDrawer();
+    });
+
+    statsToggleBtn.addEventListener("click", async () => {
+      const isOpen = drawer.style.display === "block";
+      const newState = !isOpen;
+      // apply instantly
+      if(newState) openDrawer(); else closeDrawer();
+      // save
+      try{ await set(statsVisibleRef, newState); }catch(e){}
+    });
+    drawerClose.addEventListener("click", async () => {
+      closeDrawer();
+      try{ await set(statsVisibleRef, false); }catch(e){}
+    });
+
+    // ---------- Load menu categories for grouping ----------
+    onValue(menuRef, (snap) => {
+      const byId = {};
+      const byName = {};
+      snap.forEach(ch => {
+        const id = ch.key;
+        const item = ch.val() || {};
+        byId[id] = item;
+        if(item.name) byName[item.name] = item;
+      });
+      menuById = byId;
+      menuByName = byName;
+      render();
+    });
+
+    // ---------- Load orders ----------
+    // Keep using onValue for correct updates (including status changes and deletions).
+    onValue(ordersRef, (snap) => {
+      const map = {};
+      snap.forEach(ch => {
+        map[ch.key] = ch.val() || {};
+      });
+      ordersMap = map;
+
+      // Backward compatibility: set status if missing (like your previous version)
+      // but do it quietly to avoid loops
+      for(const [id, o] of Object.entries(ordersMap)){
+        if(!o.status){
+          update(ref(db, `orders/${id}`), { status: "received order" }).catch(()=>{});
+          ordersMap[id].status = "received order";
+        }
+      }
+
+      render();
+    });
+
+    // ---------- Events ----------
+    tabAll.addEventListener("click", () => setActiveTab("all"));
+    tabActive.addEventListener("click", () => setActiveTab("active"));
+    tabReady.addEventListener("click", () => setActiveTab("ready"));
+
+    searchInput.addEventListener("input", () => render());
+    sortSelect.addEventListener("change", () => render());
+
+    inventoryBtn.addEventListener("click", () => { window.location.href = "inventory.html"; });
+    exportBtn.addEventListener("click", () => exportWithSpinner());
+    removeQueueBtn.addEventListener("click", () => removeAllQueueNumbers());
+
+    // ---------- Init ----------
+    setDailyQuote();
     updateOnlineStatus();
     window.addEventListener("online", updateOnlineStatus);
     window.addEventListener("offline", updateOnlineStatus);
-});
 
-    // ✅ Count Preparing Orders
-    function countPreparingOrders() {
-    const count = document.querySelectorAll(".order.preparing").length;
-    const elem = document.getElementById("preparing-count");
-    elem.textContent = `Preparing Orders: ${count}`;
-    elem.style.color = count > 0 ? "#f44336" : "#ffffff"; // Red if any active
-}
+    trackFPS();
+    testInternetSpeed();
+    setInterval(testInternetSpeed, 6000);
 
-    // ✅ Start updates after page is ready
-    document.addEventListener("DOMContentLoaded", () => {
-        trackFPS();
-        testInternetSpeed();
-        countPreparingOrders();
-
-        setInterval(() => {
-            testInternetSpeed();
-            countPreparingOrders();
-        }, 5000);
-    });
-
-    function setDailyQuote() {
-  const quotes = [
-    "Berniaga makanan dengan niat kerana Allah, maka setiap rezeki menjadi ibadah.",
-    "Hidangan yang halal membawa keberkatan dalam hidup dan perniagaan.",
-    "Jangan hanya jual makanan untuk kenyang, tetapi juga untuk menyuburkan jiwa dengan halal.",
-    "Keikhlasan dalam berniaga membuka pintu rezeki yang luas.",
-    "Makanan halal dan bersih adalah dakwah senyap seorang peniaga.",
-    "Barakah datang apabila niat perniagaan bukan hanya mencari untung, tetapi juga memberi manfaat.",
-    "Perniagaan makanan yang diberkati adalah yang menjaga halal dan toyyib.",
-    "Niat yang baik melahirkan rezeki yang baik.",
-    "Hidangkan makanan dengan doa, insyaAllah jadi penawar kepada pelanggan.",
-    "Dalam setiap suapan pelanggan, ada pahala buat peniaga yang amanah.",
-    "Jual makanan dengan jujur, Allah akan tambahkan rezeki.",
-    "Jangan kurangkan sukatan, kerana keberkatan akan berkurang.",
-    "Amanah dalam perniagaan lebih manis daripada keuntungan yang banyak.",
-    "Senyum peniaga adalah sebahagian daripada layanan yang ikhlas.",
-    "Allah mencintai peniaga yang jujur dan amanah.",
-    "Rezeki yang halal datang daripada perniagaan yang bersih daripada penipuan.",
-    "Jujur dalam perniagaan makanan lebih bernilai daripada promosi besar.",
-    "Menipu pelanggan dengan harga atau kualiti, sama dengan menggadai keberkatan.",
-    "Kejujuran dalam berniaga adalah iklan terbaik.",
-    "Rezeki yang sedikit tetapi berkat lebih bermakna daripada keuntungan yang banyak tetapi haram.",
-    "Pelanggan bukan sekadar pembeli, tetapi amanah yang Allah titipkan.",
-    "Setiap pelanggan yang kenyang adalah doa berjalan untuk perniagaan kita.",
-    "Layani pelanggan dengan adab, kerana akhlak lebih mengenyangkan hati.",
-    "Senyum kepada pelanggan adalah sedekah yang tidak pernah rugi.",
-    "Rezeki pelanggan datang bersama rezeki peniaga.",
-    "Jangan hanya jual makanan, tapi jual juga pengalaman yang baik.",
-    "Pelanggan yang dihormati akan kembali dengan rezeki yang berlipat kali.",
-    "Hidangkan makanan seperti anda hidangkan kepada keluarga sendiri.",
-    "Beri lebih daripada yang dijanjikan, nescaya pelanggan akan setia.",
-    "Doa pelanggan yang puas adalah promosi terbaik.",
-    "Rezeki bukan hanya pada wang, tetapi pada keberkatan masa dan kesihatan.",
-    "Berniaga dengan syukur menjadikan sedikit itu cukup.",
-    "Rezeki setiap orang sudah ditetapkan, berniagalah dengan tenang dan tawakkal.",
-    "Keuntungan yang halal adalah rezeki yang diberkati.",
-    "Jangan tamak mengejar untung, kerana rezeki Allah luas tanpa batas.",
-    "Syukur pada rezeki kecil, Allah akan gandakan dengan yang besar.",
-    "Makanan yang halal membawa rezeki yang suci.",
-    "Jangan iri pada perniagaan orang lain, kerana setiap rezeki ada bahagiannya.",
-    "Rezeki yang halal ibarat baja yang menyuburkan kehidupan.",
-    "Perniagaan yang diberkati ialah perniagaan yang disyukuri.",
-    "Berniaga makanan adalah seni menyebarkan kebaikan melalui rezeki halal.",
-    "Setiap hidangan adalah peluang untuk beramal.",
-    "Keletihan berniaga akan hilang, tetapi keberkatannya kekal.",
-    "Peniaga yang sabar dalam ujian akan Allah hadiahkan rezeki berganda.",
-    "Berniaga makanan bukan sekadar mencari untung, tetapi membina silaturrahim.",
-    "Dalam setiap masakan ada doa seorang peniaga kepada pelanggannya.",
-    "Perniagaan makanan yang bersih adalah sebahagian daripada iman.",
-    "Bern iaga adalah sunnah, berniaga makanan halal adalah ibadah.",
-    "Setiap sen yang diperoleh daripada makanan halal akan jadi cahaya dalam hidup.",
-    "Makanan yang baik menjadi sedekah kepada tubuh manusia.",
-    "Rasulullah ﷺ sendiri adalah peniaga yang jujur, ikutilah jejak baginda.",
-    "Perniagaan yang jujur akan bersama para nabi di akhirat.",
-    "Islam mengajar peniaga untuk berlaku adil dan ikhlas.",
-    "Jangan jual makanan haram, kerana ia membawa kepada murka Allah.",
-    "Allah mencintai hamba yang mencari rezeki halal dengan usaha sendiri.",
-    "Berniaga makanan adalah jihad mencari rezeki yang suci.",
-    "Peniaga yang amanah lebih mulia daripada ahli ibadah yang menipu.",
-    "Dalam perniagaan makanan, halal itu wajib, sedap itu bonus.",
-    "Setiap makanan halal yang terjual adalah saksi amal kita.",
-    "Peniaga yang baik menjadikan perniagaan sebagai jalan menuju syurga."
-  ];
-
-  // Pick quote based on day of the year
-  const today = new Date();
-  const dayOfYear = Math.floor(
-    (today - new Date(today.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24)
-  );
-
-  const quote = quotes[dayOfYear % quotes.length];
-  document.getElementById("daily-quote").textContent = `"${quote}"`;
-}
-
-// Run once when page loads
-setDailyQuote();
-
-</script>
+    // refresh elapsed timers / stats without needing DB changes
+    setInterval(() => {
+      // Only rerender if there are orders
+      if(Object.keys(ordersMap).length) render();
+    }, 60000);
+  </script>
+</body>
 </html>
