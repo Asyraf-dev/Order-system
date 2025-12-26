@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Staff Dashboard — Restaurant Control Center</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.min.js"></script>
+<style>
+    :root{
+      --bg0:#0b1220;--bg1:#0f1a33;
+      --card:rgba(255,255,255,.90);--card2:rgba(255,255,255,.70);
+      --text:#0f172a;--muted:#475569;--border:rgba(15,23,42,.10);
+      --shadow:0 18px 60px rgba(2,6,23,.18);
+      --brand:#16a34a;--brand2:#22c55e;
+      --warn:#f59e0b;--danger:#ef4444;--info:#3b82f6;
+      --focus:0 0 0 4px rgba(34,197,94,.20);
+    }
+    html[data-theme="dark"]{
+      --card:rgba(15,23,42,.78);--card2:rgba(15,23,42,.55);
+      --text:#e5e7eb;--muted:#a1a1aa;--border:rgba(255,255,255,.12);
+      --shadow:0 22px 70px rgba(0,0,0,.45);
+      --focus:0 0 0 4px rgba(34,197,94,.22);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--text);min-height:100vh;
+      background: radial-gradient(1200px 900px at 20% 15%, rgba(34,197,94,.30), transparent 55%),
+                  radial-gradient(1200px 900px at 85% 25%, rgba(59,130,246,.24), transparent 52%),
+                  linear-gradient(180deg,var(--bg0),var(--bg1));
+    }
+    .container{width:min(1250px,100%);margin:70px auto 120px;padding:0 18px;display:grid;gap:20px}
+    .card{
+      background:var(--card);backdrop-filter:blur(12px);
+      border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .card-header{
+      padding:18px 22px;border-bottom:1px solid var(--border);
+      background:linear-gradient(180deg, rgba(34,197,94,.12), transparent);
+      display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    }
+    .card-body{padding:22px}
+    h1{margin:0;font-size:20px;letter-spacing:-.02em}
+    h2{margin:0;font-size:16px;letter-spacing:-.02em}
+    .muted{color:var(--muted)}
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    input,select,button{
+      border:1px solid var(--border);
+      background:var(--card2);color:var(--text);
+      border-radius:14px;padding:12px 14px;font-size:14px;outline:none;
+      transition:all .2s ease;
+    }
+    input:focus,select:focus{box-shadow:var(--focus);border-color:rgba(34,197,94,.50)}
+    button{
+      border:none;cursor:pointer;font-weight:700;
+      display:inline-flex;align-items:center;gap:8px;
+    }
+    button:hover{background:rgba(34,197,94,.12)}
+    .btn-primary{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff}
+    .btn-primary:hover{filter:brightness(1.05)}
+    .btn-ghost{background:var(--card2)}
+    .grid-kpis{
+      display:grid;gap:14px;
+      grid-template-columns:repeat(4, minmax(0, 1fr));
+    }
+    .kpi{
+      background:var(--card2);
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:16px;
+      display:grid;gap:8px;
+    }
+    .kpi .value{font-size:22px;font-weight:800;letter-spacing:-.02em}
+    .kpi .label{font-size:12px;color:var(--muted);font-weight:700}
+    .kpi .sub{font-size:12px;color:var(--muted)}
+    .grid-charts{
+      display:grid;gap:18px;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      align-items:stretch;
+    }
+    .chart-wrap{
+      background:var(--card2);
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:14px;
+      min-height:320px;
+    }
+    canvas{width:100% !important;height:260px !important}
+    table{width:100%;border-collapse:separate;border-spacing:0 10px;margin-top:10px}
+    th{font-size:12px;color:var(--muted);text-align:left;padding:0 10px}
+    td{background:var(--card2);padding:14px 10px;vertical-align:middle}
+    tr td:first-child{border-top-left-radius:14px;border-bottom-left-radius:14px}
+    tr td:last-child{border-top-right-radius:14px;border-bottom-right-radius:14px}
+    .badge{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:6px 10px;border-radius:999px;font-size:12px;font-weight:800;
+      background:rgba(59,130,246,.14);color:var(--info);
+    }
+    .status{
+      margin-top:12px;padding:12px 14px;border-radius:14px;font-weight:700;
+      background:rgba(59,130,246,.12);color:var(--info);display:none;
+    }
+    @media (max-width: 980px){
+      .grid-kpis{grid-template-columns:repeat(2, minmax(0,1fr))}
+      .grid-charts{grid-template-columns:1fr}
+      canvas{height:240px !important}
+    }
+  </style>
+</head>
+
+<body>
+  <main class="container">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h1><i class="fa-solid fa-chart-line"></i> Staff Dashboard</h1>
+          <div class="muted" style="margin-top:6px;font-size:13px;">
+            Visual summary of net hours, late/early, and estimated payroll (net hours − breaks)
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <label class="muted" style="font-size:12px;font-weight:800;">From</label>
+          <input type="date" id="startDate">
+          <label class="muted" style="font-size:12px;font-weight:800;">To</label>
+          <input type="date" id="endDate">
+
+          <select id="locationFilter">
+            <option value="">All Locations</option>
+          </select>
+
+          <button class="btn-primary" id="refreshBtn"><i class="fa-solid fa-rotate"></i> Refresh</button>
+          <button class="btn-ghost" id="exportBtn"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
+                    <button class="btn-ghost" id="payslipBtn"><i class="fa-solid fa-file-pdf"></i> Payslips PDF</button>
+<button class="btn-ghost" id="backBtn"><i class="fa-solid fa-arrow-left"></i> Back</button>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="grid-kpis">
+          <div class="kpi">
+            <div class="label">Total Net Hours</div>
+            <div class="value" id="kpiHours">0.00</div>
+            <div class="sub" id="kpiHoursSub">—</div>
+          </div>
+          <div class="kpi">
+            <div class="label">Estimated Payroll</div>
+            <div class="value" id="kpiPay">RM0.00</div>
+            <div class="sub" id="kpiPaySub">Based on pay/hr</div>
+          </div>
+          <div class="kpi">
+            <div class="label">Shifts Count</div>
+            <div class="value" id="kpiShifts">0</div>
+            <div class="sub" id="kpiShiftsSub">Completed + active</div>
+          </div>
+          <div class="kpi">
+            <div class="label">Late / Early Alerts</div>
+            <div class="value" id="kpiAlerts">0</div>
+            <div class="sub" id="kpiAlertsSub">Late arrivals + early leaves</div>
+          </div>
+        </div>
+
+        <div class="status" id="statusBox"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2>Charts</h2>
+        <div class="muted" style="font-size:13px;">Change filters → Refresh</div>
+      </div>
+      <div class="card-body">
+        <div class="grid-charts">
+          <div class="chart-wrap">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <strong>Net Hours by Staff</strong>
+              <span class="badge"><i class="fa-solid fa-clock"></i> hours</span>
+            </div>
+            <canvas id="hoursByStaffChart"></canvas>
+          </div>
+
+          <div class="chart-wrap">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <strong>Estimated Pay by Staff</strong>
+              <span class="badge"><i class="fa-solid fa-dollar-sign"></i> pay</span>
+            </div>
+            <canvas id="payByStaffChart"></canvas>
+          </div>
+
+          <div class="chart-wrap">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <strong>Daily Total Hours Trend</strong>
+              <span class="badge"><i class="fa-solid fa-chart-area"></i> trend</span>
+            </div>
+            <canvas id="dailyHoursChart"></canvas>
+          </div>
+
+          <div class="chart-wrap">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <strong>Late / Early Count (Top Staff)</strong>
+              <span class="badge"><i class="fa-solid fa-triangle-exclamation"></i> alerts</span>
+            </div>
+            <canvas id="alertsChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2>Staff Summary Table</h2>
+        <div class="muted" style="font-size:13px;">Sorted by net hours (desc)</div>
+      </div>
+      <div class="card-body">
+        <table>
+          <thead>
+            <tr>
+              <th>Staff</th>
+              <th>Location</th>
+              <th>Shifts</th>
+              <th>Net Hours</th>
+              <th>Pay/hr</th>
+              <th>Est. Pay</th>
+              <th>Late</th>
+              <th>Early</th>
+            </tr>
+          </thead>
+          <tbody id="summaryTable">
+            <tr><td colspan="8">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAUO2ZoVhSFEtAyJAP5r5zxu3kGqoIAyQ4",
+      authDomain: "ordersystem-d710a.firebaseapp.com",
+      databaseURL: "https://ordersystem-d710a-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "ordersystem-d710a",
+      storageBucket: "ordersystem-d710a.appspot.com",
+      messagingSenderId: "741444965493",
+      appId: "1:741444965493:web:9991535a9105035c80943c"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    if (localStorage.getItem("userRole") !== "admin") {
+      alert("Admin access only");
+      location.href = "restaurant_dashboard.html";
+    }
+
+    const DEFAULT_SHIFT_START = "09:00";
+    const DEFAULT_SHIFT_END = "18:00";
+    const DEFAULT_GRACE_MIN = 15;
+
+    const startEl = document.getElementById("startDate");
+    const endEl = document.getElementById("endDate");
+    const locationFilterEl = document.getElementById("locationFilter");
+    const statusBox = document.getElementById("statusBox");
+    const summaryTable = document.getElementById("summaryTable");
+
+    let hoursByStaffChart, payByStaffChart, dailyHoursChart, alertsChart;
+// Latest computed dataset (so buttons can use it without re-fetching)
+let lastStaffList = [];
+let lastStaffDays = {};
+let lastPeriod = { startISO: "", endISO: "", location: "" };
+
+function fmtTimeShort(iso){
+  if (!iso) return "-";
+  try{
+    return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }catch{ return "-"; }
+}
+
+function generatePayslipsPDF(staffList, staffDays, period){
+  if (!staffList || !staffList.length){
+    showStatus("No staff data to generate payslips.", "warn");
+    return;
+  }
+  if (!window.jspdf || !window.jspdf.jsPDF){
+    showStatus("PDF library not loaded. Please check internet/CDN.", "warn");
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: "pt", format: "a4" });
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const M = 40; // margin
+
+  const generatedAt = new Date().toLocaleString();
+
+  // Avoid NBSP or other odd spacing in PDF output
+  const moneyPlain = (n) => String(fmtMoney(n)).replace(/\u00A0/g, " ");
+
+  function drawHeader(){
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("Restaurant Control Center", M, 42);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    doc.text("Staff Payslip Report (Estimated)", M, 60);
+
+    doc.setDrawColor(210);
+    doc.setLineWidth(1);
+    doc.line(M, 72, pageW - M, 72);
+  }
+
+  function drawFooter(pageIndex, pageTotal){
+    const y = pageH - 66;
+    doc.setDrawColor(220);
+    doc.setLineWidth(1);
+    doc.line(M, y, pageW - M, y);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.text("Manager Signature: ________________________________", M, y + 22);
+    doc.text("Staff Signature:   ________________________________", M, y + 40);
+    doc.text(`Page ${pageIndex} / ${pageTotal}`, pageW - M, y + 40, { align: "right" });
+  }
+
+  for (let i = 0; i < staffList.length; i++){
+    const s = staffList[i];
+    const rows = (staffDays && staffDays[s.username]) ? staffDays[s.username] : [];
+
+    if (i > 0) doc.addPage();
+
+    drawHeader();
+
+    // --- Employee details (table for clean alignment)
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text("Employee Details", M, 98);
+
+    const periodText = `${period.startISO} to ${period.endISO}` + (period.location ? ` (Location: ${period.location})` : "");
+
+    doc.autoTable({
+      startY: 108,
+      head: [["Field", "Value"]],
+      body: [
+        ["Staff Name", s.name || "-"],
+        ["Username", s.username ? ("@" + s.username) : "-"],
+        ["Location", s.location || "Not set"],
+        ["Pay Period", periodText],
+        ["Generated", generatedAt]
+      ],
+      theme: "grid",
+      styles: { fontSize: 10, cellPadding: 6 },
+      headStyles: { fillColor: [245,245,245], textColor: [0,0,0] },
+      columnStyles: {
+        0: { cellWidth: 140, fontStyle: "bold" },
+        1: { cellWidth: pageW - (M*2) - 140 }
+      },
+      margin: { left: M, right: M }
+    });
+
+    let y = (doc.lastAutoTable ? doc.lastAutoTable.finalY : 200) + 18;
+
+    // --- Summary
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text("Summary", M, y);
+
+    const summary = [
+      ["Shifts", String(s.shifts || 0)],
+      ["Total Net Hours", Number(s.hours || 0).toFixed(2)],
+      ["Pay Rate (per hour)", moneyPlain(s.payRate || 0)],
+      ["Estimated Pay", moneyPlain(s.pay || 0)],
+      ["Late Count", String(s.late || 0)],
+      ["Early Leave Count", String(s.early || 0)]
+    ];
+
+    doc.autoTable({
+      startY: y + 8,
+      head: [["Item", "Value"]],
+      body: summary,
+      theme: "striped",
+      styles: { fontSize: 10, cellPadding: 6 },
+      headStyles: { fillColor: [245,245,245], textColor: [0,0,0] },
+      columnStyles: {
+        0: { cellWidth: 220 },
+        1: { halign: "right" }
+      },
+      margin: { left: M, right: M }
+    });
+
+    y = (doc.lastAutoTable ? doc.lastAutoTable.finalY : y + 120) + 18;
+
+    // --- Notes / Explanation (ASCII-safe)
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text("Notes", M, y);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    const notes = [
+      "1) Net Hours = (Clock-out - Clock-in) - Break Time.",
+      "2) Estimated Pay = Net Hours x Pay Rate.",
+      "3) If a shift has no clock-out, net hours and pay may change until it is completed."
+    ];
+    doc.text(notes, M + 10, y + 16);
+
+    y = y + 16 + (notes.length * 12) + 16;
+
+    // --- Daily details
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text("Daily Details", M, y);
+
+    const detailBody = rows
+      .slice()
+      .sort((a,b) => String(a.date).localeCompare(String(b.date)))
+      .map(r => ([
+        r.date || "-",
+        r.inTime || "-",
+        r.outTime || "-",
+        Number(r.breakHrs || 0).toFixed(2),
+        Number(r.netHrs || 0).toFixed(2),
+        moneyPlain(r.dayPay || 0),
+        r.late ? "Yes" : "No",
+        r.early ? "Yes" : "No"
+      ]));
+
+    doc.autoTable({
+      startY: y + 8,
+      head: [["Date", "In", "Out", "Break (hrs)", "Net (hrs)", "Pay", "Late", "Early"]],
+      body: detailBody.length ? detailBody : [["-", "-", "-", "0.00", "0.00", moneyPlain(0), "-", "-"]],
+      theme: "grid",
+      styles: { fontSize: 9, cellPadding: 5 },
+      headStyles: { fillColor: [245,245,245], textColor: [0,0,0] },
+      columnStyles: {
+        3: { halign: "right" },
+        4: { halign: "right" },
+        5: { halign: "right" },
+        6: { halign: "center" },
+        7: { halign: "center" }
+      },
+      margin: { left: M, right: M }
+    });
+
+    drawFooter(i + 1, staffList.length);
+  }
+
+  const fname = `payslips_${period.startISO}_to_${period.endISO}.pdf`;
+  doc.save(fname);
+}
+
+
+    function showStatus(msg, type) {
+      statusBox.style.display = "block";
+      statusBox.textContent = msg;
+      statusBox.style.background = type === "warn" ? "rgba(245, 158, 11, .15)" : "rgba(59,130,246,.12)";
+      statusBox.style.color = type === "warn" ? "var(--warn)" : "var(--info)";
+    }
+    function hideStatus(){ statusBox.style.display = "none"; statusBox.textContent = ""; }
+
+    const moneyFmt = new Intl.NumberFormat("ms-MY", {
+  style: "currency",
+  currency: "MYR",
+  currencyDisplay: "symbol",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2
+});
+
+function fmtMoney(n){
+  const x = Number(n);
+  if (!Number.isFinite(x)) return moneyFmt.format(0);
+  return moneyFmt.format(x);
+}
+
+    function toISODate(d){
+      const x = new Date(d);
+      return x.toISOString().slice(0,10);
+    }
+
+    function dateRange(startISO, endISO){
+      const out = [];
+      let d = new Date(startISO + "T00:00:00.000Z");
+      const end = new Date(endISO + "T00:00:00.000Z");
+      while (d <= end) {
+        out.push(d.toISOString().slice(0,10));
+        d.setUTCDate(d.getUTCDate() + 1);
+      }
+      return out;
+    }
+
+    function minutesOf(iso){
+      try{
+        const d = new Date(iso);
+        return d.getHours()*60 + d.getMinutes();
+      }catch{return null;}
+    }
+
+    function hhmmToMinutes(hhmm){
+      if (!hhmm) return null;
+      const p = String(hhmm).split(":");
+      if (p.length < 2) return null;
+      const h = parseInt(p[0],10);
+      const m = parseInt(p[1],10);
+      if (isNaN(h) || isNaN(m)) return null;
+      return h*60 + m;
+    }
+
+    function userShiftStartMin(u){ return hhmmToMinutes((u && u.shiftStart) ? u.shiftStart : DEFAULT_SHIFT_START); }
+    function userShiftEndMin(u){ return hhmmToMinutes((u && u.shiftEnd) ? u.shiftEnd : DEFAULT_SHIFT_END); }
+    function userLateGrace(u){
+      const v = (u && u.lateGrace != null) ? parseInt(u.lateGrace,10) : DEFAULT_GRACE_MIN;
+      return isNaN(v) || v < 0 ? DEFAULT_GRACE_MIN : v;
+    }
+    function userEarlyGrace(u){
+      const v = (u && u.earlyGrace != null) ? parseInt(u.earlyGrace,10) : DEFAULT_GRACE_MIN;
+      return isNaN(v) || v < 0 ? DEFAULT_GRACE_MIN : v;
+    }
+
+    function lateFlag(u, rec){
+      if (!rec || !rec.in) return false;
+      if (typeof rec.late === "boolean") return rec.late;
+
+      const start = userShiftStartMin(u);
+      const grace = userLateGrace(u);
+      const inMin = minutesOf(rec.in);
+      if (start == null || inMin == null) return false;
+      return inMin > (start + grace);
+    }
+
+    function earlyFlag(u, rec){
+      if (!rec || !rec.out) return false;
+      if (typeof rec.early === "boolean") return rec.early;
+
+      const end = userShiftEndMin(u);
+      const grace = userEarlyGrace(u);
+      const outMin = minutesOf(rec.out);
+      if (end == null || outMin == null) return false;
+      return outMin < (end - grace);
+    }
+
+    function breakHoursFor(rec){
+      const breaks = rec && Array.isArray(rec.breaks) ? rec.breaks : [];
+      let hrs = 0;
+
+      for (let i=0;i<breaks.length;i++){
+        const b = breaks[i];
+        if (b && b.start && b.end){
+          hrs += (new Date(b.end) - new Date(b.start)) / 3600000;
+        }
+      }
+
+      if (rec && rec.currentBreakStart){
+        hrs += (new Date() - new Date(rec.currentBreakStart)) / 3600000;
+      }
+
+      return Math.max(0, hrs);
+    }
+
+    function netHoursFor(rec){
+      if (!rec || !rec.in) return 0;
+      const start = new Date(rec.in);
+      const end = rec.out ? new Date(rec.out) : new Date();
+      const gross = (end - start) / 3600000;
+      const brk = breakHoursFor(rec);
+      return Math.max(0, gross - brk);
+    }
+
+    function destroyChart(c){
+      if (c && typeof c.destroy === "function") c.destroy();
+    }
+
+    function upsertLocationOptions(users){
+      const seen = {};
+      for (const u in users){
+        const loc = users[u] && users[u].location ? String(users[u].location).trim() : "";
+        if (loc) seen[loc] = true;
+      }
+      const current = locationFilterEl.value || "";
+      const sorted = Object.keys(seen).sort((a,b)=>a.localeCompare(b));
+
+      locationFilterEl.innerHTML = `<option value="">All Locations</option>` +
+        sorted.map(l => `<option value="${l}">${l}</option>`).join("");
+
+      if (current && seen[current]) locationFilterEl.value = current;
+    }
+
+    async function loadAndRender(){
+      hideStatus();
+
+      const startISO = startEl.value;
+      const endISO = endEl.value;
+      if (!startISO || !endISO){
+        showStatus("Please select start & end date.", "warn");
+        return;
+      }
+      if (startISO > endISO){
+        showStatus("Start date must be before end date.", "warn");
+        return;
+      }
+
+      showStatus("Loading dashboard data…", "info");
+
+      const [usersSnap, attSnap] = await Promise.all([
+        get(ref(db, "users")),
+        get(ref(db, "attendance"))
+      ]);
+
+      const users = {};
+      if (usersSnap.exists()){
+        usersSnap.forEach(ch => { users[ch.key] = ch.val() || {}; });
+      }
+
+      const attendance = {};
+      if (attSnap.exists()){
+        attSnap.forEach(dateNode => {
+          attendance[dateNode.key] = dateNode.val() || {};
+        });
+      }
+
+      upsertLocationOptions(users);
+
+      const locFilter = locationFilterEl.value || "";
+      const days = dateRange(startISO, endISO);
+
+      const staffAgg = {};
+      const staffDays = {};
+      const dailyAgg = {};
+
+      for (let i=0;i<days.length;i++){
+        const day = days[i];
+        dailyAgg[day] = 0;
+
+        const dayRec = attendance[day] || {};
+        for (const username in dayRec){
+          const u = users[username] || {};
+          const loc = u.location ? String(u.location) : "Not set";
+          if (locFilter && loc !== locFilter) continue;
+
+          const rec = dayRec[username] || {};
+          const net = netHoursFor(rec);
+          if (net <= 0 && !rec.in) continue;
+
+          const payRate = (u && u.payRate != null) ? parseFloat(u.payRate) : 0;
+          const pr = (isNaN(payRate) || payRate < 0) ? 0 : payRate;
+
+          if (!staffAgg[username]){
+            staffAgg[username] = {
+              username: username,
+              name: (u.displayName || username),
+              location: loc,
+              payRate: pr,
+              shifts: 0,
+              hours: 0,
+              pay: 0,
+              late: 0,
+              early: 0
+            };
+          }
+
+          staffAgg[username].shifts += 1;
+          staffAgg[username].hours += net;
+staffAgg[username].pay += (net * pr);
+
+if (!staffDays[username]) staffDays[username] = [];
+const brk = breakHoursFor(rec);
+staffDays[username].push({
+  date: day,
+  inTime: rec && rec.in ? fmtTimeShort(rec.in) : "-",
+  outTime: rec && rec.out ? fmtTimeShort(rec.out) : (rec && rec.in ? "Working" : "-"),
+  breakHrs: Number(brk || 0),
+  netHrs: Number(net || 0),
+  dayPay: Number((net * pr) || 0),
+  late: lateFlag(u, rec),
+  early: earlyFlag(u, rec)
+});
+
+if (lateFlag(u, rec)) staffAgg[username].late += 1;
+if (earlyFlag(u, rec)) staffAgg[username].early += 1;
+
+dailyAgg[day] += net;
+        }
+      }
+
+      const staffList = Object.values(staffAgg).sort((a,b)=>b.hours - a.hours);
+
+      let totalHours = 0, totalPay = 0, totalShifts = 0, totalAlerts = 0;
+      for (let i=0;i<staffList.length;i++){
+        totalHours += staffList[i].hours;
+        totalPay += staffList[i].pay;
+        totalShifts += staffList[i].shifts;
+        totalAlerts += (staffList[i].late + staffList[i].early);
+      }
+
+      document.getElementById("kpiHours").textContent = totalHours.toFixed(2);
+      document.getElementById("kpiPay").textContent = fmtMoney(totalPay);
+      document.getElementById("kpiShifts").textContent = String(totalShifts);
+      document.getElementById("kpiAlerts").textContent = String(totalAlerts);
+
+      document.getElementById("kpiHoursSub").textContent = `${startISO} → ${endISO}`;
+      document.getElementById("kpiPaySub").textContent = locFilter ? `Location: ${locFilter}` : "All locations";
+      document.getElementById("kpiShiftsSub").textContent = `Staff count: ${staffList.length}`;
+      document.getElementById("kpiAlertsSub").textContent = `Late + Early`;
+
+      if (!staffList.length){
+        summaryTable.innerHTML = `<tr><td colspan="8">No records found for selected filters.</td></tr>`;
+      } else {
+        const rows = [];
+        for (let i=0;i<staffList.length;i++){
+          const s = staffList[i];
+          rows.push(`
+            <tr>
+              <td><strong>${s.name}</strong><div class="muted" style="font-size:12px;margin-top:4px;">@${s.username}</div></td>
+              <td>${s.location}</td>
+              <td>${s.shifts}</td>
+              <td><strong>${s.hours.toFixed(2)}</strong></td>
+              <td>${fmtMoney(s.payRate)}</td>
+              <td><strong>${fmtMoney(s.pay)}</strong></td>
+              <td>${s.late}</td>
+              <td>${s.early}</td>
+            </tr>
+          `);
+        }
+        summaryTable.innerHTML = rows.join("");
+      }
+
+      const staffNames = staffList.map(x => x.name);
+      const staffHours = staffList.map(x => Number(x.hours.toFixed(2)));
+      const staffPay = staffList.map(x => Number(x.pay.toFixed(2)));
+
+      const dayLabels = days;
+      const dayHours = days.map(d => Number((dailyAgg[d] || 0).toFixed(2)));
+
+      const topAlerts = staffList
+        .map(x => ({ name: x.name, alerts: x.late + x.early }))
+        .sort((a,b)=>b.alerts - a.alerts)
+        .slice(0,10);
+
+      destroyChart(hoursByStaffChart);
+      destroyChart(payByStaffChart);
+      destroyChart(dailyHoursChart);
+      destroyChart(alertsChart);
+
+      hoursByStaffChart = new Chart(document.getElementById("hoursByStaffChart"), {
+        type: "bar",
+        data: { labels: staffNames, datasets: [{ label: "Net Hours", data: staffHours }] },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+
+      payByStaffChart = new Chart(document.getElementById("payByStaffChart"), {
+        type: "bar",
+        data: { labels: staffNames, datasets: [{ label: "Estimated Pay", data: staffPay }] },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+
+      dailyHoursChart = new Chart(document.getElementById("dailyHoursChart"), {
+        type: "line",
+        data: { labels: dayLabels, datasets: [{ label: "Total Net Hours", data: dayHours, tension: 0.25 }] },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+
+      alertsChart = new Chart(document.getElementById("alertsChart"), {
+        type: "bar",
+        data: { labels: topAlerts.map(x=>x.name), datasets: [{ label: "Late + Early", data: topAlerts.map(x=>x.alerts) }] },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+
+// Save latest dataset for payslip generation
+lastStaffList = staffList;
+lastStaffDays = staffDays;
+lastPeriod = { startISO: startISO, endISO: endISO, location: locFilter };
+
+const payslipBtn = document.getElementById("payslipBtn");
+if (payslipBtn){
+  payslipBtn.onclick = function(){
+    generatePayslipsPDF(lastStaffList, lastStaffDays, lastPeriod);
+  };
+}
+
+showStatus("Dashboard updated ✅", "info");
+      setTimeout(hideStatus, 1200);
+
+      document.getElementById("exportBtn").onclick = function(){
+        let csv = "Username,Name,Location,Shifts,NetHours,PayRate,EstimatedPay,Late,Early\n";
+        for (let i=0;i<staffList.length;i++){
+          const s = staffList[i];
+          csv += `"${s.username}","${s.name}","${s.location}","${s.shifts}","${s.hours.toFixed(2)}","${s.payRate.toFixed(2)}","${s.pay.toFixed(2)}","${s.late}","${s.early}"\n`;
+        }
+        const blob = new Blob([csv], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `staff_dashboard_${startISO}_to_${endISO}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      };
+    }
+
+    (function init(){
+      const today = new Date();
+      const end = toISODate(today);
+      const start = toISODate(new Date(today.getTime() - 6 * 86400000));
+      startEl.value = start;
+      endEl.value = end;
+
+      document.getElementById("refreshBtn").addEventListener("click", loadAndRender);
+      locationFilterEl.addEventListener("change", loadAndRender);
+document.getElementById("backBtn").addEventListener("click", () => { location.href = "staff_management.html"; });
+
+const payslipBtn = document.getElementById("payslipBtn");
+if (payslipBtn){
+  payslipBtn.addEventListener("click", () => {
+    generatePayslipsPDF(lastStaffList, lastStaffDays, lastPeriod);
+  });
+}
+
+loadAndRender().catch(err=>{
+        console.error(err);
+        showStatus("Error loading dashboard: " + err.message, "warn");
+      });
+    })();
+  </script>
+</body>
+</html>

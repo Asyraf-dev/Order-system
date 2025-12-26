@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login — Restaurant Control Center</title>
+
+  <!-- Font Awesome (icons) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <style>
+    :root{
+      --bg0:#0b1220;
+      --bg1:#0f1a33;
+      --card:rgba(255,255,255,.90);
+      --card2:rgba(255,255,255,.70);
+      --text:#0f172a;
+      --muted:#475569;
+      --border:rgba(15, 23, 42, .10);
+      --shadow: 0 18px 60px rgba(2, 6, 23, .18);
+      --brand:#16a34a;
+      --brand2:#22c55e;
+      --danger:#ef4444;
+      --warn:#f59e0b;
+      --focus: 0 0 0 4px rgba(34,197,94,.20);
+    }
+
+    html[data-theme="dark"]{
+      --card:rgba(15, 23, 42,.78);
+      --card2:rgba(15, 23, 42,.55);
+      --text:#e5e7eb;
+      --muted:#a1a1aa;
+      --border:rgba(255,255,255,.12);
+      --shadow: 0 22px 70px rgba(0, 0, 0, .45);
+      --focus: 0 0 0 4px rgba(34,197,94,.22);
+    }
+
+    *{ box-sizing:border-box; margin:0; padding:0; }
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      min-height:100vh;
+      background: radial-gradient(1200px 900px at 20% 15%, rgba(34,197,94,.30), transparent 55%),
+                  radial-gradient(1200px 900px at 85% 25%, rgba(59,130,246,.24), transparent 52%),
+                  linear-gradient(180deg, var(--bg0), var(--bg1));
+      display:grid;
+      place-items:center;
+      padding:20px;
+    }
+
+    .card{
+      width:100%;
+      max-width:420px;
+      background:var(--card);
+      backdrop-filter: blur(10px);
+      border:1px solid var(--border);
+      border-radius:18px;
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      padding:36px 32px;
+    }
+
+    .logo{
+      width:54px;
+      height:54px;
+      margin:0 auto 20px;
+      border-radius:14px;
+      background: linear-gradient(135deg, var(--brand), var(--brand2));
+      display:grid;
+      place-items:center;
+      color:white;
+      font-size:24px;
+      box-shadow: 0 14px 40px rgba(34,197,94,.25);
+    }
+
+    h1{
+      text-align:center;
+      font-size:26px;
+      letter-spacing:-.02em;
+      margin-bottom:8px;
+    }
+
+    .subtitle{
+      text-align:center;
+      font-size:14px;
+      color:var(--muted);
+      margin-bottom:28px;
+    }
+
+    .field{
+      display:grid;
+      gap:8px;
+      margin-bottom:16px;
+    }
+
+    label{
+      font-weight:650;
+      font-size:13px;
+    }
+
+    input{
+      width:100%;
+      border:1px solid var(--border);
+      border-radius: 12px;
+      padding: 13px 14px;
+      background: var(--card2);
+      color:var(--text);
+      outline:none;
+      transition: box-shadow .2s ease, border-color .2s ease;
+      font-size:15px;
+    }
+
+    input:focus{
+      box-shadow: var(--focus);
+      border-color: rgba(34,197,94,.45);
+    }
+
+    .row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+
+    button{
+      border:1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      background: var(--card2);
+      color:var(--text);
+      cursor:pointer;
+      transition: transform .05s ease, background .2s ease, border-color .2s ease;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      justify-content:center;
+      user-select:none;
+      font:inherit;
+      font-weight:700;
+    }
+
+    button:hover{ background:rgba(34,197,94,.10); border-color:rgba(34,197,94,.30); }
+    button:active{ transform: translateY(1px); }
+    button:focus{ outline:none; box-shadow: var(--focus); }
+
+    .btn-primary{
+      width:100%;
+      background: linear-gradient(135deg, var(--brand), var(--brand2));
+      color:white;
+      border-color: rgba(255,255,255,.16);
+      font-size:16px;
+      margin-top:10px;
+    }
+
+    .btn-primary:hover{ filter: brightness(1.03); }
+
+    .btn-primary.loading{
+      pointer-events:none;
+      opacity:.9;
+    }
+
+    .spinner{
+      width:20px;
+      height:20px;
+      border:3px solid rgba(255,255,255,.3);
+      border-top-color:white;
+      border-radius:50%;
+      animation:spin 1s linear infinite;
+    }
+
+    @keyframes spin{
+      to{transform:rotate(360deg)}
+    }
+
+    .tabs{
+      display:flex;
+      gap:10px;
+      margin-bottom:20px;
+    }
+
+    .tab{
+      flex:1;
+      padding:12px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:transparent;
+      cursor:pointer;
+      font-weight:750;
+      color:var(--muted);
+      text-align:center;
+    }
+
+    .tab.active{
+      background:rgba(34,197,94,.12);
+      border-color:rgba(34,197,94,.35);
+      color:var(--text);
+    }
+
+    .note{
+      margin-top:16px;
+      font-size:13px;
+      color:var(--muted);
+      text-align:center;
+    }
+
+    .error{
+      margin-top:16px;
+      font-size:14px;
+      color:var(--danger);
+      text-align:center;
+      font-weight:600;
+      padding:10px;
+      border-radius:12px;
+      background:rgba(239,68,68,.10);
+    }
+
+    .hidden{ display:none !important; }
+  </style>
+</head>
+
+<body>
+
+  <div class="card">
+    <div class="logo"><i class="fa-solid fa-utensils"></i></div>
+
+    <h1>Restaurant Control Center</h1>
+    <div class="subtitle">Secure login with role-based access</div>
+
+    <div class="tabs">
+      <button class="tab active" id="tabLogin">Login</button>
+      <button class="tab" id="tabRegister">Register</button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <form id="loginForm">
+      <div class="field">
+        <label for="loginUsername">Username</label>
+        <input id="loginUsername" placeholder="Enter username" autocomplete="username" />
+      </div>
+
+      <div class="field">
+        <label for="loginPassword">Password</label>
+        <div class="row">
+          <input id="loginPassword" type="password" placeholder="Enter password" autocomplete="current-password" />
+          <button type="button" class="btn" id="btnShowLoginPw"><i class="fa-solid fa-eye"></i></button>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" id="btnLogin">
+        <span>Login</span>
+      </button>
+    </form>
+
+    <!-- REGISTER FORM -->
+    <form id="registerForm" class="hidden">
+      <div class="field">
+        <label for="regUsername">Username</label>
+        <input id="regUsername" placeholder="Choose username (letters, numbers, _)" autocomplete="username" />
+      </div>
+
+      <div class="field">
+        <label for="regDisplayName">Display Name (optional)</label>
+        <input id="regDisplayName" placeholder="Your name" autocomplete="name" />
+      </div>
+
+      <div class="field">
+        <label for="regPassword">Password</label>
+        <div class="row">
+          <input id="regPassword" type="password" placeholder="Create password" autocomplete="new-password" />
+          <button type="button" class="btn" id="btnShowRegPw"><i class="fa-solid fa-eye"></i></button>
+        </div>
+      </div>
+
+      <div class="note">
+        New accounts are created as <strong>Viewer</strong> role only.<br>
+        Admin can upgrade role later.
+      </div>
+
+      <button type="submit" class="btn btn-primary" id="btnRegister">
+        <span>Create Account</span>
+      </button>
+    </form>
+
+    <div class="error hidden" id="errorMsg"></div>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <script type="module">
+    firebase.initializeApp({
+      apiKey: "AIzaSyAUO2ZoVhSFEtAyJAP5r5zxu3kGqoIAyQ4",
+      databaseURL: "https://ordersystem-d710a-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "ordersystem-d710a"
+    });
+    const db = firebase.database();
+
+    // DOM
+    const tabLogin = document.getElementById("tabLogin");
+    const tabRegister = document.getElementById("tabRegister");
+    const loginForm = document.getElementById("loginForm");
+    const registerForm = document.getElementById("registerForm");
+    const errorMsg = document.getElementById("errorMsg");
+
+    // Show tab
+    function showTab(isLogin){
+      tabLogin.classList.toggle("active", isLogin);
+      tabRegister.classList.toggle("active", !isLogin);
+      loginForm.classList.toggle("hidden", !isLogin);
+      registerForm.classList.toggle("hidden", isLogin);
+      errorMsg.classList.add("hidden");
+      errorMsg.textContent = "";
+    }
+
+    tabLogin.onclick = () => showTab(true);
+    tabRegister.onclick = () => showTab(false);
+
+    // Toggle password visibility
+    document.getElementById("btnShowLoginPw").onclick = () => {
+      const input = document.getElementById("loginPassword");
+      input.type = input.type === "password" ? "text" : "password";
+    };
+    document.getElementById("btnShowRegPw").onclick = () => {
+      const input = document.getElementById("regPassword");
+      input.type = input.type === "password" ? "text" : "password";
+    };
+
+    // SHA-256 hash
+    async function sha256(text){
+      const data = new TextEncoder().encode(text);
+      const hash = await crypto.subtle.digest("SHA-256", data);
+      return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    // Loading state
+    function setLoading(btn, state){
+      if(state){
+        btn.classList.add("loading");
+        btn.innerHTML = `<div class="spinner"></div><span>Processing…</span>`;
+        btn.disabled = true;
+      } else {
+        btn.classList.remove("loading");
+        btn.disabled = false;
+        btn.querySelector("span").textContent = btn.id === "btnLogin" ? "Login" : "Create Account";
+      }
+    }
+
+    // Login
+    loginForm.onsubmit = async (e) => {
+      e.preventDefault();
+      errorMsg.classList.add("hidden");
+      const username = document.getElementById("loginUsername").value.trim();
+      const password = document.getElementById("loginPassword").value;
+
+      if(!username || !password){
+        errorMsg.textContent = "Please fill all fields";
+        errorMsg.classList.remove("hidden");
+        return;
+      }
+
+      setLoading(document.getElementById("btnLogin"), true);
+
+      const hash = await sha256(password);
+      const snap = await db.ref("users/" + username).once("value");
+
+      if(!snap.exists()){
+        errorMsg.textContent = "User not found";
+        errorMsg.classList.remove("hidden");
+        setLoading(document.getElementById("btnLogin"), false);
+      } else {
+        const data = snap.val();
+        if(data.password !== hash){
+          errorMsg.textContent = "Wrong password";
+          errorMsg.classList.remove("hidden");
+          setLoading(document.getElementById("btnLogin"), false);
+        } else {
+          localStorage.setItem("currentUser", username);
+          localStorage.setItem("userRole", data.role || "viewer");
+          localStorage.setItem("userDisplayName", data.displayName || username);
+          location.href = "restaurant_dashboard.html";
+        }
+      }
+    };
+
+    // Register
+    registerForm.onsubmit = async (e) => {
+      e.preventDefault();
+      errorMsg.classList.add("hidden");
+      const username = document.getElementById("regUsername").value.trim();
+      const displayName = document.getElementById("regDisplayName").value.trim();
+      const password = document.getElementById("regPassword").value;
+
+      if(!username || !password){
+        errorMsg.textContent = "Username and password required";
+        errorMsg.classList.remove("hidden");
+        return;
+      }
+
+      if(!/^[A-Za-z0-9_]{3,20}$/.test(username)){
+        errorMsg.textContent = "Username: 3-20 chars, letters/numbers/_ only";
+        errorMsg.classList.remove("hidden");
+        return;
+      }
+
+      if(password.length < 6){
+        errorMsg.textContent = "Password must be at least 6 characters";
+        errorMsg.classList.remove("hidden");
+        return;
+      }
+
+      setLoading(document.getElementById("btnRegister"), true);
+
+      const snap = await db.ref("users/" + username).once("value");
+
+      if(snap.exists()){
+        errorMsg.textContent = "Username already exists";
+        errorMsg.classList.remove("hidden");
+        setLoading(document.getElementById("btnRegister"), false);
+      } else {
+        const hash = await sha256(password);
+        await db.ref("users/" + username).set({
+          password: hash,
+          role: "viewer",
+          displayName: displayName || username
+        });
+        alert("Account created successfully! You can now login.");
+        showTab(true);
+        setLoading(document.getElementById("btnRegister"), false);
+      }
+    };
+  </script>
+</body>
+</html>

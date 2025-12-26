@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Restaurant Control Center</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    /* (Keep all your existing beautiful styles here - unchanged for brevity) */
+    :root {
+      --bg0: #0a0f1e;
+      --bg1: #0d1426;
+      --card: rgba(20, 25, 40, 0.85);
+      --card-hover: rgba(25, 30, 50, 0.92);
+      --text: #f1f5f9;
+      --text-secondary: #cbd5e1;
+      --muted: #94a3b8;
+      --border: rgba(255, 255, 255, 0.12);
+      --border-strong: rgba(255, 255, 255, 0.22);
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+      --shadow-sm: 0 8px 32px rgba(0, 0, 0, 0.3);
+      --brand: #16a34a;
+      --brand-light: #22c55e;
+      --brand-glow: rgba(34, 197, 94, 0.25);
+      --danger: #ef4444;
+      --warn: #f59e0b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      color: var(--text);
+      background: radial-gradient(1400px 1000px at 20% 10%, rgba(34,197,94,0.25), transparent 60%),
+                  radial-gradient(1400px 1000px at 80% 30%, rgba(59,130,246,0.15), transparent 55%),
+                  linear-gradient(180deg, var(--bg0), var(--bg1));
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .app { display: grid; grid-template-columns: 290px 1fr; height: 100vh; }
+    .sidebar { background: var(--card); backdrop-filter: blur(20px); border-right: 1px solid var(--border); box-shadow: var(--shadow); padding: 28px 20px; display: grid; grid-template-rows: auto 1fr auto; gap: 32px; transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 100; }
+    .sidebar-header { display: flex; align-items: center; gap: 16px; }
+    .logo { width: 56px; height: 56px; border-radius: 18px; background: linear-gradient(135deg, var(--brand), var(--brand-light)); color: white; font-weight: 900; font-size: 26px; display: grid; place-items: center; box-shadow: 0 12px 40px rgba(34,197,94,0.45); }
+    .brand-title { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em; }
+    .brand-subtitle { font-size: 0.9rem; color: var(--text-secondary); margin-top: 2px; }
+    .nav { display: grid; gap: 8px; }
+    .nav button { width: 100%; padding: 16px 18px; border-radius: 16px; background: transparent; border: 1px solid transparent; color: var(--text-secondary); font-weight: 600; font-size: 15.5px; cursor: pointer; display: flex; align-items: center; gap: 16px; transition: all 0.3s ease; }
+    .nav button i { font-size: 18px; width: 24px; text-align: center; }
+    .nav button:hover { background: var(--brand-glow); border-color: rgba(34,197,94,0.4); color: var(--text); transform: translateX(6px); }
+    .nav button.active { background: linear-gradient(90deg, var(--brand-glow), transparent); border-color: rgba(34,197,94,0.55); color: var(--text); font-weight: 700; box-shadow: 0 8px 25px rgba(34,197,94,0.2); }
+    .nav button.danger { color: var(--danger); }
+    .nav button.danger:hover { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.4); transform: translateX(6px); }
+    .user-pill { padding: 12px 18px; background: var(--brand-glow); border: 1px solid rgba(34,197,94,0.4); border-radius: 16px; font-size: 14.5px; display: flex; align-items: center; gap: 10px; }
+    .main { display: grid; grid-template-rows: auto 1fr; overflow: hidden; }
+    .topbar { background: var(--card); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); padding: 18px 28px; display: flex; align-items: center; gap: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+    .hamburger { display: none; background: none; border: none; color: var(--text); font-size: 26px; cursor: pointer; padding: 8px; border-radius: 12px; transition: background 0.2s; }
+    .hamburger:hover { background: var(--brand-glow); }
+    .page-title { font-size: 24px; font-weight: 800; letter-spacing: -0.03em; }
+    .content { padding: 28px; overflow-y: auto; background: rgba(0,0,0,0.1); }
+    .iframe-wrapper { width: 100%; height: 100%; min-height: 80vh; border-radius: 24px; overflow: hidden; box-shadow: var(--shadow); background: #ffffff; border: 1px solid var(--border); }
+    iframe { width: 100%; height: 100%; border: none; }
+    .home-message { height: 100%; display: grid; place-items: center; text-align: center; color: var(--text-secondary); }
+    .home-message h2 { font-size: 28px; margin-bottom: 16px; color: var(--text); }
+    .home-message p { font-size: 17px; max-width: 500px; line-height: 1.6; }
+    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); display: none; z-index: 50; }
+    .overlay.show { display: block; }
+
+    @media (max-width: 980px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 85vw; max-width: 340px; transform: translateX(-100%); box-shadow: var(--shadow); }
+      .sidebar.open { transform: translateX(0); }
+      .hamburger { display: block; }
+      .content { padding: 20px; }
+      .topbar { padding: 16px 20px; }
+    }
+    @media (max-width: 480px) {
+      .page-title { font-size: 21px; }
+      .content { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">🍽</div>
+      <div>
+        <div class="brand-title">Restaurant</div>
+        <div class="brand-subtitle">Control Center</div>
+      </div>
+    </div>
+
+    <nav class="nav" id="navMenu">
+      <!-- Menu items will be generated by JavaScript based on role permissions -->
+    </nav>
+
+    <div class="user-pill">
+      <i class="fa-solid fa-circle" style="color:var(--brand-light);"></i>
+      <span id="userStatus">Loading...</span>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <button class="hamburger" id="hamburger"><i class="fa-solid fa-bars"></i></button>
+      <div class="page-title" id="pageTitle">Home</div>
+    </header>
+
+    <section class="content" id="contentArea">
+      <div class="home-message">
+        <div>
+          <h2>Welcome back! 👋</h2>
+          <p>Select a module from the navigation menu to manage orders, inventory, analytics, and more efficiently.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="overlay" id="overlay"></div>
+
+<script>
+  const currentUser = localStorage.getItem("currentUser");
+  const userRole = localStorage.getItem("userRole");
+
+  if (!currentUser || !userRole) {
+    location.href = "auth.html";
+  }
+
+  const capitalizedRole = userRole.charAt(0).toUpperCase() + userRole.slice(1);
+  document.getElementById("userStatus").textContent = `${currentUser} • ${capitalizedRole}`;
+
+  // Default permissions (can be customized by admin)
+  defaultPermissions = {
+  admin:   ["home","orders","menu","materials","display","analysis","queue","clockin","staffdash","staff"],
+  cashier: ["home","orders","queue","clockin"],
+  kitchen: ["home","display","clockin"],
+  viewer:  ["home","clockin"]
+};
+
+  let rolePermissions = JSON.parse(localStorage.getItem("rolePermissions") || JSON.stringify(defaultPermissions));
+
+  // Ensure current role has permissions
+  if (!rolePermissions[userRole]) rolePermissions[userRole] = defaultPermissions[userRole] || ["home"];
+
+const pages = {
+  home: `<div class="home-message"><div><h2>Welcome back! 👋</h2><p>Select a module from the navigation menu to manage orders, inventory, analytics, and more efficiently.</p></div></div>`,
+  orders: '<div class="iframe-wrapper"><iframe src="index.html"></iframe></div>',
+  menu: '<div class="iframe-wrapper"><iframe src="menu.html"></iframe></div>',
+  materials: '<div class="iframe-wrapper"><iframe src="materials.html"></iframe></div>',
+  display: '<div class="iframe-wrapper"><iframe src="display.html"></iframe></div>',
+  analysis: '<div class="iframe-wrapper"><iframe src="analysis.html"></iframe></div>',
+  queue: '<div class="iframe-wrapper"><iframe src="customer.html"></iframe></div>',
+  clockin: '<div class="iframe-wrapper"><iframe src="staff_clockin.html"></iframe></div>',
+  staffdash: '<div class="iframe-wrapper"><iframe src="staff_dashboard.html"></iframe></div>',
+  staff: '<div class="iframe-wrapper"><iframe src="staff_management.html"></iframe></div>'
+};
+
+const pageLabels = {
+  home: "Home",
+  orders: "Customer Orders",
+  menu: "Menu Stock",
+  materials: "Materials",
+  display: "Order Display",
+  analysis: "Analytics",
+  queue: "Customer Queue",
+  clockin: "Staff Clock In",
+  staffdash: "Staff Dashboard & Payslips",
+  staff: "Staff Management"
+};
+
+const pageIcons = {
+  home: "fa-house",
+  orders: "fa-cart-shopping",
+  menu: "fa-burger",
+  materials: "fa-boxes-stacked",
+  display: "fa-clipboard-list",
+  analysis: "fa-chart-pie",
+  queue: "fa-users",
+  clockin: "fa-clock",
+  staffdash: "fa-file-invoice-dollar",
+  staff: "fa-users-gear"
+};
+
+  // Generate menu dynamically
+  const navMenu = document.getElementById("navMenu");
+  navMenu.innerHTML = "";
+
+  rolePermissions[userRole].forEach(page => {
+    const btn = document.createElement("button");
+    btn.dataset.page = page;
+    btn.innerHTML = `<i class="fa-solid ${pageIcons[page]}"></i> ${pageLabels[page] || page}`;
+    if (page === "home") btn.classList.add("active");
+    navMenu.appendChild(btn);
+  });
+
+  // Logout button always visible
+  const logoutBtn = document.createElement("button");
+  logoutBtn.className = "danger";
+  logoutBtn.innerHTML = `<i class="fa-solid fa-right-from-bracket"></i> Logout`;
+  logoutBtn.onclick = logout;
+  navMenu.appendChild(logoutBtn);
+
+  // Navigation logic
+  const pageTitle = document.getElementById("pageTitle");
+  const contentArea = document.getElementById("contentArea");
+
+  document.querySelectorAll('#navMenu button[data-page]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#navMenu button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const page = btn.dataset.page;
+      pageTitle.textContent = btn.textContent.trim();
+      contentArea.innerHTML = pages[page] || pages.home;
+
+      if (window.innerWidth <= 980) {
+        document.getElementById('sidebar').classList.remove('open');
+        document.getElementById('overlay').classList.remove('show');
+      }
+    });
+  });
+
+  // Mobile sidebar
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('overlay');
+  const hamburger = document.getElementById('hamburger');
+
+  hamburger.addEventListener('click', () => {
+    sidebar.classList.add('open');
+    overlay.classList.add('show');
+  });
+
+  overlay.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('show');
+  });
+
+  function logout() {
+    if (confirm("Are you sure you want to log out?")) {
+      localStorage.clear();
+      location.href = "auth.html";
+    }
+  }
+</script>
+</body>
+</html>

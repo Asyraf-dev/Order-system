@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Staff Management — Restaurant Control Center</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#16a34a">
+
+  <style>
+    :root {
+      --bg0: #0b1220;
+      --bg1: #0f1a33;
+      --card: rgba(255, 255, 255, .90);
+      --card2: rgba(255, 255, 255, .70);
+      --text: #0f172a;
+      --muted: #475569;
+      --border: rgba(15, 23, 42, .10);
+      --shadow: 0 18px 60px rgba(2, 6, 23, .18);
+      --brand: #16a34a;
+      --brand2: #22c55e;
+      --danger: #ef4444;
+      --warn: #f59e0b;
+      --info: #3b82f6;
+      --focus: 0 0 0 4px rgba(34, 197, 94, .20);
+
+      --late: #dc2626;
+      --early: #d97706;
+      --ok: #16a34a;
+      --neutral: #64748b;
+    }
+
+    html[data-theme="dark"] {
+      --card: rgba(15, 23, 42, .78);
+      --card2: rgba(15, 23, 42, .55);
+      --text: #e5e7eb;
+      --muted: #a1a1aa;
+      --border: rgba(255, 255, 255, .12);
+      --shadow: 0 22px 70px rgba(0, 0, 0, .45);
+      --focus: 0 0 0 4px rgba(34, 197, 94, .22);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+      background: radial-gradient(1200px 900px at 20% 15%, rgba(34, 197, 94, .30), transparent 55%),
+                  radial-gradient(1200px 900px at 85% 25%, rgba(59, 130, 246, .24), transparent 52%),
+                  linear-gradient(180deg, var(--bg0), var(--bg1));
+    }
+
+    .container {
+      width: min(1200px, 100%);
+      margin: 80px auto 120px;
+      padding: 0 20px;
+      display: grid;
+      gap: 28px;
+    }
+
+    .card {
+      background: var(--card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(34, 197, 94, .12), transparent);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .card-body { padding: 24px; }
+
+    h2 { margin: 0; font-size: 19px; font-weight: 700; letter-spacing: -0.02em; }
+
+    .field { display: grid; gap: 8px; margin-top: 16px; }
+    label { font-weight: 650; font-size: 13.5px; color: var(--muted); }
+
+    input, select {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 13px 16px;
+      background: var(--card2);
+      color: var(--text);
+      font-size: 15px;
+      outline: none;
+      transition: all .2s ease;
+    }
+
+    input:focus, select:focus { box-shadow: var(--focus); border-color: rgba(34, 197, 94, .50); }
+    input:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    button {
+      border: none;
+      border-radius: 14px;
+      padding: 12px 20px;
+      background: var(--card2);
+      color: var(--text);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all .2s ease;
+      white-space: nowrap;
+    }
+
+    button:hover { background: rgba(34, 197, 94, .12); }
+    button:active { transform: translateY(1px); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--brand), var(--brand2));
+      color: white;
+      min-width: 140px;
+      justify-content: center;
+    }
+    .btn-primary:hover { filter: brightness(1.05); }
+
+    .btn-edit { background: rgba(59, 130, 246, .12); color: #3b82f6; }
+    .btn-delete { background: rgba(239, 68, 68, .12); color: var(--danger); }
+    .btn-delete:hover { background: rgba(239, 68, 68, .20); }
+
+    .btn-warn { background: rgba(245, 158, 11, .14); color: var(--warn); }
+    .btn-warn:hover { background: rgba(245, 158, 11, .22); }
+    .btn-danger { background: rgba(239, 68, 68, .14); color: var(--danger); }
+    .btn-danger:hover { background: rgba(239, 68, 68, .22); }
+
+    .btn-secondary { background: rgba(59, 130, 246, .12); color: var(--info); }
+    .btn-secondary:hover { background: rgba(59, 130, 246, .20); }
+
+    .toolbar {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .search-box {
+      position: relative;
+      max-width: 320px;
+      flex: 1;
+      min-width: 220px;
+    }
+
+    .search-box input {
+      padding-left: 44px;
+      font-size: 15px;
+    }
+
+    .search-box i {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .avatar-preview {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--border);
+      margin-top: 8px;
+      background: #eee;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 10px;
+      margin-top: 8px;
+    }
+
+    th {
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 13px;
+      padding-bottom: 8px;
+      text-align: left;
+    }
+
+    td {
+      padding: 16px 12px;
+      background: var(--card2);
+      vertical-align: middle;
+    }
+
+    tr td:first-child { border-top-left-radius: 14px; border-bottom-left-radius: 14px; }
+    tr td:last-child { border-top-right-radius: 14px; border-bottom-right-radius: 14px; }
+    tr:hover td { background: rgba(34, 197, 94, .08); }
+
+    .badge {
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 750;
+      text-transform: capitalize;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-right: 6px;
+      margin-top: 6px;
+    }
+
+    .role-admin { background: rgba(34, 197, 94, .9); color: white; }
+    .role-cashier { background: rgba(59, 130, 246, .9); color: white; }
+    .role-kitchen { background: rgba(245, 158, 11, .9); color: white; }
+    .role-viewer { background: rgba(148, 163, 184, .9); color: white; }
+
+    .b-active { background: rgba(22, 163, 74, .14); color: var(--ok); }
+    .b-break { background: rgba(59, 130, 246, .14); color: var(--info); }
+    .b-complete { background: rgba(100, 116, 139, .14); color: var(--neutral); }
+    .b-none { background: rgba(100, 116, 139, .10); color: var(--muted); }
+
+    .b-late { background: rgba(220, 38, 38, .14); color: var(--late); }
+    .b-early { background: rgba(217, 119, 6, .14); color: var(--early); }
+    .b-ontime { background: rgba(22, 163, 74, .12); color: var(--ok); }
+
+    .status {
+      margin-top: 16px;
+      padding: 14px 18px;
+      border-radius: 12px;
+      font-weight: 650;
+      text-align: center;
+      font-size: 15px;
+      min-height: 46px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .status.success { background: rgba(34, 197, 94, .15); color: var(--brand); }
+    .status.warn { background: rgba(245, 158, 11, .15); color: var(--warn); }
+    .status.info { background: rgba(59, 130, 246, .15); color: var(--info); }
+
+    .fab {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--brand), var(--brand2));
+      color: white;
+      border: none;
+      box-shadow: 0 10px 30px rgba(34, 197, 94, .45);
+      font-size: 30px;
+      cursor: pointer;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .fab:hover { transform: scale(1.1); }
+
+    @media (max-width: 768px) {
+      .container { margin: 70px auto 140px; padding: 0 16px; gap: 20px; }
+      .card-header { flex-direction: column; align-items: stretch; }
+      .search-box { max-width: none; }
+      table, thead, tbody, th, td, tr { display: block; }
+      thead { display: none; }
+      tr {
+        background: var(--card2);
+        border-radius: 16px;
+        margin-bottom: 16px;
+        box-shadow: 0 4px 12px rgba(0,0,0,.08);
+        overflow: hidden;
+      }
+      td {
+        display: block;
+        padding: 14px 18px;
+        text-align: right;
+        position: relative;
+        border: none;
+      }
+      td:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 18px;
+        font-weight: 700;
+        color: var(--muted);
+        text-align: left;
+      }
+      td:last-child {
+        text-align: center;
+        padding-bottom: 24px;
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      .avatar-preview { margin: 8px auto 0; display: block; }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="container">
+    <!-- STAFF FORM -->
+    <div class="card">
+      <div class="card-header">
+        <h2 id="formTitle">Edit Staff Member</h2>
+      </div>
+      <div class="card-body">
+        <div class="field">
+          <label>Username</label>
+          <input id="username" disabled placeholder="Set only when adding new">
+        </div>
+
+        <div class="field">
+          <label>Display Name</label>
+          <input id="displayName" required>
+        </div>
+
+        <div class="field">
+          <label>Location</label>
+          <select id="location">
+            <option value="Restoran Ayam Gepuk Batu Gajah">Restoran Ayam Gepuk Batu Gajah</option>
+            <option value="Restoran Ayam Gepuk Kuala Kangsar">Restoran Ayam Gepuk Kuala Kangsar</option>
+            <option value="Mall Outlet">Mall Outlet</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <!-- Pay rate -->
+        <div class="field">
+          <label>Pay Rate (per hour)</label>
+          <input id="payRate" type="number" min="0" step="0.01" placeholder="e.g. 8.50">
+        </div>
+
+        <!-- NEW: Schedule / Late Settings -->
+        <div class="field">
+          <label>Shift Start Time</label>
+          <input id="shiftStart" type="time" value="09:00">
+        </div>
+
+        <div class="field">
+          <label>Shift End Time</label>
+          <input id="shiftEnd" type="time" value="18:00">
+        </div>
+
+        <div class="field">
+          <label>Late Grace (minutes)</label>
+          <input id="lateGrace" type="number" min="0" step="1" value="15" placeholder="e.g. 15">
+        </div>
+
+        <div class="field">
+          <label>Early Leave Grace (minutes)</label>
+          <input id="earlyGrace" type="number" min="0" step="1" value="15" placeholder="e.g. 15">
+        </div>
+
+        <div class="field">
+          <label>Avatar (optional)</label>
+          <input type="file" id="avatarUpload" accept="image/*">
+          <img id="avatarPreview" class="avatar-preview" src="" alt="Preview" style="display:none;">
+        </div>
+
+        <div class="field">
+          <label>New Password <span style="font-weight:400;color:var(--muted);">(leave blank to keep current)</span></label>
+          <input id="password" type="password">
+        </div>
+
+        <div class="field">
+          <label>Role</label>
+          <select id="role">
+            <option value="viewer">Viewer</option>
+            <option value="cashier">Cashier</option>
+            <option value="kitchen">Kitchen</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;">
+          <button class="btn-primary" onclick="saveStaff()"><i class="fa-solid fa-floppy-disk"></i> Save</button>
+          <button class="btn-secondary" onclick="openDashboard()"><i class="fa-solid fa-chart-line"></i> Dashboard</button>
+        </div>
+
+        <div class="status" id="formStatus"></div>
+      </div>
+    </div>
+
+    <!-- STAFF LIST -->
+    <div class="card">
+      <div class="card-header">
+        <h2>Current Staff List</h2>
+        <div class="toolbar">
+          <div class="search-box">
+            <i class="fa-solid fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Search by name or username...">
+          </div>
+
+          <select id="locationFilter" style="max-width:240px;">
+            <option value="">All Locations</option>
+          </select>
+
+          <button onclick="exportToCSV()"><i class="fa-solid fa-download"></i> Export CSV</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <table>
+          <thead>
+            <tr>
+              <th>Avatar</th>
+              <th>Username</th>
+              <th>Name</th>
+              <th>Location</th>
+              <th>Pay/hr</th>
+              <th>Role</th>
+              <th>Last Login</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="staffTable">
+            <tr><td colspan="8">Loading staff…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TODAY'S ATTENDANCE -->
+    <div class="card">
+      <div class="card-header">
+        <h2>Today's Attendance</h2>
+        <div class="toolbar">
+          <select id="attendanceLocationFilter" style="max-width:240px;">
+            <option value="">All Locations</option>
+          </select>
+          <button onclick="renderAttendance()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <table>
+          <thead>
+            <tr>
+              <th>Staff</th>
+              <th>In</th>
+              <th>Out</th>
+              <th>Breaks</th>
+              <th>Net Hours</th>
+              <th>Pay/hr</th>
+              <th>Est. Pay</th>
+              <th>Status / Punctuality</th>
+              <th>Admin Action</th>
+            </tr>
+          </thead>
+          <tbody id="attendanceTable">
+            <tr><td colspan="9">Loading attendance…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <button class="fab" onclick="addNewStaff()" title="Add New Staff">
+    <i class="fa-solid fa-plus"></i>
+  </button>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getDatabase, ref, update, set, remove, onValue } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+    import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAUO2ZoVhSFEtAyJAP5r5zxu3kGqoIAyQ4",
+      authDomain: "ordersystem-d710a.firebaseapp.com",
+      databaseURL: "https://ordersystem-d710a-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "ordersystem-d710a",
+      storageBucket: "ordersystem-d710a.appspot.com",
+      messagingSenderId: "741444965493",
+      appId: "1:741444965493:web:9991535a9105035c80943c"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const storage = getStorage(app);
+
+    // Admin only
+    if (localStorage.getItem("userRole") !== "admin") {
+      alert("Admin access only");
+      location.href = "restaurant_dashboard.html";
+    }
+
+    const DEFAULT_SHIFT_START = "09:00";
+    const DEFAULT_SHIFT_END = "18:00";
+    const DEFAULT_GRACE_MIN = 15;
+
+    const todayISO = new Date().toISOString().slice(0, 10);
+
+    let selectedUser = null;
+    let avatarFile = null;
+    let usersCache = {};       // username -> user object
+    let attendanceCache = {};  // username -> today's attendance object
+
+    function escapeHtml(s) {
+      s = String(s == null ? "" : s);
+      return s
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function showStatus(msg, type) {
+      const el = document.getElementById("formStatus");
+      el.textContent = msg || "";
+      el.className = "status" + (type ? " " + type : "");
+    }
+
+    function safeName(username, userObj) {
+      const dn = userObj && userObj.displayName ? String(userObj.displayName) : "";
+      const u = username ? String(username) : "";
+      return (dn || u).trim();
+    }
+
+    function payRateOf(userObj) {
+      const v = userObj && userObj.payRate != null ? userObj.payRate : 0;
+      const n = parseFloat(v);
+      return isNaN(n) || n < 0 ? 0 : n;
+    }
+
+    const moneyFmt = new Intl.NumberFormat("ms-MY", {
+      style: "currency",
+      currency: "MYR",
+      currencyDisplay: "symbol",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+
+    function money(n) {
+      const x = Number(n);
+      if (!Number.isFinite(x)) return moneyFmt.format(0);
+      return moneyFmt.format(x);
+    }
+
+    function fmtTime(iso) {
+      if (!iso) return "-";
+      try {
+        return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      } catch { return "-"; }
+    }
+
+    function minutesOf(iso) {
+      try {
+        const d = new Date(iso);
+        return d.getHours() * 60 + d.getMinutes();
+      } catch { return null; }
+    }
+
+    function hhmmToMinutes(hhmm) {
+      if (!hhmm) return null;
+      const parts = String(hhmm).split(":");
+      if (parts.length < 2) return null;
+      const h = parseInt(parts[0], 10);
+      const m = parseInt(parts[1], 10);
+      if (isNaN(h) || isNaN(m)) return null;
+      return h * 60 + m;
+    }
+
+    function userShiftStartMin(user) {
+      return hhmmToMinutes((user && user.shiftStart) ? user.shiftStart : DEFAULT_SHIFT_START);
+    }
+
+    function userShiftEndMin(user) {
+      return hhmmToMinutes((user && user.shiftEnd) ? user.shiftEnd : DEFAULT_SHIFT_END);
+    }
+
+    function userLateGrace(user) {
+      const v = (user && user.lateGrace != null) ? parseInt(user.lateGrace, 10) : DEFAULT_GRACE_MIN;
+      return isNaN(v) || v < 0 ? DEFAULT_GRACE_MIN : v;
+    }
+
+    function userEarlyGrace(user) {
+      const v = (user && user.earlyGrace != null) ? parseInt(user.earlyGrace, 10) : DEFAULT_GRACE_MIN;
+      return isNaN(v) || v < 0 ? DEFAULT_GRACE_MIN : v;
+    }
+
+    function lateInfo(user, rec) {
+      if (!rec || !rec.in) return { late: false, minutesLate: 0, source: "none" };
+
+      // Prefer stored value (set at clock-in or admin override)
+      if (typeof rec.late === "boolean") {
+        const ml = parseInt(rec.minutesLate || 0, 10);
+        return { late: rec.late, minutesLate: (isNaN(ml) || ml < 0) ? 0 : ml, source: "stored" };
+      }
+
+      // Fallback compute (for older records)
+      const startMin = userShiftStartMin(user);
+      const grace = userLateGrace(user);
+      const inMin = minutesOf(rec.in);
+      if (startMin == null || inMin == null) return { late: false, minutesLate: 0, source: "fallback" };
+
+      const limit = startMin + grace;
+      if (inMin > limit) return { late: true, minutesLate: (inMin - limit), source: "computed" };
+      return { late: false, minutesLate: 0, source: "computed" };
+    }
+
+    function earlyInfo(user, rec) {
+      if (!rec || !rec.out) return { early: false, minutesEarly: 0, source: "none" };
+
+      // Prefer stored value (set at clock-out or admin force-out)
+      if (typeof rec.early === "boolean") {
+        const me = parseInt(rec.minutesEarly || 0, 10);
+        return { early: rec.early, minutesEarly: (isNaN(me) || me < 0) ? 0 : me, source: "stored" };
+      }
+
+      // Fallback compute (for older records)
+      const endMin = userShiftEndMin(user);
+      const grace = userEarlyGrace(user);
+      const outMin = minutesOf(rec.out);
+      if (endMin == null || outMin == null) return { early: false, minutesEarly: 0, source: "fallback" };
+
+      const limit = endMin - grace;
+      if (outMin < limit) return { early: true, minutesEarly: (limit - outMin), source: "computed" };
+      return { early: false, minutesEarly: 0, source: "computed" };
+    }
+
+    function breakHoursFor(rec) {
+      const breaks = rec && Array.isArray(rec.breaks) ? rec.breaks : [];
+      let hrs = 0;
+
+      for (let i = 0; i < breaks.length; i++) {
+        const b = breaks[i];
+        if (b && b.start && b.end) {
+          hrs += (new Date(b.end) - new Date(b.start)) / 3600000;
+        }
+      }
+
+      if (rec && rec.currentBreakStart) {
+        hrs += (new Date() - new Date(rec.currentBreakStart)) / 3600000;
+      }
+
+      return Math.max(0, hrs);
+    }
+
+    function netHoursFor(rec) {
+      if (!rec || !rec.in) return 0;
+      const start = new Date(rec.in);
+      const end = rec.out ? new Date(rec.out) : new Date();
+      const gross = (end - start) / 3600000;
+      const brk = breakHoursFor(rec);
+      return Math.max(0, gross - brk);
+    }
+
+    async function sha256(text) {
+      const data = new TextEncoder().encode(text);
+      const hash = await crypto.subtle.digest("SHA-256", data);
+      return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    document.getElementById("avatarUpload").addEventListener("change", (e) => {
+      avatarFile = e.target.files && e.target.files[0] ? e.target.files[0] : null;
+      const preview = document.getElementById("avatarPreview");
+      if (avatarFile) {
+        preview.src = URL.createObjectURL(avatarFile);
+        preview.style.display = "block";
+      } else {
+        preview.style.display = "none";
+        preview.src = "";
+      }
+    });
+
+    window.openDashboard = function() {
+      // you can rename file if needed
+      location.href = "staff_dashboard.html";
+    };
+
+    window.addNewStaff = function() {
+      selectedUser = null;
+      avatarFile = null;
+
+      document.getElementById("formTitle").textContent = "Add New Staff Member";
+      document.getElementById("username").value = "";
+      document.getElementById("username").disabled = false;
+      document.getElementById("displayName").value = "";
+      document.getElementById("location").value = "Restoran Ayam Gepuk Batu Gajah";
+
+      document.getElementById("payRate").value = "0";
+      document.getElementById("shiftStart").value = DEFAULT_SHIFT_START;
+      document.getElementById("shiftEnd").value = DEFAULT_SHIFT_END;
+      document.getElementById("lateGrace").value = String(DEFAULT_GRACE_MIN);
+      document.getElementById("earlyGrace").value = String(DEFAULT_GRACE_MIN);
+
+      document.getElementById("role").value = "viewer";
+      document.getElementById("password").value = "";
+      document.getElementById("avatarUpload").value = "";
+
+      const preview = document.getElementById("avatarPreview");
+      preview.style.display = "none";
+      preview.src = "";
+
+      showStatus("", "");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    window.editUser = function(username) {
+      const d = usersCache[username];
+      if (!d) return;
+
+      selectedUser = username;
+      document.getElementById("formTitle").textContent = "Edit Staff Member";
+      document.getElementById("username").value = username;
+      document.getElementById("username").disabled = true;
+      document.getElementById("displayName").value = d.displayName || "";
+      document.getElementById("location").value = d.location || "Restoran Ayam Gepuk Batu Gajah";
+
+      document.getElementById("payRate").value = String(payRateOf(d));
+      document.getElementById("shiftStart").value = d.shiftStart || DEFAULT_SHIFT_START;
+      document.getElementById("shiftEnd").value = d.shiftEnd || DEFAULT_SHIFT_END;
+      document.getElementById("lateGrace").value = (d.lateGrace != null ? String(d.lateGrace) : String(DEFAULT_GRACE_MIN));
+      document.getElementById("earlyGrace").value = (d.earlyGrace != null ? String(d.earlyGrace) : String(DEFAULT_GRACE_MIN));
+
+      document.getElementById("role").value = d.role || "viewer";
+      document.getElementById("password").value = "";
+      document.getElementById("avatarUpload").value = "";
+      avatarFile = null;
+
+      const preview = document.getElementById("avatarPreview");
+      if (d.avatar) {
+        preview.src = d.avatar;
+        preview.style.display = "block";
+      } else {
+        preview.style.display = "none";
+        preview.src = "";
+      }
+
+      showStatus("", "");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    window.deleteUser = async function(username) {
+      if (!confirm(`Permanently delete "${username}"? This cannot be undone.`)) return;
+
+      showStatus("Deleting...", "info");
+      try {
+        await remove(ref(db, "users/" + username));
+        showStatus(`"${username}" deleted successfully.`, "success");
+      } catch (err) {
+        showStatus("Delete failed: " + err.message, "warn");
+      }
+    };
+
+    window.saveStaff = async function() {
+      const username = document.getElementById("username").value.trim();
+      const displayName = document.getElementById("displayName").value.trim();
+      const locationVal = document.getElementById("location").value;
+      const role = document.getElementById("role").value;
+      const password = document.getElementById("password").value;
+
+      const payRateRaw = document.getElementById("payRate").value;
+      const payRateNum = parseFloat(payRateRaw);
+
+      const shiftStart = document.getElementById("shiftStart").value || DEFAULT_SHIFT_START;
+      const shiftEnd = document.getElementById("shiftEnd").value || DEFAULT_SHIFT_END;
+
+      const lateGraceRaw = document.getElementById("lateGrace").value;
+      const earlyGraceRaw = document.getElementById("earlyGrace").value;
+      const lateGrace = parseInt(lateGraceRaw, 10);
+      const earlyGrace = parseInt(earlyGraceRaw, 10);
+
+      if (!username || !displayName) {
+        showStatus("Username and Display Name are required", "warn");
+        return;
+      }
+      if (!selectedUser && !password) {
+        showStatus("Password required for new staff", "warn");
+        return;
+      }
+      if (isNaN(payRateNum) || payRateNum < 0) {
+        showStatus("Pay rate must be 0 or more", "warn");
+        return;
+      }
+      if (isNaN(lateGrace) || lateGrace < 0) {
+        showStatus("Late grace must be 0 or more", "warn");
+        return;
+      }
+      if (isNaN(earlyGrace) || earlyGrace < 0) {
+        showStatus("Early grace must be 0 or more", "warn");
+        return;
+      }
+
+      showStatus("Saving...", "info");
+
+      const updateData = {
+        displayName: displayName,
+        location: locationVal,
+        role: role,
+        payRate: Number(payRateNum.toFixed(2)),
+        shiftStart: shiftStart,
+        shiftEnd: shiftEnd,
+        lateGrace: lateGrace,
+        earlyGrace: earlyGrace
+      };
+
+      if (password) updateData.password = await sha256(password);
+
+      try {
+        if (avatarFile) {
+          const avatarRef = storageRef(storage, `avatars/${username}`);
+          await uploadBytes(avatarRef, avatarFile);
+          updateData.avatar = await getDownloadURL(avatarRef);
+        }
+
+        const userRef = ref(db, "users/" + username);
+        if (selectedUser) await update(userRef, updateData);
+        else await set(userRef, updateData);
+
+        showStatus(selectedUser ? "Changes saved!" : "New staff added!", "success");
+        if (!selectedUser) addNewStaff();
+      } catch (err) {
+        showStatus("Error: " + err.message, "warn");
+      }
+    };
+
+    // Filters UI
+    const locationFilter = document.getElementById("locationFilter");
+    const attendanceLocationFilter = document.getElementById("attendanceLocationFilter");
+    const searchInput = document.getElementById("searchInput");
+
+    function rebuildLocationFilters() {
+      const locations = {};
+      for (const key in usersCache) {
+        const u = usersCache[key];
+        const loc = u && u.location ? String(u.location).trim() : "";
+        if (loc) locations[loc] = true;
+      }
+
+      const sorted = Object.keys(locations).sort(function(a,b){ return a.localeCompare(b); });
+
+      const keepA = locationFilter.value;
+      const keepB = attendanceLocationFilter.value;
+
+      locationFilter.innerHTML = `<option value="">All Locations</option>` +
+        sorted.map(l => `<option value="${escapeHtml(l)}">${escapeHtml(l)}</option>`).join("");
+
+      attendanceLocationFilter.innerHTML = `<option value="">All Locations</option>` +
+        sorted.map(l => `<option value="${escapeHtml(l)}">${escapeHtml(l)}</option>`).join("");
+
+      if (keepA && locations[keepA]) locationFilter.value = keepA;
+      if (keepB && locations[keepB]) attendanceLocationFilter.value = keepB;
+    }
+
+    function renderStaff() {
+      const tbody = document.getElementById("staffTable");
+      const q = (searchInput.value || "").trim().toLowerCase();
+      const loc = locationFilter.value || "";
+
+      const items = [];
+      for (const username in usersCache) {
+        const d = usersCache[username] || {};
+        items.push({ username, d, display: safeName(username, d) });
+      }
+      items.sort((a,b) => a.display.localeCompare(b.display));
+
+      const rows = [];
+      for (let i = 0; i < items.length; i++) {
+        const u = items[i].username;
+        const d = items[i].d;
+        const name = items[i].display;
+
+        const userLoc = d.location ? d.location : "Not set";
+        if (loc && userLoc !== loc) continue;
+
+        if (q) {
+          const uok = String(u).toLowerCase().includes(q);
+          const nok = String(name).toLowerCase().includes(q);
+          if (!uok && !nok) continue;
+        }
+
+        const avatar = d.avatar ? d.avatar :
+          `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=16a34a&color=fff&size=80`;
+        const lastLogin = d.lastLogin ? new Date(d.lastLogin).toLocaleString() : "Never";
+        const role = d.role ? d.role : "viewer";
+        const pr = payRateOf(d);
+
+        rows.push(`
+          <tr>
+            <td data-label="Avatar"><img src="${avatar}" class="avatar-preview"></td>
+            <td data-label="Username"><strong>${escapeHtml(u)}</strong></td>
+            <td data-label="Name">${escapeHtml(name)}</td>
+            <td data-label="Location">${escapeHtml(userLoc)}</td>
+            <td data-label="Pay/hr"><strong>${escapeHtml(money(pr))}</strong></td>
+            <td data-label="Role"><span class="badge role-${escapeHtml(role)}">${escapeHtml(role)}</span></td>
+            <td data-label="Last Login">${escapeHtml(lastLogin)}</td>
+            <td data-label="Actions">
+              <button class="btn-edit" onclick='editUser(${JSON.stringify(u)})'><i class="fa-solid fa-pen"></i> Edit</button>
+              <button class="btn-delete" onclick='deleteUser(${JSON.stringify(u)})'><i class="fa-solid fa-trash"></i> Delete</button>
+            </td>
+          </tr>
+        `);
+      }
+
+      tbody.innerHTML = rows.length ? rows.join("") : `<tr><td colspan="8">No matching staff</td></tr>`;
+    }
+
+    window.adminSetLate = async function(username, flag) {
+      const rec = attendanceCache[username] || null;
+      if (!rec || !rec.in) {
+        alert("This staff has not clocked in today.");
+        return;
+      }
+
+      const user = usersCache[username] || {};
+      const current = lateInfo(user, rec);
+
+      if (flag) {
+        const suggested = current.minutesLate || 0;
+        const input = prompt(`Mark "${username}" as LATE.\nMinutes late?`, String(suggested));
+        if (input === null) return;
+        const mins = parseInt(input, 10);
+        if (isNaN(mins) || mins < 0) {
+          alert("Minutes late must be 0 or more.");
+          return;
+        }
+        await update(ref(db, `attendance/${todayISO}/${username}`), {
+          late: true,
+          minutesLate: mins,
+          lateOverride: true
+        });
+      } else {
+        await update(ref(db, `attendance/${todayISO}/${username}`), {
+          late: false,
+          minutesLate: 0,
+          lateOverride: true
+        });
+      }
+    };
+
+    window.renderAttendance = function() {
+      const tbody = document.getElementById("attendanceTable");
+      const loc = attendanceLocationFilter.value || "";
+
+      const items = [];
+      for (const username in usersCache) {
+        const d = usersCache[username] || {};
+        items.push({ username, d, display: safeName(username, d) });
+      }
+      items.sort((a,b) => a.display.localeCompare(b.display));
+
+      const rows = [];
+
+      for (let i = 0; i < items.length; i++) {
+        const username = items[i].username;
+        const user = items[i].d || {};
+        const name = items[i].display;
+        const userLoc = user.location ? user.location : "Not set";
+        if (loc && userLoc !== loc) continue;
+
+        const rec = attendanceCache[username] || null;
+
+        const inTime = rec && rec.in ? fmtTime(rec.in) : "-";
+        const outTime = rec && rec.out ? fmtTime(rec.out) : (rec && rec.in ? "Working" : "-");
+
+        const brkHours = rec && rec.in ? breakHoursFor(rec) : 0;
+        const brkText = rec && rec.in ? (brkHours.toFixed(2) + " hrs") : "-";
+
+        const net = rec && rec.in ? netHoursFor(rec) : 0;
+        const netText = rec && rec.in ? (net.toFixed(2) + " hrs") : "-";
+
+        const pr = payRateOf(user);
+        const estPay = (rec && rec.in) ? (net * pr) : 0;
+
+        const li = lateInfo(user, rec);
+        const ei = earlyInfo(user, rec);
+
+        let statusBadges = "";
+
+        // Work status
+        if (!rec || !rec.in) {
+          statusBadges += `<span class="badge b-none"><i class="fa-regular fa-circle"></i> Not started</span>`;
+        } else if (rec.in && !rec.out) {
+          if (rec.currentBreakStart) {
+            statusBadges += `<span class="badge b-break"><i class="fa-solid fa-mug-hot"></i> On break</span>`;
+            statusBadges += `<span class="badge b-none">${escapeHtml(fmtTime(rec.currentBreakStart))}</span>`;
+          } else {
+            statusBadges += `<span class="badge b-active"><i class="fa-solid fa-circle-play"></i> Active</span>`;
+          }
+        } else {
+          statusBadges += `<span class="badge b-complete"><i class="fa-solid fa-circle-check"></i> Complete</span>`;
+        }
+
+        // Punctuality
+        if (rec && rec.in) {
+          if (li.late) {
+            const m = li.minutesLate ? `${li.minutesLate}m` : "";
+            statusBadges += `<span class="badge b-late"><i class="fa-solid fa-clock"></i> Late ${m}</span>`;
+          } else {
+            statusBadges += `<span class="badge b-ontime"><i class="fa-solid fa-circle-check"></i> On time</span>`;
+          }
+        }
+        if (rec && rec.out && ei.early) {
+          const m2 = ei.minutesEarly ? `${ei.minutesEarly}m` : "";
+          statusBadges += `<span class="badge b-early"><i class="fa-solid fa-person-walking"></i> Early ${m2}</span>`;
+        }
+
+        // Admin actions
+                let actions = "-";
+        const hasRec = rec && Object.keys(rec).length;
+
+        if (hasRec) {
+          actions = "";
+
+          if (rec.in) {
+// Late toggle
+          if (li.late) {
+            actions += `<button class="btn-warn" onclick='adminSetLate(${JSON.stringify(username)}, false)'><i class="fa-solid fa-circle-check"></i> Mark On Time</button>`;
+          } else {
+            actions += `<button class="btn-warn" onclick='adminSetLate(${JSON.stringify(username)}, true)'><i class="fa-solid fa-clock"></i> Mark Late</button>`;
+          }
+
+          actions += `<button class="btn-delete" onclick='adminDeleteAttendance(${JSON.stringify(username)})'><i class="fa-solid fa-trash"></i> Delete</button>`;
+        }
+
+          // Break/force out
+          if (rec.in && !rec.out) {
+            if (rec.currentBreakStart) {
+              actions += `<button class="btn-secondary" onclick='adminEndBreak(${JSON.stringify(username)})'><i class="fa-solid fa-circle-stop"></i> End Break</button>`;
+            }
+            actions += `<button class="btn-danger" onclick='adminForceClockOut(${JSON.stringify(username)})'><i class="fa-solid fa-arrow-right-from-bracket"></i> Force Out</button>`;
+          }
+        }
+
+        rows.push(`
+          <tr>
+            <td data-label="Staff">
+              <strong>${escapeHtml(name)}</strong>
+              <div style="color:var(--muted);font-size:12px;margin-top:4px;">${escapeHtml(userLoc)}</div>
+              <div style="color:var(--muted);font-size:12px;margin-top:4px;">
+                Shift: ${escapeHtml(user.shiftStart || DEFAULT_SHIFT_START)}–${escapeHtml(user.shiftEnd || DEFAULT_SHIFT_END)}
+              </div>
+            </td>
+            <td data-label="In">${escapeHtml(inTime)}</td>
+            <td data-label="Out">${escapeHtml(outTime)}</td>
+            <td data-label="Breaks">${escapeHtml(brkText)}</td>
+            <td data-label="Net Hours">${escapeHtml(netText)}</td>
+            <td data-label="Pay/hr"><strong>${escapeHtml(money(pr))}</strong></td>
+            <td data-label="Est. Pay"><strong>${escapeHtml(money(estPay))}</strong></td>
+            <td data-label="Status / Punctuality">${statusBadges}</td>
+            <td data-label="Admin Action">${actions}</td>
+          </tr>
+        `);
+      }
+
+      tbody.innerHTML = rows.length ? rows.join("") : `<tr><td colspan="9">No staff found</td></tr>`;
+    };
+
+    window.adminEndBreak = async function(username) {
+      const rec = attendanceCache[username];
+      if (!rec || !rec.in || rec.out || !rec.currentBreakStart) return;
+
+      if (!confirm(`End break for "${username}" now?`)) return;
+
+      const end = new Date().toISOString();
+      const breaks = Array.isArray(rec.breaks) ? rec.breaks : [];
+      breaks.push({ start: rec.currentBreakStart, end: end });
+
+      await update(ref(db, `attendance/${todayISO}/${username}`), {
+        breaks: breaks,
+        currentBreakStart: null
+      });
+    };
+
+    window.adminForceClockOut = async function(username) {
+      const rec = attendanceCache[username];
+      if (!rec || !rec.in || rec.out) return;
+
+      if (!confirm(`Force clock-out for "${username}" now?`)) return;
+
+      const now = new Date().toISOString();
+      const updates = { out: now };
+
+      // Auto-end break if needed
+      if (rec.currentBreakStart) {
+        const breaks = Array.isArray(rec.breaks) ? rec.breaks : [];
+        breaks.push({ start: rec.currentBreakStart, end: now });
+        updates.breaks = breaks;
+        updates.currentBreakStart = null;
+      }
+
+      // Store early flag on force-out (uses user's schedule)
+      const user = usersCache[username] || {};
+      const ei = earlyInfo(user, { out: now });
+      if (ei.early) {
+        updates.early = true;
+        updates.minutesEarly = ei.minutesEarly || 0;
+      } else {
+        updates.early = false;
+        updates.minutesEarly = 0;
+      }
+
+      await update(ref(db, `attendance/${todayISO}/${username}`), updates);
+    };
+
+window.adminDeleteAttendance = async function(username) {
+  const rec = attendanceCache[username];
+  if (!rec || !Object.keys(rec).length) {
+    alert("No attendance record for this staff today.");
+    return;
+  }
+
+  if (!confirm(`Delete today's attendance record for "${username}"? This will remove clock-in/out and breaks.`)) return;
+
+  try {
+    await remove(ref(db, `attendance/${todayISO}/${username}`));
+  } catch (err) {
+    alert("Delete failed: " + err.message);
+  }
+};
+
+
+    window.exportToCSV = async function() {
+      let csv = "Username,Display Name,Location,PayRatePerHour,ShiftStart,ShiftEnd,LateGraceMin,EarlyGraceMin,Role,LastLogin\n";
+      for (const u in usersCache) {
+        const d = usersCache[u] || {};
+        const last = d.lastLogin ? new Date(d.lastLogin).toLocaleString() : "";
+        const pr = payRateOf(d);
+        csv += `"${u}","${d.displayName || u}","${d.location || ""}","${pr.toFixed(2)}","${d.shiftStart || DEFAULT_SHIFT_START}","${d.shiftEnd || DEFAULT_SHIFT_END}","${(d.lateGrace != null ? d.lateGrace : DEFAULT_GRACE_MIN)}","${(d.earlyGrace != null ? d.earlyGrace : DEFAULT_GRACE_MIN)}","${d.role || "viewer"}","${last}"\n`;
+      }
+
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `staff_list_${new Date().toISOString().slice(0,10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+
+    // UI events
+    searchInput.addEventListener("input", renderStaff);
+    locationFilter.addEventListener("change", renderStaff);
+    attendanceLocationFilter.addEventListener("change", window.renderAttendance);
+
+    // Live subscriptions with error handlers
+    onValue(ref(db, "users"),
+      (snap) => {
+        const next = {};
+        if (snap.exists()) {
+          snap.forEach(child => { next[child.key] = child.val() || {}; });
+        }
+        usersCache = next;
+
+        rebuildLocationFilters();
+        renderStaff();
+        window.renderAttendance();
+      },
+      (err) => {
+        console.error(err);
+        showStatus("Cannot load staff list: " + err.message, "warn");
+        document.getElementById("staffTable").innerHTML = `<tr><td colspan="8">Error loading staff. Check permissions.</td></tr>`;
+      }
+    );
+
+    onValue(ref(db, `attendance/${todayISO}`),
+      (snap) => {
+        const next = {};
+        if (snap.exists()) {
+          snap.forEach(child => { next[child.key] = child.val() || {}; });
+        }
+        attendanceCache = next;
+        window.renderAttendance();
+      },
+      (err) => {
+        console.error(err);
+        document.getElementById("attendanceTable").innerHTML = `<tr><td colspan="9">Error loading attendance: ${escapeHtml(err.message)}</td></tr>`;
+      }
+    );
+
+    // Update net hours & pay while shifts are ongoing
+    setInterval(() => window.renderAttendance(), 30000);
+
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Staff Clock In — Restaurant Control Center</title>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <!-- Optional PWA support (safe even if you don't have these files yet) -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#16a34a">
+
+  <style>
+    :root {
+      --bg0: #0b1220;
+      --bg1: #0f1a33;
+      --card: rgba(255, 255, 255, .90);
+      --card2: rgba(255, 255, 255, .70);
+      --text: #0f172a;
+      --muted: #475569;
+      --border: rgba(15, 23, 42, .10);
+      --shadow: 0 18px 60px rgba(2, 6, 23, .18);
+      --brand: #16a34a;
+      --brand2: #22c55e;
+      --danger: #ef4444;
+      --warn: #f59e0b;
+      --info: #3b82f6;
+      --focus: 0 0 0 4px rgba(34, 197, 94, .20);
+    }
+
+    html[data-theme="dark"] {
+      --card: rgba(15, 23, 42, .78);
+      --card2: rgba(15, 23, 42, .55);
+      --text: #e5e7eb;
+      --muted: #a1a1aa;
+      --border: rgba(255, 255, 255, .12);
+      --shadow: 0 22px 70px rgba(0, 0, 0, .45);
+      --focus: 0 0 0 4px rgba(34, 197, 94, .22);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+      background: radial-gradient(1200px 900px at 20% 15%, rgba(34, 197, 94, .30), transparent 55%),
+                  radial-gradient(1200px 900px at 85% 25%, rgba(59, 130, 246, .24), transparent 52%),
+                  linear-gradient(180deg, var(--bg0), var(--bg1));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      width: min(440px, 100%);
+      display: grid;
+      gap: 18px;
+    }
+
+    .card {
+      background: var(--card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      text-align: center;
+    }
+
+    .card-header {
+      padding: 28px 22px 18px;
+      background: linear-gradient(180deg, rgba(34, 197, 94, .15), transparent);
+    }
+
+    .card-body { padding: 0 26px 28px; }
+
+    h1 { font-size: 26px; margin: 0 0 8px; letter-spacing: -0.03em; }
+    p.subtitle { margin: 0; color: var(--muted); font-size: 15px; }
+
+    .date-time {
+      margin: 18px 0 14px;
+      font-size: 15px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .current-time { font-size: 34px; font-weight: 800; color: var(--brand); margin: 6px 0 0; }
+
+    select, button {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 15px 16px;
+      background: var(--card2);
+      color: var(--text);
+      font-size: 16px;
+      outline: none;
+      transition: all .2s ease;
+    }
+
+    select { margin-bottom: 12px; }
+
+    select:focus { box-shadow: var(--focus); border-color: rgba(34, 197, 94, .50); }
+
+    button {
+      border: none;
+      background: linear-gradient(135deg, var(--brand), var(--brand2));
+      color: white;
+      font-weight: 800;
+      cursor: pointer;
+      margin-top: 10px;
+      font-size: 17px;
+    }
+
+    button:hover { filter: brightness(1.05); }
+    button:active { transform: translateY(1px); }
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      filter: none;
+    }
+
+    .btn-secondary {
+      background: var(--card2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      font-weight: 750;
+    }
+    .btn-secondary:hover { background: rgba(34, 197, 94, .12); }
+
+    .btn-warn {
+      background: linear-gradient(135deg, #f59e0b, #fbbf24);
+      color: #111827;
+    }
+
+    .status {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      font-weight: 650;
+      font-size: 15px;
+      text-align: center;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .status.success { background: rgba(34, 197, 94, .15); color: var(--brand); }
+    .status.warn { background: rgba(245, 158, 11, .15); color: var(--warn); }
+    .status.info { background: rgba(59, 130, 246, .15); color: var(--info); }
+
+    .logo {
+      width: 92px;
+      height: 92px;
+      border-radius: 50%;
+      background: var(--card2);
+      margin: 0 auto 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 38px;
+      color: var(--brand);
+      border: 4px solid var(--border);
+    }
+
+    .mini {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .pill {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(34, 197, 94, .12);
+      color: var(--brand);
+      font-weight: 750;
+      margin: 10px 0 0;
+      font-size: 13px;
+    }
+
+    .break-box {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: rgba(15, 23, 42, .03);
+    }
+    html[data-theme="dark"] .break-box { background: rgba(255,255,255,.04); }
+
+    .break-row {
+      display: flex;
+      gap: 10px;
+    }
+    .break-row button { margin-top: 0; }
+
+    .hint {
+      margin-top: 10px;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="card-header">
+        <div class="logo">
+          <i class="fa-solid fa-users"></i>
+        </div>
+        <h1>Staff Clock In</h1>
+        <p class="subtitle">Restaurant Control Center</p>
+      </div>
+
+      <div class="card-body">
+        <div class="date-time">
+          Today: <strong id="todayDate"></strong><br>
+          <div class="current-time" id="currentTime"></div>
+          <div class="mini" id="staffMeta"></div>
+        </div>
+
+        <select id="staffSelect">
+          <option value="">Select your name</option>
+        </select>
+
+        <button id="clockButton" disabled>Choose your name first</button>
+
+        <!-- Break tracking -->
+        <div id="breakControls" class="break-box" style="display:none;">
+          <div class="break-row">
+            <button id="startBreakBtn" class="btn-secondary" type="button">
+              <i class="fa-solid fa-mug-hot"></i> Start Break
+            </button>
+            <button id="endBreakBtn" class="btn-secondary btn-warn" type="button" style="display:none;">
+              <i class="fa-solid fa-circle-stop"></i> End Break
+            </button>
+          </div>
+          <div class="hint" id="breakStatus"></div>
+        </div>
+
+        <div class="status" id="statusMessage"></div>
+
+        <div class="pill" id="tipPill" style="display:none;">
+          <i class="fa-solid fa-circle-info"></i>
+          Tip: If you forget to end a break, clocking out will auto-end it.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getDatabase, ref, get, set, update, onValue } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAUO2ZoVhSFEtAyJAP5r5zxu3kGqoIAyQ4",
+      authDomain: "ordersystem-d710a.firebaseapp.com",
+      databaseURL: "https://ordersystem-d710a-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "ordersystem-d710a",
+      storageBucket: "ordersystem-d710a.appspot.com",
+      messagingSenderId: "741444965493",
+      appId: "1:741444965493:web:9991535a9105035c80943c"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const DEFAULT_SHIFT_START = "09:00";
+    const DEFAULT_SHIFT_END = "18:00";
+    const DEFAULT_GRACE_MIN = 15;
+
+    const staffSelect = document.getElementById("staffSelect");
+    const clockButton = document.getElementById("clockButton");
+    const statusEl = document.getElementById("statusMessage");
+    const todayDateEl = document.getElementById("todayDate");
+    const currentTimeEl = document.getElementById("currentTime");
+    const staffMetaEl = document.getElementById("staffMeta");
+
+    const breakControls = document.getElementById("breakControls");
+    const startBreakBtn = document.getElementById("startBreakBtn");
+    const endBreakBtn = document.getElementById("endBreakBtn");
+    const breakStatusEl = document.getElementById("breakStatus");
+    const tipPill = document.getElementById("tipPill");
+
+    let today = new Date();
+    const todayISO = new Date().toISOString().slice(0, 10);
+
+    // username -> {displayName, role, location, shiftStart, shiftEnd, lateGrace, earlyGrace}
+    let usersCache = {};
+    let unsubscribeAttendance = null;
+
+    // Date + clock
+    todayDateEl.textContent = today.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    function updateClock() {
+      today = new Date();
+      currentTimeEl.textContent = today.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    function showStatus(msg, type) {
+      statusEl.textContent = msg || "";
+      statusEl.className = "status" + (type ? " " + type : "");
+    }
+
+    function fmtTime(iso) {
+      try {
+        return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      } catch {
+        return "-";
+      }
+    }
+
+    function hhmmToMinutes(hhmm) {
+      if (!hhmm) return null;
+      const parts = String(hhmm).split(":");
+      if (parts.length < 2) return null;
+      const h = parseInt(parts[0], 10);
+      const m = parseInt(parts[1], 10);
+      if (isNaN(h) || isNaN(m)) return null;
+      return h * 60 + m;
+    }
+
+    function nowMinutes() {
+      const d = new Date();
+      return d.getHours() * 60 + d.getMinutes();
+    }
+
+    function getUser(username) {
+      return usersCache[username] || {};
+    }
+
+    function userShiftStartMin(u) {
+      return hhmmToMinutes(u.shiftStart || DEFAULT_SHIFT_START);
+    }
+
+    function userShiftEndMin(u) {
+      return hhmmToMinutes(u.shiftEnd || DEFAULT_SHIFT_END);
+    }
+
+    function userLateGrace(u) {
+      const v = (u.lateGrace != null) ? parseInt(u.lateGrace, 10) : DEFAULT_GRACE_MIN;
+      return isNaN(v) || v < 0 ? DEFAULT_GRACE_MIN : v;
+    }
+
+    function userEarlyGrace(u) {
+      const v = (u.earlyGrace != null) ? parseInt(u.earlyGrace, 10) : DEFAULT_GRACE_MIN;
+      return isNaN(v) || v < 0 ? DEFAULT_GRACE_MIN : v;
+    }
+
+    // Load staff list (from users)
+    async function loadStaffList() {
+      const snapshot = await get(ref(db, 'users'));
+      staffSelect.innerHTML = '<option value="">Select your name</option>';
+      usersCache = {};
+
+      if (snapshot.exists()) {
+        const staff = [];
+        snapshot.forEach(child => {
+          const username = child.key;
+          const data = child.val() || {};
+          const display = data.displayName || username;
+
+          const role = data.role || "viewer";
+          const location = data.location || "Not set";
+
+          const shiftStart = data.shiftStart || DEFAULT_SHIFT_START;
+          const shiftEnd = data.shiftEnd || DEFAULT_SHIFT_END;
+          const lateGrace = (data.lateGrace != null ? data.lateGrace : DEFAULT_GRACE_MIN);
+          const earlyGrace = (data.earlyGrace != null ? data.earlyGrace : DEFAULT_GRACE_MIN);
+
+          usersCache[username] = { displayName: display, role: role, location: location, shiftStart, shiftEnd, lateGrace, earlyGrace };
+          staff.push({ username, display, role, location });
+        });
+
+        staff.sort((a, b) => a.display.localeCompare(b.display));
+        staff.forEach(s => {
+          const opt = document.createElement("option");
+          opt.value = s.username;
+          opt.textContent = `${s.display} ${s.location && s.location !== "Not set" ? "• " + s.location : ""}`;
+          staffSelect.appendChild(opt);
+        });
+      }
+    }
+
+    function setMeta(username) {
+      if (!username || !usersCache[username]) {
+        staffMetaEl.textContent = "";
+        return;
+      }
+      const u = usersCache[username];
+      const s = u.shiftStart || DEFAULT_SHIFT_START;
+      const e = u.shiftEnd || DEFAULT_SHIFT_END;
+      const lg = (u.lateGrace != null ? u.lateGrace : DEFAULT_GRACE_MIN);
+      staffMetaEl.innerHTML =
+        `Role: <strong>${u.role}</strong> • Location: <strong>${u.location}</strong><br>` +
+        `Shift: <strong>${s}–${e}</strong> • Late grace: <strong>${lg}m</strong>`;
+    }
+
+    function setClockButtonStyle(mode) {
+      // mode: "in" | "out" | "done" | "pick" | "blocked"
+      if (mode === "in") {
+        clockButton.className = "";
+        clockButton.style.background = "linear-gradient(135deg, var(--brand), var(--brand2))";
+        clockButton.style.color = "white";
+      } else if (mode === "out") {
+        clockButton.className = "";
+        clockButton.style.background = "linear-gradient(135deg, #f59e0b, #fbbf24)";
+        clockButton.style.color = "#111827";
+      } else if (mode === "done" || mode === "blocked") {
+        clockButton.className = "";
+        clockButton.style.background = "#94a3b8";
+        clockButton.style.color = "white";
+      } else {
+        clockButton.className = "";
+        clockButton.style.background = "linear-gradient(135deg, var(--brand), var(--brand2))";
+        clockButton.style.color = "white";
+      }
+    }
+
+    async function updateButtonState() {
+      const username = staffSelect.value;
+
+      if (!username) {
+        clockButton.disabled = true;
+        clockButton.textContent = "Choose your name first";
+        setClockButtonStyle("pick");
+        breakControls.style.display = "none";
+        tipPill.style.display = "none";
+        return;
+      }
+
+      setMeta(username);
+
+      // Role-based refine: viewer cannot clock
+      const u = getUser(username);
+      const role = u.role || "viewer";
+      if (role === "viewer") {
+        clockButton.disabled = true;
+        clockButton.textContent = "Viewer role (no clock-in)";
+        setClockButtonStyle("blocked");
+        breakControls.style.display = "none";
+        tipPill.style.display = "none";
+        showStatus("If you need clock-in access, ask admin to change your role.", "warn");
+        return;
+      } else {
+        if (statusEl.classList.contains("warn") && statusEl.textContent.indexOf("Viewer role") >= 0) showStatus("");
+      }
+
+      const attendanceRef = ref(db, `attendance/${todayISO}/${username}`);
+      const snapshot = await get(attendanceRef);
+      const data = snapshot.val() || {};
+
+      if (!data.in) {
+        clockButton.disabled = false;
+        clockButton.textContent = "Clock In Now";
+        setClockButtonStyle("in");
+        breakControls.style.display = "none";
+        tipPill.style.display = "none";
+        breakStatusEl.textContent = "";
+      } else if (data.in && !data.out) {
+        clockButton.disabled = false;
+        clockButton.textContent = "Clock Out Now";
+        setClockButtonStyle("out");
+        breakControls.style.display = "block";
+        tipPill.style.display = "inline-flex";
+        await updateBreakUI(data);
+      } else {
+        clockButton.disabled = true;
+        clockButton.textContent = "Already clocked out today";
+        setClockButtonStyle("done");
+        breakControls.style.display = "none";
+        tipPill.style.display = "none";
+        breakStatusEl.textContent = "";
+      }
+    }
+
+    async function updateBreakUI(attDataMaybe) {
+      const username = staffSelect.value;
+      if (!username) return;
+
+      const data = attDataMaybe || (await get(ref(db, `attendance/${todayISO}/${username}`))).val() || {};
+      if (!data.in || data.out) {
+        breakControls.style.display = "none";
+        tipPill.style.display = "none";
+        return;
+      }
+
+      // If currently on break
+      if (data.currentBreakStart) {
+        startBreakBtn.style.display = "none";
+        endBreakBtn.style.display = "block";
+        breakStatusEl.textContent = `On break since ${fmtTime(data.currentBreakStart)}.`;
+      } else {
+        startBreakBtn.style.display = "block";
+        endBreakBtn.style.display = "none";
+
+        const breaks = Array.isArray(data.breaks) ? data.breaks : [];
+        const count = breaks.length;
+        breakStatusEl.textContent = count ? `Breaks taken today: ${count}.` : `No breaks taken yet.`;
+      }
+    }
+
+    function attachRealtimeAttendanceListener(username) {
+      if (unsubscribeAttendance) unsubscribeAttendance();
+      if (!username) return;
+
+      const attendanceRef = ref(db, `attendance/${todayISO}/${username}`);
+      unsubscribeAttendance = onValue(attendanceRef, (snap) => {
+        const data = snap.val() || {};
+        updateButtonState();
+        if (data.in && !data.out) updateBreakUI(data);
+      });
+    }
+
+    staffSelect.addEventListener("change", () => {
+      const username = staffSelect.value;
+      showStatus("");
+      attachRealtimeAttendanceListener(username);
+      updateButtonState();
+    });
+
+    function computeLateFor(username) {
+      const u = getUser(username);
+      const startMin = userShiftStartMin(u);
+      const grace = userLateGrace(u);
+      const nowMin = nowMinutes();
+
+      let late = false;
+      let minutesLate = 0;
+
+      if (startMin != null) {
+        const limit = startMin + grace;
+        if (nowMin > limit) {
+          late = true;
+          minutesLate = nowMin - limit;
+        }
+      }
+      return { late, minutesLate };
+    }
+
+    function computeEarlyFor(username) {
+      const u = getUser(username);
+      const endMin = userShiftEndMin(u);
+      const grace = userEarlyGrace(u);
+      const nowMin = nowMinutes();
+
+      let early = false;
+      let minutesEarly = 0;
+
+      if (endMin != null) {
+        const limit = endMin - grace;
+        if (nowMin < limit) {
+          early = true;
+          minutesEarly = limit - nowMin;
+        }
+      }
+      return { early, minutesEarly };
+    }
+
+    // Clock action
+    clockButton.addEventListener("click", async () => {
+      const username = staffSelect.value;
+      if (!username) return;
+
+      const u = getUser(username);
+      const role = u.role || "viewer";
+      if (role === "viewer") return;
+
+      showStatus("Processing...", "info");
+
+      const timestamp = new Date().toISOString();
+      const attendanceRef = ref(db, `attendance/${todayISO}/${username}`);
+
+      const snap = await get(attendanceRef);
+      const current = snap.val() || {};
+
+      // Stable metadata to attendance record
+      const locationAtClock = u.location || "Not set";
+
+      if (!current.in) {
+        const li = computeLateFor(username);
+
+        await set(attendanceRef, {
+          in: timestamp,
+          location: locationAtClock,
+          late: li.late,
+          minutesLate: li.minutesLate,
+          shiftStart: u.shiftStart || DEFAULT_SHIFT_START,
+          lateGrace: userLateGrace(u)
+        });
+
+        if (li.late) {
+          showStatus(`Clocked in (Late by ${li.minutesLate} min). Please inform manager.`, "warn");
+        } else {
+          showStatus("Clocked in successfully! Have a great shift ✅", "success");
+        }
+      } else if (!current.out) {
+        const ei = computeEarlyFor(username);
+
+        // If clocking out while on break, auto-end break
+        const updates = { out: timestamp, early: ei.early, minutesEarly: ei.minutesEarly };
+        if (current.currentBreakStart) {
+          const breaks = Array.isArray(current.breaks) ? current.breaks : [];
+          breaks.push({ start: current.currentBreakStart, end: timestamp });
+          updates.breaks = breaks;
+          updates.currentBreakStart = null;
+        }
+
+        await update(attendanceRef, updates);
+
+        if (ei.early) {
+          showStatus(`Clocked out (Early by ${ei.minutesEarly} min). Thanks 👋`, "warn");
+        } else {
+          showStatus("Clocked out successfully! See you next time 👋", "success");
+        }
+      }
+
+      await updateButtonState();
+    });
+
+    // Break actions
+    startBreakBtn.addEventListener("click", async () => {
+      const username = staffSelect.value;
+      if (!username) return;
+
+      const attendanceRef = ref(db, `attendance/${todayISO}/${username}`);
+      const snap = await get(attendanceRef);
+      const data = snap.val() || {};
+      if (!data.in || data.out) return;
+
+      if (data.currentBreakStart) {
+        showStatus("You're already on break.", "warn");
+        return;
+      }
+
+      showStatus("Starting break...", "info");
+      await update(attendanceRef, { currentBreakStart: new Date().toISOString() });
+      showStatus("Break started. Enjoy ☕", "success");
+      await updateButtonState();
+    });
+
+    endBreakBtn.addEventListener("click", async () => {
+      const username = staffSelect.value;
+      if (!username) return;
+
+      const attendanceRef = ref(db, `attendance/${todayISO}/${username}`);
+      const snap = await get(attendanceRef);
+      const data = snap.val() || {};
+      if (!data.in || data.out) return;
+
+      if (!data.currentBreakStart) {
+        showStatus("No active break found.", "warn");
+        return;
+      }
+
+      showStatus("Ending break...", "info");
+      const end = new Date().toISOString();
+      const breaks = Array.isArray(data.breaks) ? data.breaks : [];
+      breaks.push({ start: data.currentBreakStart, end: end });
+
+      await update(attendanceRef, {
+        breaks: breaks,
+        currentBreakStart: null
+      });
+
+      showStatus("Break ended. Back to work ✅", "success");
+      await updateButtonState();
+    });
+
+    // Initial load
+    showStatus("");
+    await loadStaffList();
+
+    // Optional: register service worker if you have sw.js
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>

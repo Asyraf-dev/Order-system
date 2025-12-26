@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Materials Inventory</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --card: rgba(255,255,255,.06);
+      --border: rgba(255,255,255,.10);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.65);
+      --brand: #3b82f6;
+      --ok: #22c55e;
+      --warn: #f59e0b;
+      --bad: #ef4444;
+      --shadow: 0 12px 40px rgba(0,0,0,.35);
+      --r: 18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: radial-gradient(1200px 600px at 15% 0%, rgba(59,130,246,.35), transparent 60%),
+                  radial-gradient(900px 500px at 95% 15%, rgba(34,197,94,.22), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+      padding:16px 14px 28px;
+    }
+    .wrap{max-width:980px;margin:0 auto}
+    .topbar{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      padding:14px 14px;border:1px solid var(--border);border-radius:var(--r);
+      background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+      box-shadow: var(--shadow);
+      position:sticky; top:10px; z-index:20; backdrop-filter: blur(10px);
+    }
+    .title{display:flex;flex-direction:column;gap:2px;min-width:0}
+    .title h1{margin:0;font-size:18px;letter-spacing:.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .title .sub{font-size:12px;color:var(--muted)}
+    .btnrow{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+    .btn{
+      border:1px solid var(--border);background:rgba(255,255,255,.06);color:var(--text);
+      padding:10px 12px;border-radius:14px;font-weight:800;cursor:pointer;
+      box-shadow: 0 10px 26px rgba(0,0,0,.25);
+      display:inline-flex;align-items:center;gap:8px;
+    }
+    .btn:active{transform:translateY(1px)}
+    .btn.primary{background:linear-gradient(180deg, rgba(59,130,246,.85), rgba(59,130,246,.55)); border-color: rgba(59,130,246,.55)}
+    .btn.ok{background:linear-gradient(180deg, rgba(34,197,94,.85), rgba(34,197,94,.55)); border-color: rgba(34,197,94,.55)}
+    .btn.warn{background:linear-gradient(180deg, rgba(245,158,11,.85), rgba(245,158,11,.55)); border-color: rgba(245,158,11,.55)}
+    .btn.ghost{background:transparent}
+    .grid{margin-top:14px;display:grid;grid-template-columns:1fr;gap:12px}
+    @media(min-width:860px){.grid{grid-template-columns: 1.2fr .8fr}}
+    .card{
+      border:1px solid var(--border);background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.04));
+      border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;
+    }
+    .card .hd{padding:14px 14px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .card .hd h2{margin:0;font-size:15px}
+    .card .bd{padding:14px}
+    .kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+    @media(min-width:520px){.kpis{grid-template-columns:repeat(4,1fr)}}
+    .kpi{
+      border:1px solid var(--border);background:rgba(255,255,255,.06);
+      border-radius:16px;padding:10px 12px;
+    }
+    .kpi .k{font-size:12px;color:var(--muted);font-weight:800}
+    .kpi .v{font-size:18px;font-weight:900;margin-top:3px}
+    .kpi .v small{font-size:12px;color:var(--muted);font-weight:800}
+    .field{display:flex;flex-direction:column;gap:7px;margin-bottom:10px}
+    label{font-size:12px;color:var(--muted);font-weight:900}
+    input,select{
+      width:100%;padding:12px 12px;border-radius:14px;border:1px solid var(--border);
+      background:rgba(0,0,0,.18);color:var(--text);outline:none;
+    }
+    input:focus,select:focus{border-color: rgba(59,130,246,.7); box-shadow: 0 0 0 3px rgba(59,130,246,.18)}
+    .help{font-size:12px;color:var(--muted);line-height:1.45}
+    .list{display:flex;flex-direction:column;gap:10px}
+    .item{
+      border:1px solid var(--border);background:rgba(255,255,255,.06);
+      border-radius:16px;padding:12px;
+    }
+    .item .r1{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+    .item .name{font-weight:950}
+    .pill{
+      font-size:11px;font-weight:950;padding:6px 10px;border-radius:999px;
+      border:1px solid var(--border); background:rgba(255,255,255,.06); color:var(--text);
+      white-space:nowrap;
+    }
+    .pill.low{border-color: rgba(239,68,68,.5); background:rgba(239,68,68,.12)}
+    .meta{margin-top:6px;font-size:12px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap}
+    .actions{margin-top:10px;display:flex;gap:10px;flex-wrap:wrap}
+    .actions .btn{padding:9px 11px;border-radius:13px}
+    .split{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media(max-width:420px){ .split{grid-template-columns:1fr} }
+    .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;
+      background:rgba(0,0,0,.55);border:1px solid var(--border);color:var(--text);
+      padding:10px 14px;border-radius:999px;box-shadow:var(--shadow);display:none;z-index:30}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="title">
+        <h1>📦 Materials Inventory</h1>
+        <div class="sub">Mobile-friendly materials list, stock, cost, and low-stock alerts.</div>
+      </div>
+      <div class="btnrow">
+        <button class="btn ghost" onclick="goBack()">← Menu</button>
+        <button class="btn primary" onclick="startAdd()">＋ Add</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="hd">
+          <h2>Materials</h2>
+          <span class="pill" id="countPill">0 items</span>
+        </div>
+        <div class="bd">
+          <div class="split">
+            <div class="field">
+              <label>Search</label>
+              <input id="search" placeholder="Type material name..." />
+            </div>
+            <div class="field">
+              <label>Filter</label>
+              <select id="filter">
+                <option value="all">All</option>
+                <option value="low">Low Stock</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="kpis" style="margin:10px 0 14px">
+            <div class="kpi"><div class="k">Total items</div><div class="v" id="kTotal">0</div></div>
+            <div class="kpi"><div class="k">Low stock</div><div class="v" id="kLow">0</div></div>
+            <div class="kpi"><div class="k">Total stock value</div><div class="v" id="kValue">0 <small>RM</small></div></div>
+            <div class="kpi"><div class="k">Avg cost/unit</div><div class="v" id="kAvg">0 <small>RM</small></div></div>
+          </div>
+
+          <div class="list" id="list"></div>
+          <div class="help" id="empty" style="display:none;margin-top:10px">
+            No materials yet. Tap <b>＋ Add</b> to create your first material.
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="editorCard" style="display:none">
+        <div class="hd">
+          <h2 id="editorTitle">Add Material</h2>
+          <span class="pill" id="editorMode">NEW</span>
+        </div>
+        <div class="bd">
+          <div class="field">
+            <label>Name</label>
+            <input id="mName" placeholder="Example: Ayam / Beras / Cili Masak" />
+          </div>
+
+          <div class="split">
+            <div class="field">
+              <label>Unit</label>
+              <select id="mUnit">
+                <option value="pcs">pcs</option>
+                <option value="g">g</option>
+                <option value="kg">kg</option>
+                <option value="ml">ml</option>
+                <option value="l">L</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Category</label>
+              <input id="mCat" placeholder="Example: Veg, Meat, Packaging" />
+            </div>
+          </div>
+
+          <div class="split">
+            <div class="field">
+              <label>Stock</label>
+              <input id="mStock" type="number" step="0.01" min="0" placeholder="0" />
+            </div>
+            <div class="field">
+              <label>Low-stock threshold</label>
+              <input id="mLow" type="number" step="0.01" min="0" placeholder="Optional" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Cost per unit (RM)</label>
+            <input id="mCost" type="number" step="0.01" min="0" placeholder="Optional" />
+            <div class="help">Used for COGS and dashboard cost estimates.</div>
+          </div>
+
+          <div class="actions">
+            <button class="btn ok" onclick="saveMaterial()">💾 Save</button>
+            <button class="btn" onclick="cancelEdit()">Cancel</button>
+            <button class="btn warn" id="btnDelete" style="display:none" onclick="deleteMaterial()">🗑 Delete</button>
+          </div>
+
+          <div class="help" style="margin-top:12px">
+            Tip: keep recipe units consistent with material units to avoid confusion.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import {
+      getDatabase, ref, onValue, push, set, update, remove, get
+    } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAUO2ZoVhSFEtAyJAP5r5zxu3kGqoIAyQ4",
+      authDomain: "ordersystem-d710a.firebaseapp.com",
+      databaseURL: "https://ordersystem-d710a-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "ordersystem-d710a",
+      storageBucket: "ordersystem-d710a.firebasestorage.app",
+      messagingSenderId: "741444965493",
+      appId: "1:741444965493:web:9991535a9105035c80943c",
+      measurementId: "G-4P6YQDH0LL"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const materialsRef = ref(db, "materials");
+
+    const listEl = document.getElementById("list");
+    const emptyEl = document.getElementById("empty");
+    const searchEl = document.getElementById("search");
+    const filterEl = document.getElementById("filter");
+
+    const editorCard = document.getElementById("editorCard");
+    const editorTitle = document.getElementById("editorTitle");
+    const editorMode = document.getElementById("editorMode");
+    const btnDelete = document.getElementById("btnDelete");
+
+    const mName = document.getElementById("mName");
+    const mUnit = document.getElementById("mUnit");
+    const mCat = document.getElementById("mCat");
+    const mStock = document.getElementById("mStock");
+    const mLow = document.getElementById("mLow");
+    const mCost = document.getElementById("mCost");
+
+    const kTotal = document.getElementById("kTotal");
+    const kLow = document.getElementById("kLow");
+    const kValue = document.getElementById("kValue");
+    const kAvg = document.getElementById("kAvg");
+    const countPill = document.getElementById("countPill");
+
+    let materials = {};
+    let editId = null;
+
+    function toast(msg){
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.style.display = "block";
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(()=> t.style.display="none", 1600);
+    }
+
+    function norm(s){ return (s||"").toString().trim(); }
+    function num(x){ const n = Number(x); return Number.isFinite(n) ? n : 0; }
+
+    window.goBack = function(){
+      window.location.href = "menu.html";
+    }
+
+    window.startAdd = function(){
+      editId = null;
+      editorTitle.textContent = "Add Material";
+      editorMode.textContent = "NEW";
+      btnDelete.style.display = "none";
+      mName.value = "";
+      mUnit.value = "pcs";
+      mCat.value = "";
+      mStock.value = "";
+      mLow.value = "";
+      mCost.value = "";
+      editorCard.style.display = "block";
+      editorCard.scrollIntoView({behavior:"smooth", block:"start"});
+      mName.focus();
+    }
+
+    function startEdit(id){
+      const m = materials[id];
+      if(!m) return;
+      editId = id;
+      editorTitle.textContent = "Edit Material";
+      editorMode.textContent = "EDIT";
+      btnDelete.style.display = "inline-flex";
+      mName.value = m.name || "";
+      mUnit.value = m.unit || "pcs";
+      mCat.value = m.category || "";
+      mStock.value = (m.stock ?? "");
+      mLow.value = (m.lowStock ?? "");
+      mCost.value = (m.costPerUnit ?? "");
+      editorCard.style.display = "block";
+      editorCard.scrollIntoView({behavior:"smooth", block:"start"});
+    }
+
+    window.saveMaterial = async function(){
+      const name = norm(mName.value);
+      if(!name){ toast("Name is required"); return; }
+
+      const payload = {
+        name,
+        unit: norm(mUnit.value) || "pcs",
+        category: norm(mCat.value),
+        stock: num(mStock.value),
+        lowStock: (mLow.value === "" ? null : num(mLow.value)),
+        costPerUnit: (mCost.value === "" ? null : num(mCost.value)),
+        updatedAt: Date.now()
+      };
+
+      try{
+        if(editId){
+          await update(ref(db, `materials/${editId}`), payload);
+          toast("Updated");
+        }else{
+          const newRef = push(materialsRef);
+          await set(newRef, payload);
+          toast("Added");
+        }
+        window.cancelEdit();
+      }catch(e){
+        console.error(e);
+        toast("Save failed");
+      }
+    }
+
+    window.cancelEdit = function(){
+      editorCard.style.display = "none";
+      editId = null;
+    }
+
+    window.deleteMaterial = async function(){
+      if(!editId) return;
+      if(!confirm("Delete this material?")) return;
+      try{
+        await remove(ref(db, `materials/${editId}`));
+        toast("Deleted");
+        window.cancelEdit();
+      }catch(e){
+        console.error(e);
+        toast("Delete failed");
+      }
+    }
+
+    function render(){
+      const q = norm(searchEl.value).toLowerCase();
+      const mode = filterEl.value;
+
+      const arr = Object.entries(materials).map(([id,m])=>({id,...m}));
+      arr.sort((a,b)=> (a.name||"").localeCompare(b.name||""));
+
+      const filtered = arr.filter(m=>{
+        const name = (m.name||"").toLowerCase();
+        if(q && !name.includes(q)) return false;
+        const low = (m.lowStock != null && Number(m.stock||0) <= Number(m.lowStock||0));
+        if(mode === "low" && !low) return false;
+        return true;
+      });
+
+      listEl.innerHTML = "";
+      if(filtered.length === 0){
+        emptyEl.style.display = (Object.keys(materials).length===0) ? "block" : "none";
+      }else{
+        emptyEl.style.display = "none";
+      }
+
+      filtered.forEach(m=>{
+        const low = (m.lowStock != null && Number(m.stock||0) <= Number(m.lowStock||0));
+        const pill = low ? `<span class="pill low">LOW</span>` : `<span class="pill">OK</span>`;
+        const cost = (m.costPerUnit == null ? "-" : Number(m.costPerUnit).toFixed(2));
+        const stock = Number(m.stock||0);
+        const unit = m.unit || "pcs";
+        const lowTxt = (m.lowStock == null ? "-" : Number(m.lowStock||0));
+        const cat = m.category ? m.category : "-";
+
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `
+          <div class="r1">
+            <div>
+              <div class="name">${m.name || "(no name)"}</div>
+              <div class="meta">
+                <span>Stock: <b>${stock}</b> ${unit}</span>
+                <span>Low: <b>${lowTxt}</b></span>
+              </div>
+              <div class="meta">
+                <span>Cost: <b>${cost}</b> RM/${unit}</span>
+                <span>Category: <b>${cat}</b></span>
+              </div>
+            </div>
+            ${pill}
+          </div>
+          <div class="actions">
+            <button class="btn" onclick="window.__edit('${m.id}')">✏️ Edit</button>
+          </div>
+        `;
+        listEl.appendChild(div);
+      });
+
+      // KPIs
+      const total = arr.length;
+      const lowCount = arr.filter(m => (m.lowStock != null && Number(m.stock||0) <= Number(m.lowStock||0))).length;
+      let totalValue = 0;
+      let costCount = 0;
+      let costSum = 0;
+
+      arr.forEach(m=>{
+        const c = (m.costPerUnit == null ? null : Number(m.costPerUnit));
+        const s = Number(m.stock||0);
+        if(c != null && Number.isFinite(c)){
+          totalValue += c * s;
+          costSum += c;
+          costCount += 1;
+        }
+      });
+
+      kTotal.textContent = String(total);
+      kLow.textContent = String(lowCount);
+      kValue.textContent = (Math.round(totalValue*100)/100).toString();
+      kAvg.textContent = (costCount ? (Math.round((costSum/costCount)*100)/100).toString() : "0");
+      countPill.textContent = `${filtered.length} items`;
+    }
+
+    window.__edit = (id)=> startEdit(id);
+
+    searchEl.addEventListener("input", render);
+    filterEl.addEventListener("change", render);
+
+    onValue(materialsRef, (snap)=>{
+      materials = snap.val() || {};
+      render();
+    });
+  </script>
+</body>
+</html>
