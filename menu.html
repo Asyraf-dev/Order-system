@@ -1,174 +1,564 @@
-<!doctype html>
+<!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Menu Admin — Restoran Ayam Gepuk Ngences</title>
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Menu Admin — Restoran Ayam Gepuk Ngences</title>
+<style>
     :root{
-      --accent:#0b74de;
-      --muted:#6b7280;
-      --card:#fff;
-      --bg:#f6f8fb;
-      --danger:#ef4444;
-      --success:#16a34a;
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+
+      --primary: #2563eb;
+      --primary-2: #1d4ed8;
+      --ring: rgba(37,99,235,.16);
+
+      --success: #16a34a;
+      --danger: #ef4444;
+      --warn: #f59e0b;
+
+      --border: #e7ecf3;
+      --shadow: 0 14px 36px rgba(2, 6, 23, 0.07);
+      --shadow-soft: 0 8px 22px rgba(2, 6, 23, 0.06);
+
+      --radius: 16px;
     }
+
     *{box-sizing:border-box}
+    html,body{height:100%}
     body{
       margin:0;
-      font-family: Inter, "Segoe UI", Roboto, system-ui, -apple-system, Arial;
-      background:var(--bg);
-      color:#0f172a;
-      padding:16px;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color: var(--text);
+      background:
+        radial-gradient(900px 480px at 18% 6%, rgba(37,99,235,.12), transparent 60%),
+        radial-gradient(900px 520px at 90% 20%, rgba(245,158,11,.10), transparent 60%),
+        var(--bg);
+      padding: 18px;
     }
 
-    header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
-    header h1{margin:0;font-size:1.25rem}
-    header p{margin:0;color:var(--muted);font-size:0.95rem}
-
-    .container{display:grid;grid-template-columns: 1fr; gap:12px; max-width:1100px;margin:0 auto;}
-    @media(min-width:900px){ .container{grid-template-columns: 360px 1fr} }
-
-    .card{background:var(--card); border-radius:12px; padding:12px; box-shadow:0 6px 18px rgba(12,18,30,0.04); border:1px solid #eef2f6}
-    .card h3{margin:0 0 8px 0}
-
-    .form-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
-    label{font-size:13px;color:var(--muted)}
-    input[type="text"], input[type="number"], select, textarea{
-      width:100%; padding:8px 10px; border-radius:8px; border:1px solid #e6e9ee; font-size:14px;
-      background:white;
+    .topbar{
+      max-width: 1180px;
+      margin: 0 auto 14px auto;
+      display:flex;
+      gap:14px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
     }
-    textarea{min-height:90px; resize:vertical}
-    .btn{display:inline-block;padding:8px 12px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
-    .btn-primary{background:var(--accent);color:white}
-    .btn-ghost{background:transparent;border:1px solid #dbe6f6;color:var(--accent)}
-    .btn-danger{background:var(--danger);color:white}
-    .muted{color:var(--muted);font-size:13px}
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .logo{
+      width:40px;height:40px;border-radius:14px;
+      background: linear-gradient(135deg, var(--primary), #60a5fa);
+      box-shadow: var(--shadow-soft);
+      display:grid;place-items:center;
+      color:white;font-weight:900;
+      letter-spacing:-0.02em;
+      user-select:none;
+    }
+    .brand h1{margin:0;font-size:18px;letter-spacing:-0.02em}
+    .brand p{margin:0;color:var(--muted);font-size:13px}
+    .top-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .hint{
+      font-size:12px;color:var(--muted);
+      background: rgba(255,255,255,.7);
+      border:1px solid var(--border);
+      padding:8px 10px;border-radius:999px;
+      box-shadow: 0 1px 0 rgba(255,255,255,.9) inset;
+    }
 
-    #items-list{display:flex;flex-direction:column;gap:10px;max-height:70vh;overflow:auto;padding-right:6px}
-    .item-row{display:flex;gap:12px;align-items:flex-start;padding:10px;border-radius:10px;border:1px solid #eef2f6;background:linear-gradient(180deg,#fff,#fbfdff)}
-    .item-thumb{width:84px;height:64px;border-radius:8px;object-fit:cover;border:1px solid #f0f2f5;flex-shrink:0}
-    .item-main{flex:1;display:flex;flex-direction:column;gap:6px}
-    .item-title{font-weight:700;font-size:15px}
-    .item-meta{color:var(--muted);font-size:13px}
-    .item-controls{display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap}
+    .container{
+      max-width:1180px;
+      margin:0 auto;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+    @media (min-width: 980px){
+      .container{grid-template-columns: 410px 1fr;}
+    }
 
-    .toggle-switch{display:inline-flex;align-items:center;gap:8px}
-    .switch{width:44px;height:24px;background:#e6eefc;border-radius:999px;position:relative;cursor:pointer}
-    .switch .knob{position:absolute;width:18px;height:18px;border-radius:50%;top:3px;left:3px;background:white;box-shadow:0 4px 8px rgba(2,6,23,0.06);transition:all .18s}
-    .switch.on{background:var(--success)}
+    .card{
+      background: rgba(255,255,255,.92);
+      backdrop-filter: blur(6px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card-header{
+      padding: 14px 14px 10px 14px;
+      border-bottom: 1px solid var(--border);
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .card-header h2{margin:0;font-size:15px;letter-spacing:-0.02em}
+    .card-header .sub{margin:2px 0 0 0;font-size:12px;color:var(--muted)}
+    .card-body{padding: 14px;}
+
+    .section-title{
+      font-weight:900;
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color: var(--muted);
+      margin: 14px 0 8px 0;
+    }
+
+    .grid{display:grid;grid-template-columns: 1fr;gap: 10px;}
+    .grid.two{grid-template-columns: 1fr;}
+    @media (min-width: 520px){ .grid.two{grid-template-columns: 1fr 1fr;} }
+
+    .field label{
+      display:block;
+      font-size:12px;
+      color: var(--muted);
+      margin: 0 0 6px 2px;
+    }
+    .field input[type="text"],
+    .field input[type="number"],
+    .field select,
+    .field textarea{
+      width:100%;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      font-size: 14px;
+      background: white;
+      outline: none;
+      box-shadow: 0 1px 0 rgba(255,255,255,.9) inset;
+      transition: box-shadow .15s, border-color .15s;
+    }
+    .field textarea{min-height:98px; resize:vertical}
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus{
+      border-color: rgba(37,99,235,.55);
+      box-shadow: 0 0 0 4px var(--ring);
+    }
+    .help{font-size:12px;color:var(--muted);margin: 6px 0 0 2px;line-height:1.4;}
+
+    .toggle-row{
+      display:flex;align-items:center;justify-content:space-between;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, #fff, #fbfdff);
+    }
+    .toggle-left{display:flex;flex-direction:column;gap:2px}
+    .toggle-left .title{font-weight:900;font-size:13px}
+    .toggle-left .desc{font-size:12px;color:var(--muted)}
+
+    .switch{
+      width: 46px; height: 26px;
+      background: #e8efff;
+      border: 1px solid #dbe6ff;
+      border-radius: 999px;
+      position:relative;
+      cursor:pointer;
+      flex-shrink:0;
+      transition: background .18s, border-color .18s;
+      box-shadow: 0 2px 10px rgba(2, 6, 23, 0.06) inset;
+    }
+    .switch .knob{
+      position:absolute; top:3px; left:3px;
+      width: 20px; height: 20px;
+      border-radius: 999px;
+      background:#fff;
+      box-shadow: 0 8px 18px rgba(2, 6, 23, 0.10);
+      transition: left .18s;
+    }
+    .switch.on{
+      background: rgba(22,163,74,.18);
+      border-color: rgba(22,163,74,.35);
+    }
     .switch.on .knob{left:23px}
 
-    .small-muted{font-size:12px;color:var(--muted)}
-    .danger-small{background:transparent;border:1px solid rgba(239,68,68,0.12);color:var(--danger);padding:6px 8px;border-radius:8px}
+    .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .btn{
+      border:none;cursor:pointer;font-weight:900;border-radius: 14px;
+      padding: 10px 12px;font-size: 14px;
+      transition: transform .05s, box-shadow .15s, background .15s;
+    }
+    .btn:active{transform: translateY(1px)}
+    .btn-primary{
+      color:white;
+      background: linear-gradient(180deg, var(--primary), var(--primary-2));
+      box-shadow: 0 10px 20px rgba(37,99,235,.22);
+    }
+    .btn-ghost{background: transparent;border: 1px solid #dbe6ff;color: var(--primary);}
+    .btn-danger{
+      color:white;background: linear-gradient(180deg, #ef4444, #dc2626);
+      box-shadow: 0 10px 20px rgba(239,68,68,.18);
+    }
 
-    /* Category availability UI */
+    .toolbar{
+      display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+      padding: 0 14px 14px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .tool{display:flex;flex-direction:column;gap:6px;min-width:180px}
+    .tool.grow{flex:1;min-width:220px}
+    #search{width:100%}
+    @media(max-width:520px){.tool{min-width:100%}.tool.grow{min-width:100%}}
+.toolbar .label{font-size:12px;color:var(--muted);font-weight:900;text-transform:uppercase;letter-spacing:.08em}
+    .toolbar select{
+      border-radius: 12px;border: 1px solid var(--border);
+      padding: 9px 10px;font-size: 14px;background:white;outline:none;
+    }
+    #items-list{padding: 14px; max-height: 72vh; overflow:auto; display:flex; flex-direction:column; gap: 10px;}
+
+    .group-header{
+      display:flex;align-items:center;justify-content:space-between;
+      padding: 10px 12px;border-radius: 14px;border: 1px solid var(--border);
+      background: linear-gradient(180deg, #ffffff, #f7fbff);
+      margin: 10px 0 2px 0;
+    }
+    .group-header .name{font-weight:900;color:var(--primary);letter-spacing:-0.01em}
+    .group-header .meta{font-size:12px;color:var(--muted)}
+
+    .item-row{
+      display:flex;gap: 12px;align-items:flex-start;padding: 12px;
+      border-radius: 16px;border: 1px solid var(--border);
+      background: linear-gradient(180deg, #fff, #fbfdff);
+      box-shadow: 0 10px 22px rgba(2, 6, 23, 0.05);
+      cursor:pointer;
+      transition: transform .06s, box-shadow .18s, border-color .18s;
+    }
+    .item-row:hover{
+      transform: translateY(-1px);
+      border-color: rgba(37,99,235,.22);
+      box-shadow: 0 14px 30px rgba(2, 6, 23, 0.08);
+    }
+
+    .thumb{
+      width: 92px; height: 72px;border-radius: 14px;border: 1px solid #eef2f7;
+      object-fit: cover;flex-shrink:0;background:#f8fafc;
+    }
+    .item-main{flex:1; display:flex; flex-direction:column; gap: 6px;}
+    .title-row{display:flex; align-items:center; gap: 8px; flex-wrap:wrap}
+    .title{font-weight:900; font-size: 15px; letter-spacing:-0.01em}
+    .meta{color:var(--muted); font-size: 13px}
+    .chips{display:flex; gap:6px; flex-wrap:wrap; margin-top: 2px}
+
+    .chip{
+      display:inline-flex;align-items:center;padding: 4px 9px;border-radius: 999px;
+      font-size: 12px;font-weight: 900;border: 1px solid #e5e7eb;background: #fff;color: #0f172a;
+      box-shadow: 0 1px 0 rgba(255,255,255,.9) inset;white-space:nowrap;
+    }
+    .chip-stock-ok{border-color: rgba(22,163,74,.25); color: var(--success)}
+    .chip-stock-low{border-color: rgba(245,158,11,.35); color: var(--warn)}
+    .chip-stock-out{border-color: rgba(239,68,68,.30); color: var(--danger)}
+
+    .chip-new{border-color: rgba(37,99,235,.25); color: var(--primary); background: rgba(37,99,235,.06)}
+    .chip-hot{border-color: rgba(239,68,68,.25); color: #dc2626; background: rgba(239,68,68,.06)}
+    .chip-rec{border-color: rgba(245,158,11,.35); color: #b45309; background: rgba(245,158,11,.08)}
+
+    .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top: 6px;}
+    .mini-btn{
+      border-radius: 12px;padding: 8px 10px;font-weight: 900;font-size: 13px;
+      border: 1px solid #dbe6ff;background: rgba(37,99,235,.05);color: var(--primary);cursor:pointer;
+    }
+    .mini-danger{border-color: rgba(239,68,68,.25);background: rgba(239,68,68,.06);color: #dc2626;}
+
+    .category-panel{
+      padding: 14px;border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(255,255,255,.8), rgba(255,255,255,.92));
+    }
+    .category-panel h3{margin:0 0 10px 0;font-size: 14px;letter-spacing:-0.01em;}
     .category-list{display:flex;flex-direction:column;gap:8px}
-    .category-row{display:flex;align-items:center;justify-content:space-between;padding:8px;border-radius:8px;border:1px solid #eef2f6;background:#fff}
-    .category-name{font-weight:700;color:#0f172a}
-    .category-note{font-size:12px;color:var(--muted)}
+    .category-row{
+      display:flex;align-items:center;justify-content:space-between;
+      padding: 10px 12px;border-radius: 14px;border: 1px solid var(--border);background:#fff;
+    }
+    .category-name{font-weight:900}
+    .category-note{font-size:12px;color:var(--muted);margin-top:2px}
+    .notice-small{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5}
 
-    #notice{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;padding:10px 14px;border-radius:10px;background:#111827;color:white;display:none;z-index:9999}
-  </style>
+
+    /* Recipe materials */
+    .recipeRows{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+    .recipeRow{
+      display:grid;
+      grid-template-columns: 1fr 130px 44px;
+      gap: 8px;
+      align-items:center;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #fff;
+    }
+    .recipeRow select,.recipeRow input{
+      width:100%;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      font-size: 14px;
+      background: white;
+      outline:none;
+    }
+    .recipeRow button{
+      border-radius: 12px;
+      padding: 10px 0;
+      font-weight: 900;
+      border: 1px solid rgba(239,68,68,.25);
+      background: rgba(239,68,68,.06);
+      color: #dc2626;
+      cursor:pointer;
+    }
+
+    /* Materials inventory (global) */
+    .materialsGrid{display:grid;grid-template-columns:1fr;gap:12px}
+    @media (min-width: 980px){ .materialsGrid{grid-template-columns: 430px 1fr;} }
+    .table{
+      width:100%;
+      border-collapse: collapse;
+      overflow:hidden;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background:#fff;
+    }
+    .table th,.table td{
+      padding: 10px 10px;
+      border-bottom: 1px solid var(--border);
+      text-align:left;
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .table th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+    .table tr:last-child td{border-bottom:none}
+    .rowActions{display:flex;gap:8px;flex-wrap:wrap}
+    .tagLow{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:900;border:1px solid rgba(245,158,11,.35);background:rgba(245,158,11,.08);color:#b45309}
+
+    #notice{
+      position:fixed;left:50%;transform:translateX(-50%);
+      bottom: 18px;padding: 10px 14px;border-radius: 14px;
+      background: rgba(2, 6, 23, 0.88);color:white;display:none;z-index:9999;
+      box-shadow: 0 12px 28px rgba(2,6,23,.22);
+      border: 1px solid rgba(255,255,255,.12);
+      font-weight: 900;max-width: calc(100vw - 32px);
+    }
+  
+    .cat-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .mini-btn{
+      border:1px solid var(--border);
+      background:#fff;
+      color:#1f2937;
+      padding:8px 12px;
+      border-radius:12px;
+      font-weight:900;
+      cursor:pointer;
+    }
+    .mini-btn:active{transform:translateY(1px)}
+    .category-panel.collapsed .category-body{display:none}
+
+    .category-panel.collapsed .notice-small{display:none}
+
+    .toggleRow{margin-top:10px}
+    .toggleLabel{display:flex;align-items:center;gap:10px;font-weight:900;color:#0f172a}
+    .toggleLabel input{width:18px;height:18px}
+    #recipeSection{display:none}
+</style>
+
+<style>
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border-radius:14px;font-weight:800;text-decoration:none}
+  .btn-outline{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:rgba(255,255,255,.92)}
+</style>
+
+<style>
+  .unit-badge{display:inline-flex;align-items:center;justify-content:center;min-width:44px;
+    padding:10px 10px;border-radius:14px;border:1px solid rgba(255,255,255,.18);
+    background:rgba(255,255,255,.06);color:rgba(255,255,255,.85);font-weight:900}
+  @media(max-width:420px){.unit-badge{min-width:40px;padding:10px 8px}}
+</style>
 </head>
 <body>
+<div class="topbar">
+<div class="brand">
+<div class="logo">M</div>
+<div>
+<h1>Menu Admin</h1>
+<p>Manage items, stock tracking, category availability, and badges.</p>
+</div>
+</div>
+<div class="top-actions">
+<div class="hint">Stock-tracked item becomes unavailable automatically when stock = 0.</div>
+<a class="btn btn-outline" href="materials.html">📦 Materials</a></div>
+</div>
+<div class="container">
+<div class="card">
+<div class="card-header">
+<div>
+<h2 id="form-title">Add New Menu Item</h2>
+<div class="sub">Create or update an item. Changes are saved to Firebase.</div>
+</div>
+</div>
+<div class="card-body">
+<div class="grid">
+<div class="field">
+<label>Item name</label>
+<input id="name" placeholder="e.g. Original Peha (Sambal Kacang)" type="text"/>
+</div>
+<div class="grid two">
+<div class="field">
+<label>Price (RM)</label>
+<input id="price" min="0" step="0.01" type="number" value="0.00"/>
+</div>
+<div class="field">
+<label>Category</label>
+<select id="category">
+<option value="food">Food</option>
+<option value="Side Dish">Side Dish</option>
+<option value="Air Panas">Air Panas</option>
+<option value="Air Sejuk">Air Sejuk</option>
+<option value="Little Ngences Food">Little Ngences Food</option>
+<option value="Little Ngences Drink">Little Ngences Drink</option>
+<option value="Others">Others</option>
+</select>
+</div>
+</div>
+<div class="field">
+<label>Image URL (optional)</label>
+<input id="image" placeholder="https://...jpg" type="text"/>
+<div class="help">If empty, a placeholder image is used.</div>
+</div>
+<div class="section-title">Badges</div>
+<div class="grid">
+<div class="toggle-row">
+<div class="toggle-left">
+<div class="title">New Item</div>
+<div class="desc">Show “NEW” in customer view.</div>
+</div>
+<span aria-checked="false" class="switch" id="isNewSwitch" role="switch"><span class="knob"></span></span>
+</div>
+<div class="toggle-row">
+<div class="toggle-left">
+<div class="title">Hot Seller</div>
+<div class="desc">Mark as best seller / popular.</div>
+</div>
+<span aria-checked="false" class="switch" id="isHotSwitch" role="switch"><span class="knob"></span></span>
+</div>
+<div class="toggle-row">
+<div class="toggle-left">
+<div class="title">Recommended</div>
+<div class="desc">Highlight as recommended.</div>
+</div>
+<span aria-checked="false" class="switch" id="isRecSwitch" role="switch"><span class="knob"></span></span>
+</div>
+</div>
+<div class="section-title">Stock</div>
+<div class="toggle-row">
+<div class="toggle-left">
+<div class="title">Track stock for this item</div>
+<div class="desc">When stock reaches 0, item becomes unavailable automatically.</div>
+</div>
+<span aria-checked="false" class="switch" id="trackStockSwitch" role="switch"><span class="knob"></span></span>
+</div>
+<div class="grid two" id="stockRow" style="display:none">
+<div class="field">
+<label>Stock count</label>
+<input id="stockCount" min="0" step="1" type="number" value="0"/>
+<div class="help">Set to 0 to mark out-of-stock.</div>
+</div>
+<div class="field">
+<label>Status</label>
+<input disabled="" id="stockHint" type="text" value="Unlimited stock (tracking off)"/>
+<div class="help">Category off will also hide the item.</div>
+</div>
+</div>
+<div class="section-title">Add-ons</div>
+<div class="field">
+<label>Add-ons (one per line, format: name:price)</label>
+<textarea id="addons" placeholder="Nasi Tambah:2.00
+Tempe Tambah:1.50"></textarea>
+<div class="help">Avoid characters <b>. # $ / [ ]</b> in add-on names.</div>
+</div>
+<div class="section-title">Recipe Materials (per 1 menu)</div>
+<div class="toggleRow">
+  <label class="toggleLabel">
+    <input type="checkbox" id="useMaterialsToggle" />
+    <span>Enable materials deduction for this menu</span>
+  </label>
+</div>
 
-  <header>
-    <div>
-      <h1>Menu Admin</h1>
-      <p class="muted">Add / Edit / Toggle availability of menu items in Firebase</p>
-    </div>
-  </header>
+<div id="recipeSection">
 
-  <div class="container">
-    <!-- left: add/edit form -->
-    <div class="card">
-      <h3 id="form-title">Add New Menu Item</h3>
-      <div style="margin-top:8px">
-        <div class="form-row">
-          <div style="flex:1">
-            <label>Item name</label>
-            <input id="name" type="text" placeholder="e.g. Original Peha (Sambal Kacang)">
+<div class="help">
+            Add the raw materials used for <b>1 serving</b>. When a customer submits an order, the system will auto-deduct these materials and record daily usage for the dashboard.
           </div>
+<div class="recipeRows" id="recipeRows"></div>
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">
+<button class="mini-btn" id="addRecipeRowBtn" type="button">+ Add material</button>
+<button class="mini-btn mini-danger" id="clearRecipeBtn" title="Remove all recipe rows" type="button">Clear</button>
+</div>
+
+</div>
+<div class="btn-row">
+<button class="btn btn-primary" id="save-btn">Save</button>
+<button class="btn btn-ghost" id="reset-btn">Reset</button>
+<button class="btn btn-danger" id="delete-btn" style="display:none">Delete</button>
+</div>
+<div class="help">Tip: click an item on the right to edit it.</div>
+</div>
+</div>
+</div>
+<div class="card">
+<div class="card-header">
+<div>
+<h2>Menu Items</h2>
+<div class="sub">Toggle category availability or manage items below.</div>
+</div>
+</div>
+<div class="category-panel collapsed">
+<div class="cat-head">
+  <h3>Category Availability</h3>
+  <button type="button" class="mini-btn" id="category-toggle" aria-expanded="false">Show</button>
+</div><div class="category-body">
+
+<div class="category-list" id="category-availability">
+</div></div>
+<div class="notice-small">
+          Changing a category toggle sets all items in that category to available/unavailable.
+          Stock-tracked items with stock = 0 will stay unavailable.
         </div>
-
-        <div class="form-row">
-          <div style="width:140px">
-            <label>Price (RM)</label>
-            <input id="price" type="number" step="0.01" min="0" value="0.00">
-          </div>
-          <div style="flex:1">
-            <label>Category</label>
-            <select id="category">
-              <option value="food">Food</option>
-              <option value="Side Dish">Side Dish</option>
-              <option value="Air Panas">Air Panas</option>
-              <option value="Air Sejuk">Air Sejuk</option>
-              <option value="Little Ngences Food">Little Ngences Food</option>
-              <option value="Little Ngences Drink">Little Ngences Drink</option>
-              <option value="Others">Others</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div style="flex:1">
-            <label>Image URL (optional)</label>
-            <input id="image" type="text" placeholder="https://...jpg">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div style="flex:1">
-            <label>Add-ons (one per line, format: name:price)</label>
-            <textarea id="addons" placeholder="Nasi Tambah:2.00&#10;Tempe Tambah:1.50"></textarea>
-            <div class="muted" style="margin-top:6px">Avoid characters . # $ / [ ]</div>
-          </div>
-        </div>
-
-        <div style="display:flex;gap:8px;margin-top:10px">
-          <button id="save-btn" class="btn btn-primary">Save</button>
-          <button id="reset-btn" class="btn btn-ghost">Reset</button>
-          <button id="delete-btn" class="btn btn-danger" style="display:none">Delete</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- right: category availability + items list -->
-    <div class="card">
-      <h3>Menu Items</h3>
-
-      <!-- Category Availability panel (NEW) -->
-      <div class="card" style="margin-bottom:12px;padding:10px">
-        <h4 style="margin:0 0 8px 0;color:var(--accent)">Category Availability</h4>
-        <div id="category-availability" class="category-list">
-          <!-- dynamically populated -->
-        </div>
-        <div class="muted" style="margin-top:8px">Toggles are saved — changing a category toggle will set all items in that category to available/unavailable.</div>
-      </div>
-
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-        <label for="filter" style="font-size:14px;color:var(--muted)">Filter:</label>
-        <select id="filter" style="padding:6px 8px;border-radius:8px;border:1px solid #e5e7eb;font-size:14px">
-          <option value="all">All</option>
-          <option value="food">Food</option>
-          <option value="Side Dish">Side Dish</option>
-          <option value="Air Panas">Air Panas</option>
-          <option value="Air Sejuk">Air Sejuk</option>
-          <option value="Little Ngences Food">Little Ngences Food</option>
-          <option value="Little Ngences Drink">Little Ngences Drink</option>
-          <option value="Others">Others</option>
-        </select>
-      </div>
-
-      <div id="items-list" aria-live="polite"></div>
-    </div>
+</div>
+<div class="toolbar">
+  <div class="tool">
+    <div class="label">Filter</div>
+    <select id="filter">
+<option value="all">All</option>
+<option value="food">Food</option>
+<option value="Side Dish">Side Dish</option>
+<option value="Air Panas">Air Panas</option>
+<option value="Air Sejuk">Air Sejuk</option>
+<option value="Little Ngences Food">Little Ngences Food</option>
+<option value="Little Ngences Drink">Little Ngences Drink</option>
+<option value="Others">Others</option>
+</select>
   </div>
 
-  <div id="notice"></div>
+  <div class="tool grow">
+    <div class="label">Search</div>
+    <input id="search" type="text" placeholder="Search menu name..." />
+  </div>
+</div>
+<div aria-live="polite" id="items-list"></div>
 
-  <!-- Firebase + script -->
-  <script type="module">
+</div>
+</div>
+<div id="notice"></div>
+<script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
     import {
       getDatabase, ref, onValue, push, set, update, remove, get
@@ -187,17 +577,14 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+
     const itemsRef = ref(db, "menuItems");
-    const categoryStatusRef = ref(db, "categoryStatus"); // NEW: store per-category availability
+    const categoryStatusRef = ref(db, "categoryStatus");
+    const materialsRef = ref(db, "materials");
 
     const categories = [
-      "food",
-      "Side Dish",
-      "Air Panas",
-      "Air Sejuk",
-      "Little Ngences Food",
-      "Little Ngences Drink",
-      "Others"
+      "food","Side Dish","Air Panas","Air Sejuk",
+      "Little Ngences Food","Little Ngences Drink","Others"
     ];
 
     const itemsList = document.getElementById("items-list");
@@ -206,40 +593,93 @@
     const categoryEl = document.getElementById("category");
     const imageEl = document.getElementById("image");
     const addonsEl = document.getElementById("addons");
+
+    // Recipe UI (materials per 1 menu)
+    const recipeRowsEl = document.getElementById("recipeRows");
+    const useMaterialsToggle = document.getElementById("useMaterialsToggle");
+    const recipeSectionEl = document.getElementById("recipeSection");
+    const addRecipeRowBtn = document.getElementById("addRecipeRowBtn");
+    const clearRecipeBtn = document.getElementById("clearRecipeBtn");
+
+    // Materials manager UI
+    const matNameEl = document.getElementById("matName");
+    const matUnitEl = document.getElementById("matUnit");
+    const matStockEl = document.getElementById("matStock");
+    const matCostEl = document.getElementById("matCost");
+    const matCategoryEl = document.getElementById("matCategory");
+    const matSaveBtn = document.getElementById("matSaveBtn");
+    const matResetBtn = document.getElementById("matResetBtn");
+    const matDeleteBtn = document.getElementById("matDeleteBtn");
+    const materialsTbody = document.getElementById("materialsTbody");
+    const matSearchEl = document.getElementById("matSearch");
+
+    let materialsCache = {}; // {materialId: {name, unit, stock, costPerUnit, category}}
+    let editingMaterialId = null;
+
+
+    const isNewSwitch = document.getElementById("isNewSwitch");
+    const isHotSwitch = document.getElementById("isHotSwitch");
+    const isRecSwitch = document.getElementById("isRecSwitch");
+
+    const trackStockSwitch = document.getElementById("trackStockSwitch");
+    const stockRowEl = document.getElementById("stockRow");
+    const stockCountEl = document.getElementById("stockCount");
+    const stockHintEl = document.getElementById("stockHint");
+
     const saveBtn = document.getElementById("save-btn");
     const resetBtn = document.getElementById("reset-btn");
     const deleteBtn = document.getElementById("delete-btn");
     const formTitle = document.getElementById("form-title");
     const notice = document.getElementById("notice");
     const filterEl = document.getElementById("filter");
+    const searchEl = document.getElementById("search");
+    let __searchMode = "contains"; // "contains" | "startsWith"
     const categoryAvailabilityEl = document.getElementById("category-availability");
+    const categoryPanelEl = document.querySelector(".category-panel");
+    const categoryToggleBtn = document.getElementById("category-toggle");
+    if(categoryPanelEl && categoryToggleBtn){
+      // minimized by default (collapsed class already in HTML)
+      categoryToggleBtn.textContent = "Show";
+      categoryToggleBtn.setAttribute("aria-expanded","false");
+
+      categoryToggleBtn.addEventListener("click", ()=>{
+        const collapsed = categoryPanelEl.classList.toggle("collapsed");
+        categoryToggleBtn.textContent = collapsed ? "Show" : "Hide";
+        categoryToggleBtn.setAttribute("aria-expanded", collapsed ? "false" : "true");
+      });
+    }
+
 
     let editingId = null;
-    let currentCategoryStatus = {}; // cached from Firebase
+    let currentCategoryStatus = {};
+    let lastItemsCache = {};
 
-    function showNotice(msg,time=2500){
+    let formBadges = { isNew:false, isHot:false, isRecommended:false };
+    let formTrackStock = false;
+
+    function showNotice(msg, time=2500){
       notice.innerText = msg;
       notice.style.display = "block";
-      setTimeout(()=> notice.style.display="none",time);
+      setTimeout(()=> notice.style.display="none", time);
     }
 
     function sanitizeKey(k){
       if(!k) return "";
-      return k.replace(/[.#$\/\[\]]/g,'').trim().replace(/\s+/g,'_');
+      return k.replace(/[.#$\\/\\[\\]]/g,'').trim().replace(/\\s+/g,'_');
     }
 
     function parseAddons(text){
       const out = {};
-      const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      const lines = text.split(/\\r?\\n/).map(l => l.trim()).filter(Boolean);
       for(const line of lines){
-        const parts = line.split(/[:\-\|]/).map(p => p.trim());
+        const parts = line.split(/[:\\-\\|]/).map(p => p.trim());
         if(parts.length >= 2){
-          const label = parts[0]; // keep as typed
+          const label = parts[0];
           let price = parseFloat(parts[1]);
           if(isNaN(price)) price = 0;
           out[label] = Number(price);
         } else {
-          out[line] = 0; // no price, still keep raw text
+          out[line] = 0;
         }
       }
       return out;
@@ -249,165 +689,388 @@
       if(!obj) return "";
       return Object.entries(obj)
         .map(([label, price]) => `${label}:${Number(price).toFixed(2)}`)
-        .join("\n");
+        .join("\\n");
     }
 
-    function fillForm(id,data){
-      editingId=id;
-      formTitle.innerText=`Edit menu: ${data.name||id}`;
-      nameEl.value=data.name||"";
-      priceEl.value=Number(data.price||0).toFixed(2);
-      categoryEl.value=data.category||"food";
-      imageEl.value=data.image||"";
-      addonsEl.value=addonsToText(data.addOns||{});
-      deleteBtn.style.display="inline-block";
-      saveBtn.innerText="Update";
-      window.scrollTo({top:0,behavior:"smooth"});
+    // ---------- Recipe helpers ----------
+    function toNumber(val){
+      const n = Number(val);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function materialLabel(mat){
+      if(!mat) return "Material";
+      const unit = mat.unit ? ` (${mat.unit})` : "";
+      return `${mat.name || "Material"}${unit}`;
+    }
+
+    function buildMaterialOptions(selectedId){
+      const opts = ['<option value="">Select material…</option>'];
+      const entries = Object.entries(materialsCache || {})
+        .sort((a,b) => String(a[1]?.name||"").localeCompare(String(b[1]?.name||"")));
+      for(const [id, mat] of entries){
+        const sel = (id === selectedId) ? "selected" : "";
+        const name = (mat?.name || id).replace(/</g,"&lt;").replace(/>/g,"&gt;");
+        const unit = (mat?.unit || "").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+        opts.push(`<option value="${id}" ${sel}>${name}${unit ? " ("+unit+")" : ""}</option>`);
+      }
+      return opts.join("");
+    }
+
+    function setRecipeEnabled(enabled){
+      if(!recipeSectionEl || !useMaterialsToggle) return;
+      recipeSectionEl.style.display = enabled ? "block" : "none";
+      useMaterialsToggle.checked = !!enabled;
+    }
+
+    useMaterialsToggle && useMaterialsToggle.addEventListener("change", ()=>{
+      setRecipeEnabled(useMaterialsToggle.checked);
+    });
+
+function addRecipeRow(selectedId="", qty=""){
+      const row = document.createElement("div");
+      row.className = "recipeRow";
+      row.innerHTML = `
+        <select class="recipeMat">${buildMaterialOptions(selectedId)}</select>
+        <input class="recipeQty" type="number" min="0" step="0.01" placeholder="Qty" value="${qty}">
+        <button type="button" class="recipeRemove" title="Remove">✕</button>
+      `;
+      row.querySelector(".recipeRemove").addEventListener("click", () => row.remove());
+      recipeRowsEl.appendChild(row);
+    }
+
+    function clearRecipeRows(){
+      recipeRowsEl.innerHTML = "";
+    }
+
+    function setRecipeFromObject(obj){
+      clearRecipeRows();
+      const recipe = (obj && typeof obj === "object") ? obj : {};
+      const entries = Object.entries(recipe).filter(([,v]) => toNumber(v) > 0);
+      if(entries.length === 0){
+        // show one empty row for UX
+        addRecipeRow("", "");
+        return;
+      }
+      entries.forEach(([matId, qty]) => addRecipeRow(matId, String(qty)));
+    }
+
+    function getRecipeAsObject(){
+      const out = {};
+      const rows = Array.from(recipeRowsEl.querySelectorAll(".recipeRow"));
+      for(const r of rows){
+        const matId = (r.querySelector(".recipeMat")?.value || "").trim();
+        const qty = toNumber(r.querySelector(".recipeQty")?.value);
+        if(!matId || qty <= 0) continue;
+        out[matId] = qty;
+      }
+      return out;
+    }
+
+    function refreshRecipeDropdowns(){
+      // when materials list changes, update dropdowns but keep current selection
+      Array.from(recipeRowsEl.querySelectorAll(".recipeRow")).forEach(r => {
+        const sel = r.querySelector(".recipeMat");
+        if(!sel) return;
+        const current = sel.value;
+        sel.innerHTML = buildMaterialOptions(current);
+        sel.value = current;
+      });
+    }
+
+    function setSwitch(el, on){
+      el.classList.toggle("on", !!on);
+      el.setAttribute("aria-checked", !!on ? "true" : "false");
+    }
+
+    function setStockUI(track){
+      stockRowEl.style.display = track ? "grid" : "none";
+      stockCountEl.disabled = !track;
+      stockHintEl.value = track ? "Tracking ON" : "Unlimited stock (tracking off)";
+      if(!track) stockCountEl.value = "0";
+      if(track){
+        const n = Math.max(0, parseInt(stockCountEl.value || "0", 10) || 0);
+        stockHintEl.value = n <= 0 ? "Out of stock → unavailable" : `In stock: ${n}`;
+      }
+    }
+
+    function normalizeStockFields(item){
+      const trackStock = item?.trackStock === true;
+      const stockCount = trackStock ? Math.max(0, parseInt(item?.stockCount ?? 0, 10) || 0) : null;
+      return { trackStock, stockCount };
+    }
+
+    function stockChip(item){
+      const { trackStock, stockCount } = normalizeStockFields(item);
+      if(!trackStock) return { text:"Stock: Unlimited", className:"chip chip-stock-ok" };
+      if(stockCount <= 0) return { text:"Out of stock", className:"chip chip-stock-out" };
+      if(stockCount <= 3) return { text:`Stock: ${stockCount} (Low)`, className:"chip chip-stock-low" };
+      return { text:`Stock: ${stockCount}`, className:"chip chip-stock-ok" };
+    }
+
+    function badgeChips(item){
+      const chips = [];
+      if(item?.isNew === true) chips.push({text:"NEW", className:"chip chip-new"});
+      const hot = (item?.isHot === true) || (item?.isHotSell === true);
+      if(hot) chips.push({text:"HOT", className:"chip chip-hot"});
+      if(item?.isRecommended === true) chips.push({text:"RECOMMENDED", className:"chip chip-rec"});
+      return chips;
+    }
+
+    isNewSwitch.addEventListener("click", () => {
+      formBadges.isNew = !formBadges.isNew;
+      setSwitch(isNewSwitch, formBadges.isNew);
+    });
+    isHotSwitch.addEventListener("click", () => {
+      formBadges.isHot = !formBadges.isHot;
+      setSwitch(isHotSwitch, formBadges.isHot);
+    });
+    isRecSwitch.addEventListener("click", () => {
+      formBadges.isRecommended = !formBadges.isRecommended;
+      setSwitch(isRecSwitch, formBadges.isRecommended);
+    });
+
+    trackStockSwitch.addEventListener("click", () => {
+      formTrackStock = !formTrackStock;
+      setSwitch(trackStockSwitch, formTrackStock);
+      setStockUI(formTrackStock);
+    });
+
+    stockCountEl.addEventListener("input", () => {
+      if(!formTrackStock) return;
+      setStockUI(true);
+    });
+
+    // Recipe buttons
+    addRecipeRowBtn.addEventListener("click", () => addRecipeRow("", ""));
+    clearRecipeBtn.addEventListener("click", () => {
+      if(!confirm("Clear all recipe materials for this menu item?")) return;
+      setRecipeFromObject({});
+    });
+
+    function fillForm(id, data){
+      editingId = id;
+      formTitle.innerText = `Edit: ${data?.name || id}`;
+
+      nameEl.value = data?.name || "";
+      priceEl.value = Number(data?.price || 0).toFixed(2);
+      categoryEl.value = data?.category || "food";
+      imageEl.value = data?.image || "";
+      addonsEl.value = addonsToText(data?.addOns || {});
+      setRecipeFromObject(data?.recipeMaterials || data?.materials || data?.recipe || {});
+
+      formBadges = {
+        isNew: data?.isNew === true,
+        isHot: (data?.isHot === true) || (data?.isHotSell === true),
+        isRecommended: data?.isRecommended === true
+      };
+      setSwitch(isNewSwitch, formBadges.isNew);
+      setSwitch(isHotSwitch, formBadges.isHot);
+      setSwitch(isRecSwitch, formBadges.isRecommended);
+
+      const { trackStock, stockCount } = normalizeStockFields(data);
+      formTrackStock = trackStock;
+      setSwitch(trackStockSwitch, formTrackStock);
+      setStockUI(formTrackStock);
+      stockCountEl.value = String(formTrackStock ? stockCount : 0);
+      setStockUI(formTrackStock);
+
+      deleteBtn.style.display = "inline-block";
+      saveBtn.innerText = "Update";
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     function resetForm(){
-      editingId=null;
-      formTitle.innerText="Add New Menu Item";
-      nameEl.value="";
-      priceEl.value="0.00";
-      categoryEl.value="food";
-      imageEl.value="";
-      addonsEl.value="";
-      deleteBtn.style.display="none";
-      saveBtn.innerText="Save";
+      editingId = null;
+      formTitle.innerText = "Add New Menu Item";
+
+      nameEl.value = "";
+      priceEl.value = "0.00";
+      categoryEl.value = "food";
+      imageEl.value = "";
+      addonsEl.value = "";
+      setRecipeFromObject({});
+
+      formBadges = { isNew:false, isHot:false, isRecommended:false };
+      setSwitch(isNewSwitch, false);
+      setSwitch(isHotSwitch, false);
+      setSwitch(isRecSwitch, false);
+
+      formTrackStock = false;
+      setSwitch(trackStockSwitch, false);
+      setStockUI(false);
+      stockCountEl.value = "0";
+
+      deleteBtn.style.display = "none";
+      saveBtn.innerText = "Save";
     }
 
-    function renderItemRow(id,data){
-      const row=document.createElement("div");
-      row.className="item-row";
-      row.dataset.id=id;
+    function renderItemRow(id, item){
+      const row = document.createElement("div");
+      row.className = "item-row";
+      row.dataset.id = id;
 
-      const img=document.createElement("img");
-      img.className="item-thumb";
-      img.src=data.image||"https://via.placeholder.com/160x120?text=No+Image";
-      img.alt=data.name||id;
+      const img = document.createElement("img");
+      img.className = "thumb";
+      img.src = item?.image || "https://via.placeholder.com/200x140?text=No+Image";
+      img.alt = item?.name || id;
 
-      const main=document.createElement("div");
-      main.className="item-main";
+      const main = document.createElement("div");
+      main.className = "item-main";
 
-      const title=document.createElement("div");
-      title.className="item-title";
-      title.innerText=data.name||"Untitled";
+      const titleRow = document.createElement("div");
+      titleRow.className = "title-row";
 
-      const meta=document.createElement("div");
-      meta.className="item-meta";
-      meta.innerText=`RM ${Number(data.price||0).toFixed(2)} • ${data.category||"Others"}`;
+      const title = document.createElement("div");
+      title.className = "title";
+      title.innerText = item?.name || "Untitled";
 
-      const addonsBrief = document.createElement("div");
-      addonsBrief.className = "small-muted";
+      titleRow.appendChild(title);
 
-      if (data.addOns) {
-        const addonList = Object.entries(data.addOns).map(
-          ([label, price]) => `${label} (RM${Number(price).toFixed(2)})`
-        );
-        addonsBrief.innerText = addonList.length
-          ? `Add-ons: ${addonList.join(", ")}`
-          : "";
-      }
+      const chips = document.createElement("div");
+      chips.className = "chips";
 
-      const controls=document.createElement("div");
-      controls.className="item-controls";
-
-      const toggleWrap=document.createElement("label");
-      toggleWrap.className="toggle-switch";
-      const switchEl=document.createElement("span");
-      switchEl.className="switch "+(data.visible!==false?"on":"");
-      switchEl.title=data.visible!==false?"Available":"Unavailable";
-      const knob=document.createElement("span");knob.className="knob";
-      switchEl.appendChild(knob);
-      toggleWrap.appendChild(switchEl);
-      const availLabel=document.createElement("span");availLabel.className="small-muted";
-      availLabel.innerText=data.visible!==false?"Available":"Unavailable";
-      toggleWrap.appendChild(availLabel);
-
-      const editBtn=document.createElement("button");
-      editBtn.className="btn btn-ghost";
-      editBtn.innerText="Edit";
-      editBtn.addEventListener("click",()=>fillForm(id,data));
-
-      const delBtn=document.createElement("button");
-      delBtn.className="danger-small";
-      delBtn.innerText="Delete";
-      delBtn.addEventListener("click",async (e)=>{
-        e.stopPropagation();
-        if(!confirm("Delete this menu item?")) return;
-        try{ await remove(ref(db,`menuItems/${id}`)); showNotice("Deleted"); }
-        catch(err){ console.error(err); showNotice("Failed to delete"); }
+      badgeChips(item).forEach(b => {
+        const el = document.createElement("span");
+        el.className = b.className;
+        el.innerText = b.text;
+        chips.appendChild(el);
       });
 
-      controls.appendChild(toggleWrap);
+      const s = stockChip(item);
+      const stockEl = document.createElement("span");
+      stockEl.className = s.className;
+      stockEl.innerText = s.text;
+      chips.appendChild(stockEl);
+
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      meta.innerText = `RM ${Number(item?.price||0).toFixed(2)} • ${item?.category||"Others"}`;
+
+      const addonsBrief = document.createElement("div");
+      addonsBrief.className = "meta";
+      if(item?.addOns){
+        const list = Object.entries(item.addOns).map(([label, price]) => `${label} (RM${Number(price).toFixed(2)})`);
+        addonsBrief.innerText = list.length ? `Add-ons: ${list.join(", ")}` : "";
+      }
+
+      const controls = document.createElement("div");
+      controls.className = "controls";
+
+      const switchEl = document.createElement("span");
+      switchEl.className = "switch " + (item?.visible !== false ? "on" : "");
+      switchEl.title = item?.visible !== false ? "Available" : "Unavailable";
+      const knob = document.createElement("span"); knob.className = "knob";
+      switchEl.appendChild(knob);
+
+      const editBtn = document.createElement("button");
+      editBtn.className = "mini-btn";
+      editBtn.innerText = "Edit";
+
+      const delBtn = document.createElement("button");
+      delBtn.className = "mini-btn mini-danger";
+      delBtn.innerText = "Delete";
+
+      controls.appendChild(switchEl);
       controls.appendChild(editBtn);
       controls.appendChild(delBtn);
 
-      row.addEventListener("click",()=>fillForm(id,data));
+      row.addEventListener("click", () => fillForm(id, item));
+      editBtn.addEventListener("click", (e) => { e.stopPropagation(); fillForm(id, item); });
 
-      switchEl.addEventListener("click",async (e)=>{
+      delBtn.addEventListener("click", async (e) => {
         e.stopPropagation();
-        const newVisible=!(data.visible!==false);
+        if(!confirm("Delete this menu item?")) return;
         try{
-          await update(ref(db,`menuItems/${id}`),{visible:newVisible});
-          showNotice(newVisible?"Made available":"Marked unavailable");
-        }catch(err){ console.error(err); showNotice("Update failed"); }
+          await remove(ref(db, `menuItems/${id}`));
+          showNotice("Deleted");
+        }catch(err){
+          console.error(err);
+          showNotice("Failed to delete");
+        }
       });
 
-      main.appendChild(title);
+      switchEl.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const { trackStock, stockCount } = normalizeStockFields(item);
+        const enabling = (item?.visible === false);
+        if(enabling && trackStock && (stockCount ?? 0) <= 0){
+          showNotice("Cannot set Available: stock is 0. Increase stock first.");
+          return;
+        }
+        const newVisible = !(item?.visible !== false);
+        try{
+          await update(ref(db, `menuItems/${id}`), { visible: newVisible });
+          showNotice(newVisible ? "Made available" : "Marked unavailable");
+        }catch(err){
+          console.error(err);
+          showNotice("Update failed");
+        }
+      });
+
+      main.appendChild(titleRow);
+      main.appendChild(chips);
       main.appendChild(meta);
       if(addonsBrief.innerText) main.appendChild(addonsBrief);
       main.appendChild(controls);
 
       row.appendChild(img);
       row.appendChild(main);
-
       return row;
     }
 
     function renderItems(data){
-      itemsList.innerHTML="";
-      const grouped={};
-      Object.keys(data).forEach(id=>{
-        const item=data[id]||{};
-        const category=item.category||"Others";
-        if(!grouped[category]) grouped[category]=[];
-        grouped[category].push({id,item});
+      itemsList.innerHTML = "";
+      const grouped = {};
+      Object.keys(data || {}).forEach(id => {
+        const item = data[id] || {};
+        const cat = item.category || "Others";
+        if(!grouped[cat]) grouped[cat] = [];
+        grouped[cat].push({ id, item });
       });
-      const categoryOrder=categories;
-      const selected=filterEl.value;
-      categoryOrder.forEach(cat=>{
-        if(grouped[cat]){
-          if(selected!=="all" && selected!==cat) return;
-          const header=document.createElement("h4");
-          header.innerText=cat;
-          header.style.margin="16px 0 8px";
-          header.style.color="var(--accent)";
-          header.style.borderBottom="1px solid #e5e7eb";
-          header.style.paddingBottom="4px";
-          // show category status next to header
-          const statusSpan=document.createElement("span");
-          statusSpan.style.fontSize="13px";
-          statusSpan.style.marginLeft="8px";
-          statusSpan.style.color="var(--muted)";
-          const catStatus = currentCategoryStatus[cat];
-          statusSpan.innerText = (catStatus === false) ? " (Category: Unavailable)" : " (Category: Available)";
-          header.appendChild(statusSpan);
 
-          itemsList.appendChild(header);
-          grouped[cat].sort((a,b)=>(a.item.name||"").localeCompare(b.item.name||"")).forEach(({id,item})=>{
-            const row=renderItemRow(id,item);
-            itemsList.appendChild(row);
-          });
-        }
+      const selected = filterEl.value;
+      categories.forEach(cat => {
+        if(!grouped[cat]) return;
+        if(selected !== "all" && selected !== cat) return;
+
+        
+        const q = (searchEl && searchEl.value ? searchEl.value : "").toLowerCase();
+const header = document.createElement("div");
+        header.className = "group-header";
+
+        const left = document.createElement("div");
+        left.className = "name";
+        left.innerText = cat;
+
+        const right = document.createElement("div");
+        right.className = "meta";
+        const catStatus = currentCategoryStatus[cat];
+        right.innerText = (catStatus === false) ? "Category: Unavailable" : "Category: Available";
+
+        header.appendChild(left);
+        header.appendChild(right);
+        itemsList.appendChild(header);
+
+        const filteredItems = grouped[cat]
+          .filter(({item}) => {
+            const name = (item?.name || "").toLowerCase();
+            const desc = (item?.description || "").toLowerCase();
+            if(!q) return true;
+            if(__searchMode === "startsWith") return name.startsWith(q);
+            return name.includes(q) || desc.includes(q);
+          })
+          .sort((a,b) => (a.item.name||"").localeCompare(b.item.name||""));
+
+        if(filteredItems.length === 0) return;
+
+        filteredItems.forEach(({id, item}) => itemsList.appendChild(renderItemRow(id, item)));
       });
     }
 
-    // Render category availability toggles into the Category Availability panel
     function renderCategoryAvailabilityUI(){
       categoryAvailabilityEl.innerHTML = "";
-      categories.forEach(cat=>{
+      categories.forEach(cat => {
         const row = document.createElement("div");
         row.className = "category-row";
 
@@ -422,114 +1085,361 @@
 
         const note = document.createElement("div");
         note.className = "category-note";
-        note.innerText = currentCategoryStatus[cat] === false ? "Currently: Unavailable — items in this category are hidden" : "Currently: Available — items in this category are visible";
+        note.innerText = currentCategoryStatus[cat] === false
+          ? "Currently unavailable — items hidden"
+          : "Currently available — items visible";
 
         left.appendChild(name);
         left.appendChild(note);
 
-        const toggleWrap = document.createElement("div");
-        toggleWrap.className = "toggle-switch";
         const switchEl = document.createElement("span");
         switchEl.className = "switch " + (currentCategoryStatus[cat] !== false ? "on" : "");
         switchEl.title = currentCategoryStatus[cat] !== false ? "Category available" : "Category unavailable";
         const knob = document.createElement("span"); knob.className = "knob";
         switchEl.appendChild(knob);
-        toggleWrap.appendChild(switchEl);
 
-        // When category toggle is clicked:
         switchEl.addEventListener("click", async (e) => {
           e.stopPropagation();
-          // compute new status (if undefined or true => set false; if false => set true)
           const newStatus = !(currentCategoryStatus[cat] !== false);
-          // update categoryStatus in DB and update all menuItems in that category
-          try {
-            // 1) set categoryStatus/{cat} = newStatus
+
+          try{
             const updates = {};
             updates[`categoryStatus/${sanitizeKey(cat)}`] = newStatus;
-            // 2) set menuItems/*/visible = newStatus for items in this category
+
             const snap = await get(itemsRef);
             const data = snap.val() || {};
             let affected = 0;
+
             Object.keys(data).forEach(id => {
               const item = data[id] || {};
-              if ((item.category||"") === cat) {
-                updates[`menuItems/${id}/visible`] = newStatus;
+              if((item.category||"") !== cat) return;
+
+              if(newStatus === false){
+                updates[`menuItems/${id}/visible`] = false;
                 affected++;
+                return;
               }
+
+              const { trackStock, stockCount } = normalizeStockFields(item);
+              if(trackStock && (stockCount ?? 0) <= 0){
+                updates[`menuItems/${id}/visible`] = false;
+                updates[`menuItems/${id}/autoHiddenByStock`] = true;
+              } else {
+                updates[`menuItems/${id}/visible`] = true;
+              }
+              affected++;
             });
-            // Apply bulk update
+
             await update(ref(db), updates);
             showNotice(`${affected} item(s) in "${cat}" set to ${newStatus ? "available" : "unavailable"}`);
-            // update local cache immediately (will also be updated by onValue listener)
+
             currentCategoryStatus[cat] = newStatus;
             renderCategoryAvailabilityUI();
-          } catch (err) {
+          }catch(err){
             console.error(err);
             showNotice("Failed to update category");
           }
         });
 
         row.appendChild(left);
-        row.appendChild(toggleWrap);
+        row.appendChild(switchEl);
         categoryAvailabilityEl.appendChild(row);
       });
     }
 
-    // Listen to menu items and categoryStatus so UI stays in sync
+    async function enforceVisibilityRules(items){
+      const updates = {};
+      Object.keys(items || {}).forEach(id => {
+        const item = items[id] || {};
+        const cat = item.category || "Others";
+        const catAvail = (currentCategoryStatus[cat] !== false);
+
+        const { trackStock, stockCount } = normalizeStockFields(item);
+        const visible = (item.visible !== false);
+        const autoHiddenByStock = (item.autoHiddenByStock === true);
+
+        if(!catAvail && visible){
+          updates[`menuItems/${id}/visible`] = false;
+          return;
+        }
+
+        if(trackStock){
+          if((stockCount ?? 0) <= 0){
+            if(visible) updates[`menuItems/${id}/visible`] = false;
+            if(!autoHiddenByStock) updates[`menuItems/${id}/autoHiddenByStock`] = true;
+          } else {
+            if(autoHiddenByStock && catAvail){
+              if(!visible) updates[`menuItems/${id}/visible`] = true;
+              updates[`menuItems/${id}/autoHiddenByStock`] = false;
+            }
+          }
+        }
+      });
+
+      if(Object.keys(updates).length === 0) return;
+      try{ await update(ref(db), updates); }
+      catch(err){ console.error(err); }
+    }
+
     onValue(itemsRef, (snap) => {
-      renderItems(snap.val() || {});
+      const data = snap.val() || {};
+      lastItemsCache = data;
+      renderItems(data);
+      enforceVisibilityRules(data);
     });
 
-    // Listen to categoryStatus (saved toggles)
     onValue(categoryStatusRef, (snap) => {
-      // categoryStatus stored by sanitized key; map back to original category names
       const raw = snap.val() || {};
       const mapped = {};
       categories.forEach(cat => {
         const key = sanitizeKey(cat);
-        if (Object.prototype.hasOwnProperty.call(raw, key)) {
-          mapped[cat] = raw[key];
-        } else {
-          mapped[cat] = true; // default to available if not set
-        }
+        mapped[cat] = Object.prototype.hasOwnProperty.call(raw, key) ? raw[key] : true;
       });
       currentCategoryStatus = mapped;
+
       renderCategoryAvailabilityUI();
-
-      // also re-render items header statuses (calls renderItems with current items cached via onValue)
-      // To ensure header statuses reflect new currentCategoryStatus, fetch current items and re-render
-      get(itemsRef).then(s=> renderItems(s.val() || {})).catch(()=>{});
+      renderItems(lastItemsCache || {});
+      enforceVisibilityRules(lastItemsCache || {});
     });
 
-    filterEl.addEventListener("change",async()=>{
-      const snap=await get(itemsRef);
-      renderItems(snap.val()||{});
-    });
 
-    saveBtn.addEventListener("click",async()=>{
-      const name=nameEl.value.trim();
-      const price=parseFloat(priceEl.value)||0;
-      const category=categoryEl.value;
-      const image=imageEl.value.trim();
-      const addOns=parseAddons(addonsEl.value);
-      if(!name){alert("Please enter name");return;}
-      const payload={name,price:Number(price),category,image:image||null,addOns,visible:true};
+    // ================= Materials inventory =================
+    const LOW_STOCK_THRESHOLD = 5;
+
+    function resetMaterialForm(){
+      editingMaterialId = null;
+      matNameEl.value = "";
+      matUnitEl.value = "";
+      matStockEl.value = "0";
+      matCostEl.value = "0";
+      matCategoryEl.value = "barang_pasaran";
+      matDeleteBtn.style.display = "none";
+      matSaveBtn.textContent = "Save Material";
+    }
+
+    function fillMaterialForm(id, mat){
+      editingMaterialId = id;
+      matNameEl.value = mat?.name || "";
+      matUnitEl.value = mat?.unit || "";
+      matStockEl.value = String(Number(mat?.stock || 0));
+      matCostEl.value = String(Number(mat?.costPerUnit || 0));
+      matCategoryEl.value = mat?.category || "barang_pasaran";
+      matDeleteBtn.style.display = "inline-block";
+      matSaveBtn.textContent = "Update Material";
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    }
+
+    function renderMaterialsTable(){
+      if(!materialsTbody || !matSearchEl) return;
+      const q = (matSearchEl.value || "").trim().toLowerCase();
+      if(materialsTbody) materialsTbody.innerHTML = "";
+      const entries = Object.entries(materialsCache || {})
+        .filter(([id, m]) => {
+          const hay = `${m?.name||id} ${m?.category||""} ${m?.unit||""}`.toLowerCase();
+          return !q || hay.includes(q);
+        })
+        .sort((a,b) => String(a[1]?.name||"").localeCompare(String(b[1]?.name||"")));
+
+      for(const [id, mat] of entries){
+        const tr = document.createElement("tr");
+
+        const name = document.createElement("td");
+        name.innerHTML = `<div style="font-weight:1000">${(mat?.name||id)}</div>`;
+        const stock = Number(mat?.stock || 0);
+        if(stock <= LOW_STOCK_THRESHOLD){
+          name.innerHTML += ` <span class="tagLow" title="Low stock">LOW</span>`;
+        }
+
+        const stockTd = document.createElement("td");
+        stockTd.textContent = String(stock);
+
+        const unitTd = document.createElement("td");
+        unitTd.textContent = mat?.unit || "";
+
+        const costTd = document.createElement("td");
+        costTd.textContent = `RM ${Number(mat?.costPerUnit || 0).toFixed(2)}`;
+
+        const catTd = document.createElement("td");
+        catTd.textContent = mat?.category || "";
+
+        const actTd = document.createElement("td");
+        const actions = document.createElement("div");
+        actions.className = "rowActions";
+
+        const edit = document.createElement("button");
+        edit.className = "mini-btn";
+        edit.type = "button";
+        edit.textContent = "Edit";
+        edit.addEventListener("click", () => fillMaterialForm(id, mat));
+
+        const quickAdd = document.createElement("button");
+        quickAdd.className = "mini-btn";
+        quickAdd.type = "button";
+        quickAdd.textContent = "+ Stock";
+        quickAdd.title = "Add to stock quickly";
+        quickAdd.addEventListener("click", async () => {
+          const add = prompt("Add how much stock?");
+          if(add === null) return;
+          const inc = Number(add);
+          if(!Number.isFinite(inc) || inc <= 0) return alert("Invalid amount");
+          try{
+            const next = (Number(materialsCache?.[id]?.stock || 0) || 0) + inc;
+            await update(ref(db, `materials/${id}`), { stock: next, updatedAt: new Date().toISOString() });
+            showNotice("Stock updated");
+          }catch(err){
+            console.error(err);
+            showNotice("Failed to update stock");
+          }
+        });
+
+        actions.appendChild(edit);
+        actions.appendChild(quickAdd);
+        actTd.appendChild(actions);
+
+        tr.appendChild(name);
+        tr.appendChild(stockTd);
+        tr.appendChild(unitTd);
+        tr.appendChild(costTd);
+        tr.appendChild(catTd);
+        tr.appendChild(actTd);
+
+        materialsTbody.appendChild(tr);
+      }
+
+      refreshRecipeDropdowns();
+    }
+
+    matSearchEl && matSearchEl.addEventListener("input", () => renderMaterialsTable());
+
+    matResetBtn && matResetBtn.addEventListener("click", () => resetMaterialForm());
+
+    matSaveBtn && matSaveBtn.addEventListener("click", async () => {
+      const name = matNameEl.value.trim();
+      const unit = matUnitEl.value.trim();
+      const stock = Math.max(0, Number(matStockEl.value || 0) || 0);
+      const costPerUnit = Math.max(0, Number(matCostEl.value || 0) || 0);
+      const category = matCategoryEl.value;
+
+      if(!name) return alert("Please enter material name");
+
+      const payload = {
+        useMaterials: (useMaterialsToggle && useMaterialsToggle.checked) ? true : false, name, unit, stock, costPerUnit, category, updatedAt: new Date().toISOString() };
+
       try{
-        if(editingId){await update(ref(db,`menuItems/${editingId}`),payload); showNotice("Updated menu item");}
-        else{const newRef=push(itemsRef); await set(newRef,payload); showNotice("Added new menu item");}
-        resetForm();
-      }catch(err){console.error(err); showNotice("Failed to save");}
+        if(editingMaterialId){
+          await update(ref(db, `materials/${editingMaterialId}`), payload);
+          showNotice("Material updated");
+        } else {
+          const newRef = push(materialsRef);
+          await set(newRef, payload);
+          showNotice("Material added");
+        }
+        resetMaterialForm();
+      }catch(err){
+        console.error(err);
+        showNotice("Failed to save material");
+      }
     });
 
-    resetBtn.addEventListener("click",(e)=>{e.preventDefault();resetForm();});
-    deleteBtn.addEventListener("click",async()=>{
+    matDeleteBtn && matDeleteBtn.addEventListener("click", async () => {
+      if(!editingMaterialId) return;
+      if(!confirm("Delete this material? (Recipes using it will fail stock checking.)")) return;
+      try{
+        await remove(ref(db, `materials/${editingMaterialId}`));
+        showNotice("Material deleted");
+        resetMaterialForm();
+      }catch(err){
+        console.error(err);
+        showNotice("Delete failed");
+      }
+    });
+
+    onValue(materialsRef, (snap) => {
+      materialsCache = snap.val() || {};
+      renderMaterialsTable();
+      // If recipe UI is empty (first load), keep at least one row.
+      if(recipeRowsEl && recipeRowsEl.children.length === 0){
+        addRecipeRow("", "");
+      }
+    });
+
+
+        filterEl.addEventListener("change", async () => {
+      const snap = await get(itemsRef);
+      const data = snap.val() || {};
+      lastItemsCache = data;
+      renderItems(data);
+    });
+
+    saveBtn.addEventListener("click", async () => {
+      const name = nameEl.value.trim();
+      const price = parseFloat(priceEl.value) || 0;
+      const category = categoryEl.value;
+      const image = imageEl.value.trim();
+      const addOns = parseAddons(addonsEl.value);
+      const recipeMaterials = getRecipeAsObject();
+
+      if(!name){
+        alert("Please enter name");
+        return;
+      }
+
+      const trackStock = formTrackStock;
+      const stockCount = trackStock ? Math.max(0, parseInt(stockCountEl.value || "0", 10) || 0) : null;
+
+      const shouldBeVisible = !(trackStock && stockCount <= 0);
+
+      const payload = {
+        useMaterials: (useMaterialsToggle && useMaterialsToggle.checked) ? true : false,
+        name,
+        price: Number(price),
+        category,
+        image: image || null,
+        addOns,
+        recipeMaterials: Object.keys(recipeMaterials).length ? recipeMaterials : null,
+
+        isNew: !!formBadges.isNew,
+        isHot: !!formBadges.isHot,
+        isHotSell: !!formBadges.isHot,
+        isRecommended: !!formBadges.isRecommended,
+
+        trackStock: !!trackStock,
+        stockCount: trackStock ? stockCount : null,
+        visible: shouldBeVisible,
+        autoHiddenByStock: (trackStock && stockCount <= 0) ? true : false
+      };
+
+      try{
+        if(editingId){
+          await update(ref(db, `menuItems/${editingId}`), payload);
+          showNotice("Updated menu item");
+        } else {
+          const newRef = push(itemsRef);
+          await set(newRef, payload);
+          showNotice("Added new menu item");
+        }
+        resetForm();
+      }catch(err){
+        console.error(err);
+        showNotice("Failed to save");
+      }
+    });
+
+    resetBtn.addEventListener("click", (e) => { e.preventDefault(); resetForm(); });
+
+    deleteBtn.addEventListener("click", async () => {
       if(!editingId) return;
       if(!confirm("Delete this menu item?")) return;
-      try{await remove(ref(db,`menuItems/${editingId}`)); showNotice("Deleted"); resetForm();}
-      catch(err){console.error(err); showNotice("Delete failed");}
+      try{
+        await remove(ref(db, `menuItems/${editingId}`));
+        showNotice("Deleted");
+        resetForm();
+      }catch(err){
+        console.error(err);
+        showNotice("Delete failed");
+      }
     });
 
-    // initialize
     resetForm();
   </script>
 </body>
