@@ -2,373 +2,667 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Queue Status</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Queue Status — TV</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.4.0/dist/confetti.browser.min.js"></script>
+
+  <!-- Firebase v8 (matches your current customer.html) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
   <style>
-  :root {
-    --primary-bg: #ffffff;
-    --secondary-bg: #f4f4f4;
-    --primary-text: #222;
-    --light-text: #666;
-    --border-radius: 16px;
+    :root {
+      --bg: #f5f7fb;
+      --card: rgba(255,255,255,.92);
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: rgba(226,232,240,.95);
+      --shadow: 0 18px 44px rgba(2,6,23,.10);
+      --shadowSoft: 0 10px 24px rgba(2,6,23,.06);
+      --radius: 18px;
 
-    --new-order: #2980b9;
-    --preparing: #e67e22;
-    --ready: #27ae60;
-  }
-
-  body {
-    font-family: 'Poppins', sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: var(--secondary-bg);
-    color: var(--primary-text);
-    animation: fadeInBody 1s ease-in;
-  }
-
-  @keyframes fadeInBody {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-
-  .container {
-    max-width: 1000px;
-    margin: 60px auto;
-    padding: 40px;
-    background: var(--primary-bg);
-    border-radius: var(--border-radius);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-    animation: fadeInUp 1s ease forwards;
-  }
-
-  @keyframes fadeInUp {
-    from {
-      transform: translateY(30px);
-      opacity: 0;
+      --new: #2563eb;
+      --prep: #f59e0b;
+      --ready: #16a34a;
     }
-    to {
-      transform: translateY(0);
-      opacity: 1;
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      color: var(--text);
+      background:
+        radial-gradient(950px 560px at 12% 0%, rgba(37,99,235,.14), transparent 60%),
+        radial-gradient(950px 560px at 100% 10%, rgba(245,158,11,.12), transparent 58%),
+        var(--bg);
+      padding: 18px 22px;
+      overflow-x: hidden; /* Prevent horizontal scrolling */
     }
-  }
 
-  .header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    margin-bottom: 35px;
-  }
-
-  .logo {
-    width: 140px;
-  }
-
-  .restaurant-name {
-    font-size: 26px;
-    font-weight: 600;
-    color: var(--primary-text);
-  }
-
-  #darkModeToggle {
-    font-size: 20px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    transition: color 0.3s;
-  }
-
-  .queue-boxes {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 25px;
-  }
-
-  .queue-box {
-    flex: 1;
-    min-width: 280px;
-    padding: 30px 25px;
-    border-radius: 20px;
-    text-align: center;
-    font-weight: 600;
-    color: white;
-    backdrop-filter: blur(5px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    animation: fadeInPop 1s ease forwards;
-  }
-
-  .queue-box:hover {
-    transform: scale(1.03);
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
-  }
-
-  @keyframes fadeInPop {
-    from {
-      opacity: 0;
-      transform: scale(0.95);
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      margin: -18px -22px 14px;
+      padding: 16px 22px 14px;
+      background: linear-gradient(180deg, rgba(245,247,251,.92), rgba(245,247,251,.72));
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(226,232,240,.9);
     }
-    to {
-      opacity: 1;
-      transform: scale(1);
+
+    .topRow {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
     }
-  }
 
-  .queue-box h2 {
-    font-size: 22px;
-    margin-bottom: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-  }
-
-  .queue-box p {
-    font-size: 24px;
-    font-weight: 500;
-    letter-spacing: 1px;
-    word-spacing: 4px;
-  }
-
-  .receiver {
-    background: var(--new-order);
-  }
-
-  .preparing {
-    background: var(--preparing);
-  }
-
-  .ready {
-    background: var(--ready);
-  }
-
-  /* Pulse animation only for ready box for emphasis */
-  .ready p {
-    animation: pulseText 2s infinite;
-  }
-
-  @keyframes pulseText {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.7; }
-  }
-
-  footer {
-    text-align: center;
-    margin-top: 50px;
-    padding: 20px;
-    font-size: 0.9rem;
-    background-color: #f9f9f9;
-    color: var(--light-text);
-    border-top: 1px solid #ddd;
-  }
-
-  footer a {
-    color: #007bff;
-    text-decoration: none;
-    margin: 0 8px;
-  }
-
-  footer a:hover {
-    text-decoration: underline;
-  }
-
-  @media (max-width: 768px) {
-    .queue-boxes {
-      flex-direction: column;
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 320px;
     }
+
+    .logoWrap {
+      width: 46px;
+      height: 46px;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: var(--shadowSoft);
+      flex: 0 0 auto;
+    }
+
+    .logoWrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .brandText h1 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 1000;
+      letter-spacing: -0.02em;
+      line-height: 1.05;
+    }
+
+    .brandText p {
+      margin: 3px 0 0;
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .pills {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(226,232,240,.95);
+      box-shadow: var(--shadowSoft);
+      font-weight: 900;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: #e2e8f0;
+    }
+
+    .dot.online { background: var(--ready); }
+    .dot.offline { background: #ef4444; }
 
     .container {
-      padding: 25px 20px;
+      max-width: 1700px;
+      margin: 0 auto;
     }
 
-    .restaurant-name {
-      font-size: 22px;
-      text-align: center;
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+      position: relative;
+      min-height: calc(100vh - 120px);
+    }
+
+    .panel::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 6px;
       width: 100%;
+      background: linear-gradient(90deg, rgba(37,99,235,.85), rgba(96,165,250,.85));
     }
 
-    .header {
+    .panel.prep::before {
+      background: linear-gradient(90deg, rgba(245,158,11,.85), rgba(251,191,36,.85));
+    }
+
+    .panel.ready::before {
+      background: linear-gradient(90deg, rgba(22,163,74,.85), rgba(52,211,153,.85));
+    }
+
+    .panelHead {
+      padding: 16px 16px 10px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .titleRow {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      box-shadow: var(--shadowSoft);
+      flex: 0 0 auto;
+      font-size: 18px;
+    }
+
+    .icon.new { background: linear-gradient(180deg, #2563eb, #1d4ed8); }
+    .icon.prep { background: linear-gradient(180deg, #f59e0b, #d97706); }
+    .icon.ready { background: linear-gradient(180deg, #16a34a, #15803d); }
+
+    .panelTitle {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 1000;
+      letter-spacing: -0.02em;
+    }
+
+    .panelSub {
+      margin: 2px 0 0;
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .countPill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(2,6,23,.06);
+      border: 1px solid rgba(226,232,240,.95);
+      border-radius: 999px;
+      padding: 10px 12px;
+      font-weight: 1000;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .countPill .big { font-size: 15px; }
+
+    .panelBody { padding: 0 16px 16px; }
+
+    /* Multi-column chips to fit on ONE page */
+    .chips {
+      display: block;
+      column-count: 3;
+      column-gap: 10px;
+      padding-top: 6px;
+    }
+
+    .chips.cols-2 { column-count: 2; }
+    .chips.cols-3 { column-count: 3; }
+    .chips.cols-4 { column-count: 4; }
+    .chips.cols-5 { column-count: 5; }
+
+    .chip {
+      width: 100%;
+      display: flex;
       justify-content: center;
-      gap: 15px;
+      align-items: center;
+      margin: 0 0 10px 0;
+      break-inside: avoid;
+      border-radius: 999px;
+      padding: 12px 0;
+      font-weight: 1000;
+      font-size: 18px;
+      border: 1px solid rgba(226,232,240,.95);
+      background: rgba(255,255,255,.88);
     }
-  }
 
-  /* ========== Dark Mode ========== */
-  .dark-mode {
-    background-color: #1e1e1e;
-    color: #eee;
-  }
+    .chip.new { border-color: rgba(37,99,235,.25); color: #1d4ed8; background: rgba(37,99,235,.06); }
+    .chip.prep { border-color: rgba(245,158,11,.28); color: #b45309; background: rgba(245,158,11,.08); }
+    .chip.ready { border-color: rgba(22,163,74,.25); color: #15803d; background: rgba(22,163,74,.08); }
 
-  .dark-mode .container {
-    background: #2c2c2c;
-    box-shadow: 0 8px 24px rgba(255, 255, 255, 0.05);
-  }
+    .commaBox {
+      font-size: 22px;
+      font-weight: 1000;
+      line-height: 1.5;
+      letter-spacing: .01em;
+      padding-top: 6px;
+    }
 
-  .dark-mode .queue-box {
-    opacity: 0.95;
-    box-shadow: 0 6px 18px rgba(255, 255, 255, 0.08);
-  }
+    .empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px dashed rgba(148,163,184,.55);
+      border-radius: 16px;
+      padding: 14px;
+      color: var(--muted);
+      background: rgba(255,255,255,.60);
+      font-weight: 900;
+      margin-top: 8px;
+    }
 
-  .dark-mode footer {
-    background-color: #121212;
-    color: #ccc;
-  }
+    /* Responsive adjustments */
+    @media (max-width: 1200px) {
+      .grid {
+        gap: 12px;
+        grid-template-columns: repeat(2, 1fr);
+      }
 
-  .dark-mode footer a {
-    color: #4aa3ff;
-  }
+      .chip {
+        font-size: 16px;
+        padding: 10px 0;
+        margin-bottom: 8px;
+      }
 
-  /* ========== Wave Background (Optional) ========== */
-  .wave-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 180px;
-    background: url('https://www.svgviewer.dev/snapshot/99b9b98b-411b-4e33-8194-6ab3e415040b.svg') no-repeat center center;
-    background-size: cover;
-    z-index: -1;
-    animation: waveAnimation 10s ease-in-out infinite;
-    opacity: 0.1;
-  }
+      .panel {
+        min-height: calc(100vh - 132px);
+      }
+    }
 
-  @keyframes waveAnimation {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-100%); }
-  }
-</style>
+    @media (max-width: 768px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
 
+      .chip {
+        font-size: 14px;
+        padding: 8px 0;
+        margin-bottom: 6px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .panel {
+        min-height: calc(100vh - 100px); /* Adjusted for smaller screens */
+      }
+    }
+
+    /* Dark mode */
+    body.dark {
+      --bg: #0b1220;
+      --card: rgba(15,23,42,.82);
+      --text: #e5e7eb;
+      --muted: #a8b3c7;
+      --border: rgba(148,163,184,.18);
+      --shadow: 0 20px 54px rgba(0,0,0,.40);
+      --shadowSoft: 0 10px 24px rgba(0,0,0,.28);
+    }
+
+    body.dark .pill { background: rgba(15,23,42,.74); }
+    body.dark .chip { background: rgba(15,23,42,.58); }
+  </style>
 </head>
-<body>
-  <div class="wave-container"></div>
-  
-  <div class="container">
-    <div class="header">
-      <img src="logo.png" alt="Company Logo" class="logo" />
-      <div class="restaurant-name">Order Monitoring <span style="color:#2ecc71;">[Live Update]</span></div>
-      <button id="darkModeToggle" style="margin-left: auto;">🌙</button>
-    </div>
 
-    <div class="queue-boxes">
-      <div class="queue-box receiver">
-        <h2><i class="fas fa-inbox"></i> New Orders</h2>
-        <p id="receiverQueue">Loading...</p>
+<body>
+  <div class="topbar">
+    <div class="topRow">
+      <div class="brand">
+        <div class="logoWrap">
+          <img src="logo.png" alt="Logo" onerror="this.onerror=null;this.src='data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2296%22%20height%3D%2296%22%20viewBox%3D%220%200%2096%2096%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%22%20stop-color%3D%22%232563eb%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2360a5fa%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20x%3D%228%22%20y%3D%228%22%20width%3D%2280%22%20height%3D%2280%22%20rx%3D%2222%22%20fill%3D%22url%28%23g%29%22/%3E%0A%20%20%3Cpath%20d%3D%22M30%2058c8%208%2028%208%2036%200%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%226%22%20stroke-linecap%3D%22round%22/%3E%0A%20%20%3Cpath%20d%3D%22M34%2040h2%22%20stroke%3D%22%23fff%22%20stroke-width%3D%226%22%20stroke-linecap%3D%22round%22/%3E%0A%20%20%3Cpath%20d%3D%22M60%2040h2%22%20stroke%3D%22%23fff%22%20stroke-width%3D%226%22%20stroke-linecap%3D%22round%22/%3E%0A%3C/svg%3E';" />
+        </div>
+        <div class="brandText">
+          <h1>Queue Status</h1>
+          <p id="headerMeta">Live update • Last updated: …</p>
+        </div>
       </div>
-      <div class="queue-box preparing">
-        <h2><i class="fas fa-hourglass-half"></i> Preparing</h2>
-        <p id="preparingQueue">Loading...</p>
-      </div>
-      <div class="queue-box ready">
-        <h2><i class="fas fa-check-circle"></i> Ready</h2>
-        <p id="readyQueue">Loading...</p>
+
+      <div class="pills">
+        <div class="pill"><span id="connDot" class="dot"></span><span id="connText">…</span></div>
+        <div class="pill" id="totalCounts">…</div>
       </div>
     </div>
   </div>
 
-  <footer>
-    <p><b>Little Ngences X Ayam Gepuk Ngences</b></p>
-    <p>&copy; 2024 electricaltechnologymy. All rights reserved.</p>
-    <p>
-      <a href="https://wa.me/+60176977263">Contact Us</a> |
-      <a href="https://www.instagram.com/littlengencescoffee?igsh=MWZhZmM4YXcyc2Fraw==" target="_blank">Instagram</a> |
-      <a href="https://www.tiktok.com/@little.ngences.co?_t=8nzZDYmHXhg&_r=1" target="_blank">TikTok</a> |
-      <a href="https://batugajahdev.wixstudio.io/little-ngences" target="_blank">Website</a>
-    </p>
-  </footer>
+  <div class="container">
+    <div class="grid">
+      <section class="panel new" aria-label="New Orders">
+        <div class="panelHead">
+          <div class="titleRow">
+            <div class="icon new"><i class="fa-solid fa-inbox"></i></div>
+            <div>
+              <h2 class="panelTitle">New Orders</h2>
+              <p class="panelSub">Just received</p>
+            </div>
+          </div>
+          <div class="countPill"><span class="big" id="newCount">0</span> orders</div>
+        </div>
+        <div class="panelBody">
+          <div id="newList" class="chips cols-3"></div>
+          <div id="newEmpty" class="empty" style="display:none;">No orders</div>
+        </div>
+      </section>
 
-  <script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyAUO2ZoVhSFEtAyJAP5r5zxu3kGqoIAyQ4",
-    authDomain: "ordersystem-d710a.firebaseapp.com",
-    databaseURL: "https://ordersystem-d710a-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "ordersystem-d710a",
-    storageBucket: "ordersystem-d710a.appspot.com",
-    messagingSenderId: "741444965493",
-    appId: "1:741444965493:web:9991535a9105035c80943c"
-  };
+      <section class="panel prep" aria-label="Preparing">
+        <div class="panelHead">
+          <div class="titleRow">
+            <div class="icon prep"><i class="fa-solid fa-hourglass-half"></i></div>
+            <div>
+              <h2 class="panelTitle">Preparing</h2>
+              <p class="panelSub">In progress</p>
+            </div>
+          </div>
+          <div class="countPill"><span class="big" id="prepCount">0</span> orders</div>
+        </div>
+        <div class="panelBody">
+          <div id="prepList" class="chips cols-3"></div>
+          <div id="prepEmpty" class="empty" style="display:none;">No orders</div>
+        </div>
+      </section>
 
-  firebase.initializeApp(firebaseConfig);
-  const database = firebase.database();
+      <section class="panel ready" aria-label="Ready">
+        <div class="panelHead">
+          <div class="titleRow">
+            <div class="icon ready"><i class="fa-solid fa-check-circle"></i></div>
+            <div>
+              <h2 class="panelTitle">Ready</h2>
+              <p class="panelSub">Pick up</p>
+            </div>
+          </div>
+          <div class="countPill"><span class="big" id="readyCount">0</span> orders</div>
+        </div>
+        <div class="panelBody">
+          <div id="readyList" class="chips cols-3"></div>
+          <div id="readyEmpty" class="empty" style="display:none;">No orders</div>
+        </div>
+      </section>
+    </div>
+  </div>
 
-  function updateQueueNumbers() {
-  const ordersRef = database.ref("orders");
+    <script>
+    // ===== Firebase Config (same as your customer.html) =====
+    const firebaseConfig = {
+      apiKey: "AIzaSyAUO2ZoVhSFEtAyJAP5r5zxu3kGqoIAyQ4",
+      authDomain: "ordersystem-d710a.firebaseapp.com",
+      databaseURL: "https://ordersystem-d710a-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "ordersystem-d710a",
+      storageBucket: "ordersystem-d710a.appspot.com",
+      messagingSenderId: "741444965493",
+      appId: "1:741444965493:web:9991535a9105035c80943c"
+    };
 
-  ordersRef.on("value", (snapshot) => {
-    if (snapshot.exists()) {
-      const ordersData = snapshot.val();
-      let preparingQueue = [];
-      let readyQueue = [];
-      let receiverQueue = [];
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    const ordersRef = database.ref("orders");
 
-      Object.entries(ordersData).forEach(([orderId, order]) => {
-        if (!order) return;
+    // ===== UI =====
+    const elNewList = document.getElementById("newList");
+    const elPrepList = document.getElementById("prepList");
+    const elReadyList = document.getElementById("readyList");
 
-        let queueNumber = String(order.queueNumber || "").trim();
-        if (
-          !queueNumber ||
-          ["n/a", "na", "unknown"].includes(queueNumber.toLowerCase())
-        ) return;
+    const elNewEmpty = document.getElementById("newEmpty");
+    const elPrepEmpty = document.getElementById("prepEmpty");
+    const elReadyEmpty = document.getElementById("readyEmpty");
 
-        let status = (order.status || "").trim().toLowerCase();
-        let foodStatus = (order.foodStatus || "").trim().toLowerCase();
-        let drinkStatus = (order.drinkStatus || "").trim().toLowerCase();
+    const elNewCount = document.getElementById("newCount");
+    const elPrepCount = document.getElementById("prepCount");
+    const elReadyCount = document.getElementById("readyCount");
 
-        // ✅ READY: Both food and drink are ready
-        if (foodStatus === "food ready" && drinkStatus === "drink ready") {
-          if (!readyQueue.includes(queueNumber)) {
-            readyQueue.push(queueNumber);
-            confetti(); // 🎉 trigger confetti once
-          }
+    const elConnDot = document.getElementById("connDot");
+    const elConnText = document.getElementById("connText");
+    const elTotalCounts = document.getElementById("totalCounts");
+    const headerMeta = document.getElementById("headerMeta");
+
+    // ===== TV controls (keyboard) =====
+    // D = dark mode toggle
+    // S = sound toggle
+    // F = fullscreen toggle
+    const prefsKey = "queue_tv_prefs_v1";
+    const prefs = (() => {
+      try {
+        return Object.assign({ dark:false, sound:true }, JSON.parse(localStorage.getItem(prefsKey) || "{}"));
+      } catch {
+        return { dark:false, sound:true };
+      }
+    })();
+    function savePrefs(){
+      try { localStorage.setItem(prefsKey, JSON.stringify(prefs)); } catch {}
+    }
+    function applyPrefs(){
+      document.body.classList.toggle("dark", !!prefs.dark);
+    }
+    applyPrefs();
+
+    document.addEventListener("keydown", async (e) => {
+      const k = String(e.key || "").toLowerCase();
+      if(k === "d") {
+        prefs.dark = !prefs.dark; savePrefs(); applyPrefs();
+      }
+      if(k === "s") {
+        prefs.sound = !prefs.sound; savePrefs();
+      }
+      if(k === "f") {
+        try {
+          if(!document.fullscreenElement) await document.documentElement.requestFullscreen();
+          else await document.exitFullscreen();
+        } catch {}
+      }
+    });
+
+    // ===== Helpers =====
+    function setConnectionUI(){
+      const online = navigator.onLine;
+      elConnDot.classList.toggle("online", online);
+      elConnDot.classList.toggle("offline", !online);
+      elConnText.textContent = online ? "Online" : "Offline";
+    }
+    window.addEventListener("online", setConnectionUI);
+    window.addEventListener("offline", setConnectionUI);
+    setConnectionUI();
+
+    function cleanQueue(q){
+      const s = String(q || "").trim();
+      if(!s) return "";
+      const bad = ["n/a","na","unknown","null","undefined"];
+      if(bad.includes(s.toLowerCase())) return "";
+      return s;
+    }
+
+    function sortNumericStrings(arr){
+      return [...arr].sort((a,b) => {
+        const na = parseInt(a,10), nb = parseInt(b,10);
+        const aNum = Number.isFinite(na) && String(na) === a;
+        const bNum = Number.isFinite(nb) && String(nb) === b;
+        if(aNum && bNum) return na - nb;
+        if(aNum && !bNum) return -1;
+        if(!aNum && bNum) return 1;
+        return a.localeCompare(b);
+      });
+    }
+
+    function chooseColumns(count){
+      if(count >= 60) return 5;
+      if(count >= 40) return 4;
+      if(count >= 24) return 3;
+      return 3; // TV default
+    }
+    function useCommaMode(count){ return count >= 95; }
+
+    function renderList(elList, elEmpty, values, cls){
+      elList.innerHTML = "";
+      elEmpty.style.display = values.length ? "none" : "flex";
+      if(!values.length) return;
+
+      if(useCommaMode(values.length)){
+        const div = document.createElement("div");
+        div.className = "commaBox";
+        div.textContent = values.join(", ");
+        elList.appendChild(div);
+        return;
+      }
+
+      const cols = chooseColumns(values.length);
+      elList.classList.remove("cols-2","cols-3","cols-4","cols-5");
+      elList.classList.add(`cols-${cols}`);
+
+      for(const q of values){
+        const chip = document.createElement("div");
+        chip.className = "chip " + cls;
+        chip.textContent = q;
+        elList.appendChild(chip);
+      }
+    }
+
+    // ===== Queue categorization (same rules as your customer.html) =====
+    let prevReady = new Set();
+
+    function categorizeOrders(ordersData){
+      const preparingQueue = [];
+      const readyQueue = [];
+      const receiverQueue = [];
+
+      Object.entries(ordersData || {}).forEach(([orderId, order]) => {
+        if(!order) return;
+
+        const queueNumber = cleanQueue(order.queueNumber);
+        if(!queueNumber) return;
+
+        const status = String(order.status || "").trim().toLowerCase();
+        const foodStatus = String(order.foodStatus || "").trim().toLowerCase();
+        const drinkStatus = String(order.drinkStatus || "").trim().toLowerCase();
+
+        // READY: both ready
+        if(foodStatus === "food ready" && drinkStatus === "drink ready"){
+          readyQueue.push(queueNumber);
+          return;
         }
-        // 🟧 PREPARING: Either food or drink is preparing or ready (but not both ready)
-        else if (
+
+        // PREPARING: either preparing or one ready
+        if(
           foodStatus.includes("preparing") ||
           drinkStatus.includes("preparing") ||
           foodStatus === "food ready" ||
           drinkStatus === "drink ready"
-        ) {
+        ){
           preparingQueue.push(queueNumber);
+          return;
         }
-        // 🟦 RECEIVED: Neither food nor drink started
-        else if (status.includes("received")) {
+
+        // RECEIVED
+        if(status.includes("received")){
           receiverQueue.push(queueNumber);
+          return;
         }
+
+        // fallback
+        receiverQueue.push(queueNumber);
       });
 
-      // ✅ Update UI
-      document.getElementById("receiverQueue").innerText =
-        receiverQueue.length ? receiverQueue.join(", ") : "No orders";
-
-      document.getElementById("preparingQueue").innerText =
-        preparingQueue.length ? preparingQueue.join(", ") : "No orders";
-
-      document.getElementById("readyQueue").innerText =
-        readyQueue.length ? readyQueue.join(", ") : "No orders";
-
-    } else {
-      document.getElementById("receiverQueue").innerText = "No active orders";
-      document.getElementById("preparingQueue").innerText = "No active orders";
-      document.getElementById("readyQueue").innerText = "No active orders";
+      return {
+        receiver: sortNumericStrings([...new Set(receiverQueue)]),
+        preparing: sortNumericStrings([...new Set(preparingQueue)]),
+        ready: sortNumericStrings([...new Set(readyQueue)]),
+      };
     }
-  }, (error) => {
-    console.error("Firebase read error:", error);
-  });
-}
 
+    function beep(){
+      if(!prefs.sound) return;
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = "sine";
+        o.frequency.value = 880;
+        g.gain.value = 0.04;
+        o.connect(g); g.connect(ctx.destination);
+        o.start();
+        setTimeout(() => {
+          o.stop(); ctx.close();
+        }, 180);
+      } catch {}
+    }
 
-  document.addEventListener("DOMContentLoaded", updateQueueNumbers);
+    function celebrate(newReady){
+      if(!newReady.length) return;
+      try {
+        confetti({
+          particleCount: Math.min(80, 40 + newReady.length * 10),
+          spread: 70,
+          startVelocity: 34,
+          origin: { y: 0.65 }
+        });
+      } catch {}
+      beep();
+    }
 
-  // Dark mode toggle
-  document.getElementById('darkModeToggle').addEventListener('click', () => {
-    document.body.classList.toggle('dark-mode');
-  });
-</script>
+    function updateHeader(listing){
+      const now = new Date();
+      headerMeta.textContent = `Live update • Last updated: ${now.toLocaleString()}`;
+      const total = listing.receiver.length + listing.preparing.length + listing.ready.length;
+      elTotalCounts.textContent = `${total} total • New ${listing.receiver.length} • Preparing ${listing.preparing.length} • Ready ${listing.ready.length}`;
+    }
 
+    function updateUI(listing){
+      elNewCount.textContent = String(listing.receiver.length);
+      elPrepCount.textContent = String(listing.preparing.length);
+      elReadyCount.textContent = String(listing.ready.length);
+
+      renderList(elNewList, elNewEmpty, listing.receiver, "new");
+      renderList(elPrepList, elPrepEmpty, listing.preparing, "prep");
+      renderList(elReadyList, elReadyEmpty, listing.ready, "ready");
+
+      updateHeader(listing);
+    }
+
+    // ===== Subscribe =====
+    ordersRef.on("value", (snapshot) => {
+      const ordersData = snapshot.val() || {};
+      const listing = categorizeOrders(ordersData);
+
+      const currentReady = new Set(listing.ready);
+      const newlyReady = listing.ready.filter(q => !prevReady.has(q));
+      celebrate(newlyReady);
+      prevReady = currentReady;
+
+      updateUI(listing);
+    }, (err) => {
+      console.error("Firebase error:", err);
+    });
+  </script>
 </body>
 </html>
