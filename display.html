@@ -329,6 +329,27 @@
       white-space:nowrap;
     }
 
+    /* Add these inside your existing .meta .val rule */
+.meta .val{
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Add this new block under it */
+.meta-request{
+  align-items: flex-start;
+}
+.meta-request .val{
+  white-space: normal;          /* allow wrap */
+  overflow: visible;            /* stop clipping */
+  text-overflow: unset;         /* no ellipsis */
+  overflow-wrap: anywhere;      /* break long words */
+  word-break: break-word;
+  line-height: 1.35;
+  max-width: 65%;               /* keep your layout balance (optional) */
+}
+
+
     .divider{height:1px;background: rgba(231,236,243,.95);}
 
     .itemsWrap{padding: 10px 12px 12px 14px;}
@@ -1170,7 +1191,7 @@
         <div class="metaRow">
           <div class="meta"><strong>Name</strong> <span class="val" title="${escapeHtml(name)}">${escapeHtml(name)}</span></div>
           <div class="meta"><strong>Table</strong> <span class="val">${escapeHtml(table)}</span></div>
-          <div class="meta"><strong>Request</strong> <span class="val" title="${escapeHtml(request)}">${escapeHtml(request)}</span></div>
+          <div class="meta meta-request"><strong>Request</strong> <span class="val" title="${escapeHtml(request)}">${escapeHtml(request)}</span></div>
           <div class="meta"><strong>Total</strong> <span class="val">${total}</span></div>
           <div class="meta"><strong>Time</strong> <span class="val" title="${escapeHtml(time)}">${escapeHtml(time)}</span></div>
         </div>
