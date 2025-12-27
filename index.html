@@ -606,7 +606,7 @@
 
   .field{display:flex; flex-direction:column; gap: 6px;}
   .field label{font-size:12px;color: var(--muted);font-weight:900;text-transform:uppercase;letter-spacing:.08em;}
-  .field input, .field textarea{
+  .field input, .field textarea, .field select{
     border: 1px solid var(--border);
     background: rgba(255,255,255,.95);
     border-radius: 14px;
@@ -769,6 +769,10 @@
           <span>✨</span>
           <span id="daily-quote">Welcome!</span>
         </div>
+        <div class="pill" id="order-type-pill" title="Order type (tap to change)" style="cursor:pointer">
+          <span id="order-type-emoji">🍽️</span>
+          <span id="order-type-label">Choose: Dine In / Take Away</span>
+        </div>
         <button class="cart-btn" id="goToCartBtn" type="button" aria-label="Open cart">
           Cart <span class="cart-count" id="cart-count">0</span>
         </button>
@@ -826,7 +830,7 @@
             </div>
             <div class="field">
               <label for="table-number">Table No.</label>
-              <input id="table-number" type="text" placeholder="e.g. 12">
+              <select id="table-number" aria-label="Table number selection"></select>
             </div>
             <div class="field">
               <label for="special-request">Special Request</label>
@@ -884,7 +888,7 @@
           </div>
           <div class="field">
             <label for="table-number-mobile">Table No.</label>
-            <input id="table-number-mobile" type="text" placeholder="e.g. 12">
+            <select id="table-number-mobile" aria-label="Table number selection"></select>
           </div>
           <div class="field">
             <label for="special-request-mobile">Special Request</label>
@@ -899,6 +903,20 @@
           </div>
         </div>
       </div>
+    </div>
+  </div>
+
+
+  <!-- Order type (Take Away / Dine In) -->
+  <div class="center-overlay show" id="ordertype-overlay" aria-hidden="false">
+    <div class="center-card" role="dialog" aria-modal="true" aria-label="Choose order type">
+      <div style="font-weight:900;font-size:15px;letter-spacing:-0.01em">How would you like to order?</div>
+      <div class="small" style="margin-top:6px">Please select <b>Take Away</b> or <b>Dine In</b> before ordering.</div>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px">
+        <button class="btn btn-primary" id="choose-takeaway" type="button">🥡 Take Away</button>
+        <button class="btn btn-ghost" id="choose-dinein" type="button">🍽️ Dine In</button>
+      </div>
+      <div class="small" style="margin-top:10px">You can change this anytime by tapping the order type pill in the top bar.</div>
     </div>
   </div>
 
@@ -928,7 +946,17 @@
   <audio id="success-sound" src="success.mp3" preload="auto"></audio>
 
   <!-- jsPDF (for receipt) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+  // Live tables (from /tables) — used for Dine In selection
+  onValue(tablesRef, (snap) => {
+    tablesCache = snap.val() || {};
+    buildTableOptions(tableSelectDesktop, tablesCache);
+    buildTableOptions(tableSelectMobile, tablesCache);
+    applyOrderTypeToCheckout();
+  });
+
+
+</script>
 
   <!-- Firebase + logic -->
   <script type="module">
@@ -950,6 +978,7 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+    const tablesRef = ref(db, "tables");
 
     // DOM
     const menuArea = document.getElementById("menu-area");
@@ -992,6 +1021,18 @@
     const downloadReceiptBtn = document.getElementById("download-receipt-btn");
     const closeSuccessBtn = document.getElementById("close-success-btn");
 
+    // Order type (Take Away / Dine In)
+    const orderTypeOverlay = document.getElementById("ordertype-overlay");
+    const chooseTakeawayBtn = document.getElementById("choose-takeaway");
+    const chooseDineinBtn = document.getElementById("choose-dinein");
+    const orderTypePill = document.getElementById("order-type-pill");
+    const orderTypeLabelEl = document.getElementById("order-type-label");
+    const orderTypeEmojiEl = document.getElementById("order-type-emoji");
+
+    const tableSelectDesktop = document.getElementById("table-number");
+    const tableSelectMobile = document.getElementById("table-number-mobile");
+
+
     // Quotes (keeps your vibe, but short for header)
     const quotes = [
       "Sekali Rasa Pasti Nak Lagi",
@@ -1002,6 +1043,22 @@
       "Terima kasih, anda keluarga kami ❤️"
     ];
     document.getElementById("daily-quote").textContent = quotes[Math.floor(Math.random()*quotes.length)];
+
+    // Order type overlay events
+    chooseTakeawayBtn?.addEventListener("click", () => setOrderType("TAKEAWAY"));
+    chooseDineinBtn?.addEventListener("click", () => setOrderType("DINEIN"));
+    orderTypePill?.addEventListener("click", () => showOrderTypeOverlay());
+
+    // Prevent clicking outside to close (must choose)
+    orderTypeOverlay?.addEventListener("click", (e) => {
+      if(e.target === orderTypeOverlay){
+        const card = orderTypeOverlay.querySelector(".center-card");
+        if(card){
+          card.animate([{transform:"translateX(0)"},{transform:"translateX(-6px)"},{transform:"translateX(6px)"},{transform:"translateX(0)"}], {duration:220});
+        }
+      }
+    });
+
 
     const categories = [
       { key: "all", label: "All" },
@@ -1021,6 +1078,11 @@
     let cart = [];
     let lastOrderForReceipt = null;
 
+    // 'TAKEAWAY' | 'DINEIN' | null
+    let orderType = null;
+    let tablesCache = {};
+
+
     // Helpers
     const RM = (n) => `RM ${Number(n||0).toFixed(2)}`;
     const escapeHtml = (str) => String(str ?? "")
@@ -1029,6 +1091,97 @@
       .replace(/>/g,"&gt;")
       .replace(/"/g,"&quot;")
       .replace(/'/g,"&#039;");
+
+    // ---------- Order Type helpers ----------
+    function buildTableOptions(selectEl, tablesObj){
+      if(!selectEl) return;
+      selectEl.innerHTML = "";
+
+      const opt0 = document.createElement("option");
+      opt0.value = "";
+      opt0.textContent = "Select table…";
+      selectEl.appendChild(opt0);
+
+      // Take away option (used for auto-fill when orderType=TAKEAWAY)
+      const optTA = document.createElement("option");
+      optTA.value = "TAKEAWAY";
+      optTA.textContent = "Take Away";
+      selectEl.appendChild(optTA);
+
+      const entries = Object.entries(tablesObj || {})
+        .filter(([k,t]) => t && t.active !== false)
+        .sort((a,b) => Number(a[0]) - Number(b[0]));
+
+      for(const [key, t] of entries){
+        const displayName = (t?.displayName && String(t.displayName).trim()) ? String(t.displayName).trim() : `Table ${key}`;
+        const zone = (t?.zone && String(t.zone).trim()) ? String(t.zone).trim() : "";
+        const label = zone ? `${displayName} — ${zone}` : displayName;
+
+        const o = document.createElement("option");
+        o.value = String(key);
+        o.textContent = label;
+        selectEl.appendChild(o);
+      }
+    }
+
+    function showOrderTypeOverlay(){
+      if(!orderTypeOverlay) return;
+      orderTypeOverlay.classList.add("show");
+      orderTypeOverlay.setAttribute("aria-hidden","false");
+    }
+
+    function hideOrderTypeOverlay(){
+      if(!orderTypeOverlay) return;
+      orderTypeOverlay.classList.remove("show");
+      orderTypeOverlay.setAttribute("aria-hidden","true");
+    }
+
+    function applyOrderTypeToCheckout(){
+      const label = (orderType === "TAKEAWAY") ? "Take Away"
+                  : (orderType === "DINEIN") ? "Dine In"
+                  : "Choose: Dine In / Take Away";
+
+      if(orderTypeLabelEl) orderTypeLabelEl.textContent = label;
+      if(orderTypeEmojiEl) orderTypeEmojiEl.textContent = (orderType === "TAKEAWAY") ? "🥡" : "🍽️";
+
+      const tables = [tableSelectDesktop, tableSelectMobile].filter(Boolean);
+
+      // Prevent selecting Take Away when orderType is Dine In
+      tables.forEach(el => {
+        const taOpt = el.querySelector('option[value="TAKEAWAY"]');
+        if(taOpt){ taOpt.disabled = (orderType === "DINEIN"); }
+      });
+
+      if(orderType === "TAKEAWAY"){
+        tables.forEach(el => {
+          el.value = "TAKEAWAY";
+          el.disabled = true;
+        });
+      }else if(orderType === "DINEIN"){
+        tables.forEach(el => {
+          if(el.value === "TAKEAWAY") el.value = "";
+          el.disabled = false;
+        });
+      }else{
+        tables.forEach(el => { el.disabled = false; });
+      }
+    }
+
+    function setOrderType(next){
+      orderType = next;
+      try{ localStorage.setItem("orderType", next || ""); }catch(_){}
+      hideOrderTypeOverlay();
+      applyOrderTypeToCheckout();
+    }
+
+    function initOrderType(){
+      // Always ask on fresh open (per your request). If you want to remember, uncomment the localStorage lines.
+      // try{ orderType = localStorage.getItem("orderType") || null; }catch(_){ orderType = null; }
+      orderType = null;
+      applyOrderTypeToCheckout();
+      showOrderTypeOverlay();
+    }
+
 
     function normalizeCategory(cat){
       return categories.find(c => c.key === cat)?.key || cat || "Others";
@@ -1071,7 +1224,7 @@
       const badges = [];
       if(item?.isNew === true) badges.push(`<span class="badge new">NEW</span>`);
       const hot = (item?.isHot === true) || (item?.isHotSell === true);
-      if(hot) badges.push(`<span class="badge hot">HOT</span>`);
+      if(hot) badges.push(`<span class="badge hot">HOT SELLER</span>`);
       if(item?.isRecommended === true) badges.push(`<span class="badge rec">RECOMMENDED</span>`);
       return badges.join("");
     }
@@ -1470,6 +1623,7 @@ function buildCategoryStrip(){
       document.getElementById("customer-name-mobile").value = document.getElementById("customer-name").value || "";
       document.getElementById("table-number-mobile").value = document.getElementById("table-number").value || "";
       document.getElementById("special-request-mobile").value = document.getElementById("special-request").value || "";
+      applyOrderTypeToCheckout();
     });
     cancelCheckoutBtn.addEventListener("click", () => checkoutBox.style.display = "none");
 
@@ -1482,10 +1636,23 @@ function buildCategoryStrip(){
       document.getElementById("table-number").value = document.getElementById("table-number-mobile").value || "";
       document.getElementById("special-request").value = document.getElementById("special-request-mobile").value || "";
     }
-    ["customer-name-mobile","table-number-mobile","special-request-mobile"].forEach(id => {
+
+    function syncToMobile(){
+      document.getElementById("customer-name-mobile").value = document.getElementById("customer-name").value || "";
+      document.getElementById("table-number-mobile").value = document.getElementById("table-number").value || "";
+      document.getElementById("special-request-mobile").value = document.getElementById("special-request").value || "";
+    }
+
+    // desktop table select uses 'change'
+    document.getElementById("table-number")?.addEventListener("change", syncToMobile);
+
+    ["customer-name-mobile","special-request-mobile"].forEach(id => {
       const el = document.getElementById(id);
       el?.addEventListener("input", syncToDesktop);
     });
+    // table select uses 'change'
+    document.getElementById("table-number-mobile")?.addEventListener("change", syncToDesktop);
+
 
     // Sorting + searching
     searchInput.addEventListener("input", () => renderMenu());
@@ -1515,6 +1682,14 @@ function buildCategoryStrip(){
     // Initial UI
     buildCategoryStrip();
     updateCartUI();
+
+    // Build table selects from Firebase /tables (will refresh on live updates)
+    buildTableOptions(tableSelectDesktop, tablesCache);
+    buildTableOptions(tableSelectMobile, tablesCache);
+
+    // Ask for Take Away / Dine In at page open
+    initOrderType();
+
 
     // Queue helper (fixed)
     
@@ -1554,17 +1729,23 @@ async function getLastQueueNumber(){
       }
     }
 
+    function normalizeTableValue(raw){
+      const v = String(raw || "").trim();
+      if(v === "TAKEAWAY") return "Take Away";
+      return v;
+    }
+
     function getCheckoutValues(source){
       if(source === "mobile"){
         return {
           name: (document.getElementById("customer-name-mobile").value || "").trim(),
-          table: (document.getElementById("table-number-mobile").value || "").trim(),
+          table: normalizeTableValue(document.getElementById("table-number-mobile").value || ""),
           request: (document.getElementById("special-request-mobile").value || "").trim()
         };
       }
       return {
         name: (document.getElementById("customer-name").value || "").trim(),
-        table: (document.getElementById("table-number").value || "").trim(),
+        table: normalizeTableValue(document.getElementById("table-number").value || ""),
         request: (document.getElementById("special-request").value || "").trim()
       };
     }
@@ -1822,9 +2003,25 @@ async function precheckCart(){
         return;
       }
 
+      if(!orderType){
+        alert("Please select Take Away or Dine In first.");
+        showOrderTypeOverlay();
+        return;
+      }
+
       const { name, table, request } = getCheckoutValues(source);
-      if(!name || !table){
-        alert("Please enter Name and Table No.");
+
+      if(!name){
+        alert("Please enter Name.");
+        return;
+      }
+      if(orderType === "DINEIN" && !table){
+        alert("Please select your Table No.");
+        return;
+      }
+      if(orderType === "TAKEAWAY" && !table){
+        alert("Order type is Take Away. Table will be set automatically.");
+        applyOrderTypeToCheckout();
         return;
       }
 
@@ -1850,8 +2047,9 @@ async function precheckCart(){
         // 2) Push order after stock deduction
         const orderDetails = {
           queueNumber,
+          orderType: (orderType === "TAKEAWAY") ? "Take Away" : "Dine In",
           name,
-          table,
+          table: (orderType === "TAKEAWAY") ? "Take Away" : table,
           request,
           cart: cart.map(x => ({
             menuId: x.menuId,
@@ -1936,6 +2134,9 @@ async function precheckCart(){
       doc.text(`Queue: ${orderDetails.queueNumber}`, 5, y); y += 4;
       doc.text(`Name: ${orderDetails.name}`, 5, y); y += 4;
       doc.text(`Table: ${orderDetails.table}`, 5, y); y += 4;
+      if(orderDetails.orderType){
+        doc.text(`Type: ${orderDetails.orderType}`, 5, y); y += 4;
+      }
 
       if(orderDetails.request){
         doc.text(`Request: ${orderDetails.request}`, 5, y); y += 4;
@@ -2045,7 +2246,17 @@ async function precheckCart(){
       }
     });
 
-  </script>
+  
+  // Live tables (from /tables) — used for Dine In selection
+  onValue(tablesRef, (snap) => {
+    tablesCache = snap.val() || {};
+    buildTableOptions(tableSelectDesktop, tablesCache);
+    buildTableOptions(tableSelectMobile, tablesCache);
+    applyOrderTypeToCheckout();
+  });
+
+
+</script>
 
 <div id="toast" style="position:fixed;left:12px;right:12px;bottom:14px;z-index:9999;display:none;
   padding:12px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.18);
