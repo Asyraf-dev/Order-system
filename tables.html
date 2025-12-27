@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tables Admin — Restoran Ayam Gepuk Ngences</title>
+<style>
+  :root{
+    --bg:#f5f7fb; --card:#ffffff; --text:#0f172a; --muted:#64748b;
+    --primary:#2563eb; --primary-2:#1d4ed8; --ring:rgba(37,99,235,.16);
+    --success:#16a34a; --danger:#ef4444; --warn:#f59e0b;
+    --border:#e7ecf3;
+    --shadow:0 14px 36px rgba(2, 6, 23, 0.07);
+    --shadow-soft:0 8px 22px rgba(2, 6, 23, 0.06);
+    --radius:16px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    color: var(--text);
+    background:
+      radial-gradient(900px 480px at 18% 6%, rgba(37,99,235,.12), transparent 60%),
+      radial-gradient(900px 520px at 90% 20%, rgba(245,158,11,.10), transparent 60%),
+      var(--bg);
+    padding:18px;
+  }
+  .topbar{
+    max-width:1180px;
+    margin:0 auto 14px auto;
+    display:flex;
+    gap:14px;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+  }
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{
+    width:40px;height:40px;border-radius:14px;
+    background: linear-gradient(135deg, var(--primary), #60a5fa);
+    box-shadow: var(--shadow-soft);
+    display:grid;place-items:center;
+    color:#fff;font-weight:900;
+    user-select:none;
+  }
+  .brand h1{margin:0;font-size:18px;letter-spacing:-0.02em}
+  .brand p{margin:0;color:var(--muted);font-size:13px}
+  .top-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .hint{
+    font-size:12px;color:var(--muted);
+    background: rgba(255,255,255,.7);
+    border:1px solid var(--border);
+    padding:8px 10px;border-radius:999px;
+    box-shadow: 0 1px 0 rgba(255,255,255,.9) inset;
+  }
+  .btn-link{display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border-radius:14px;font-weight:800;text-decoration:none}
+  .btn-outline{border:1px solid rgba(2,6,23,.12);background:rgba(255,255,255,.6);color:rgba(2,6,23,.86)}
+  .btn-outline:hover{background:#fff}
+
+  .container{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:1fr;gap:14px}
+  @media (min-width:980px){ .container{grid-template-columns: 420px 1fr;} }
+
+  .card{
+    background: rgba(255,255,255,.92);
+    backdrop-filter: blur(6px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow:hidden;
+  }
+  .card-header{
+    padding:14px 14px 10px 14px;
+    border-bottom:1px solid var(--border);
+    display:flex;align-items:flex-start;justify-content:space-between;gap:10px;
+  }
+  .card-header h2{margin:0;font-size:15px;letter-spacing:-0.02em}
+  .card-header .sub{margin:2px 0 0 0;font-size:12px;color:var(--muted)}
+  .card-body{padding:14px}
+
+  .grid{display:grid;grid-template-columns:1fr;gap:10px}
+  .grid.two{grid-template-columns:1fr}
+  @media (min-width:520px){ .grid.two{grid-template-columns: 1fr 1fr;} }
+
+  .field label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px 2px}
+  .field input[type="text"],
+  .field input[type="number"],
+  .field select{
+    width:100%;
+    border-radius:12px;
+    border:1px solid var(--border);
+    padding:10px 12px;
+    font-size:14px;
+    background:#fff;
+    outline:none;
+    box-shadow: 0 1px 0 rgba(255,255,255,.9) inset;
+    transition: box-shadow .15s, border-color .15s;
+  }
+  .field input:focus, .field select:focus{
+    border-color: rgba(37,99,235,.55);
+    box-shadow: 0 0 0 4px var(--ring);
+  }
+  .help{font-size:12px;color:var(--muted);margin:6px 0 0 2px;line-height:1.45}
+
+  .toggle-row{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:12px;
+    padding:10px 12px;
+    border-radius:14px;
+    border:1px solid var(--border);
+    background: linear-gradient(180deg, #fff, #fbfdff);
+  }
+  .toggle-left{display:flex;flex-direction:column;gap:2px}
+  .toggle-left .title{font-weight:900;font-size:13px}
+  .toggle-left .desc{font-size:12px;color:var(--muted)}
+  .switch{
+    width:46px;height:26px;
+    background:#e8efff;
+    border:1px solid #dbe6ff;
+    border-radius:999px;
+    position:relative;
+    cursor:pointer;
+    flex-shrink:0;
+    transition: background .18s, border-color .18s;
+    box-shadow: 0 2px 10px rgba(2, 6, 23, 0.06) inset;
+  }
+  .switch .knob{
+    position:absolute;top:3px;left:3px;
+    width:20px;height:20px;border-radius:999px;
+    background:#fff;
+    box-shadow: 0 8px 18px rgba(2, 6, 23, 0.10);
+    transition:left .18s;
+  }
+  .switch.on{background: rgba(22,163,74,.18);border-color: rgba(22,163,74,.35);}
+  .switch.on .knob{left:23px}
+
+  .section-title{
+    font-weight:900;font-size:12px;
+    text-transform:uppercase;letter-spacing:.08em;
+    color:var(--muted);
+    margin:14px 0 8px 0;
+  }
+
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+  .btn{
+    border:none;cursor:pointer;font-weight:900;border-radius:14px;
+    padding:10px 12px;font-size:14px;
+    transition: transform .05s, box-shadow .15s, background .15s;
+  }
+  .btn:active{transform: translateY(1px)}
+  .btn-primary{color:#fff;background: linear-gradient(180deg, var(--primary), var(--primary-2));box-shadow: 0 10px 20px rgba(37,99,235,.22);}
+  .btn-ghost{background:transparent;border:1px solid #dbe6ff;color: var(--primary);}
+  .btn-danger{color:#fff;background: linear-gradient(180deg, #ef4444, #dc2626);box-shadow: 0 10px 20px rgba(239,68,68,.18);}
+
+  .toolbar{
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    padding:0 14px 14px 14px;
+    border-bottom:1px solid var(--border);
+  }
+  .tool{display:flex;flex-direction:column;gap:6px;min-width:170px}
+  .tool.grow{flex:1;min-width:240px}
+  .toolbar .label{font-size:12px;color:var(--muted);font-weight:900;text-transform:uppercase;letter-spacing:.08em}
+
+  #list{
+    padding:14px;
+    max-height:76vh;
+    overflow:auto;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+
+  .row{
+    display:flex;gap:12px;align-items:flex-start;
+    padding:12px;border-radius:16px;border:1px solid var(--border);
+    background: linear-gradient(180deg, #fff, #fbfdff);
+    box-shadow: 0 10px 22px rgba(2, 6, 23, 0.05);
+    cursor:pointer;
+    transition: transform .06s, box-shadow .18s, border-color .18s;
+  }
+  .row:hover{
+    transform: translateY(-1px);
+    border-color: rgba(37,99,235,.22);
+    box-shadow: 0 14px 30px rgba(2, 6, 23, 0.08);
+  }
+  .badge{
+    width:44px;height:44px;border-radius:16px;
+    background: rgba(37,99,235,.09);
+    border: 1px solid rgba(37,99,235,.18);
+    display:grid;place-items:center;
+    font-weight:1000;color:var(--primary);
+    flex-shrink:0;
+  }
+  .main{flex:1;display:flex;flex-direction:column;gap:6px}
+  .title{font-weight:1000;font-size:15px}
+  .meta{font-size:13px;color:var(--muted)}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{
+    display:inline-flex;align-items:center;
+    padding:4px 9px;border-radius:999px;
+    font-size:12px;font-weight:900;
+    border:1px solid #e5e7eb;background:#fff;color:#0f172a;
+    box-shadow:0 1px 0 rgba(255,255,255,.9) inset;
+    white-space:nowrap;
+  }
+  .chip-ok{border-color: rgba(22,163,74,.25); color: var(--success)}
+  .chip-off{border-color: rgba(239,68,68,.25); color: var(--danger)}
+
+  .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:4px}
+  .mini-btn{
+    border-radius:12px;padding:8px 10px;font-weight:900;font-size:13px;
+    border:1px solid #dbe6ff;background: rgba(37,99,235,.05);
+    color:var(--primary);cursor:pointer;
+  }
+  .mini-danger{border-color: rgba(239,68,68,.25); background: rgba(239,68,68,.06); color:#dc2626}
+
+  #notice{
+    position:fixed;left:50%;transform:translateX(-50%);
+    bottom:18px;padding:10px 14px;border-radius:14px;
+    background: rgba(2, 6, 23, 0.88);color:#fff;display:none;z-index:9999;
+    box-shadow: 0 12px 28px rgba(2,6,23,.22);
+    border:1px solid rgba(255,255,255,.12);
+    font-weight:900;max-width: calc(100vw - 32px);
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="logo">T</div>
+    <div>
+      <h1>Tables Admin</h1>
+      <p>Manage table numbers now; later you can add table mapping (position/size).</p>
+    </div>
+  </div>
+  <div class="top-actions">
+    <div class="hint">Saved in Firebase path: <b>/tables</b></div>
+    <a class="btn-link btn-outline" href="index.html">🧾 Customer Order</a>
+    <a class="btn-link btn-outline" href="menu.html">🍗 Menu Admin</a>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- FORM -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h2 id="form-title">Add New Table</h2>
+        <div class="sub">Create / update table. Ready for future table mapping.</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="grid">
+
+        <div class="grid two">
+          <div class="field">
+            <label>Table number</label>
+            <input id="tableNo" type="number" min="1" step="1" placeholder="e.g. 12" />
+            <div class="help">This will be used as the key: <b>tables/{tableNo}</b></div>
+          </div>
+          <div class="field">
+            <label>Display name (optional)</label>
+            <input id="displayName" type="text" placeholder="e.g. Table 12 / VIP 1" />
+            <div class="help">If empty, it will display as “Table {tableNo}”.</div>
+          </div>
+        </div>
+
+        <div class="grid two">
+          <div class="field">
+            <label>Zone / Area (optional)</label>
+            <input id="zone" type="text" placeholder="e.g. Inside / Outside / VIP" />
+          </div>
+          <div class="field">
+            <label>Capacity (optional)</label>
+            <input id="capacity" type="number" min="0" step="1" placeholder="e.g. 4" />
+          </div>
+        </div>
+
+        <div class="toggle-row">
+          <div class="toggle-left">
+            <div class="title">Active</div>
+            <div class="desc">If off, table will not appear in customer selection (future).</div>
+          </div>
+          <span class="switch on" id="activeSwitch" role="switch" aria-checked="true"><span class="knob"></span></span>
+        </div>
+
+        <div class="section-title">Mapping fields (optional, for future)</div>
+        <div class="grid two">
+          <div class="field">
+            <label>Map X</label>
+            <input id="mapX" type="number" step="1" placeholder="e.g. 120" />
+          </div>
+          <div class="field">
+            <label>Map Y</label>
+            <input id="mapY" type="number" step="1" placeholder="e.g. 80" />
+          </div>
+        </div>
+        <div class="grid two">
+          <div class="field">
+            <label>Map Width</label>
+            <input id="mapW" type="number" step="1" placeholder="e.g. 90" />
+          </div>
+          <div class="field">
+            <label>Map Height</label>
+            <input id="mapH" type="number" step="1" placeholder="e.g. 60" />
+          </div>
+        </div>
+        <div class="help">These fields won’t affect customer checkout today; they’re just stored so you can build a map later.</div>
+
+        <div class="btn-row">
+          <button class="btn btn-primary" id="saveBtn" type="button">Save</button>
+          <button class="btn btn-ghost" id="resetBtn" type="button">Reset</button>
+          <button class="btn btn-danger" id="deleteBtn" type="button" style="display:none">Delete</button>
+        </div>
+
+        <div class="section-title">Quick tools</div>
+        <div class="grid two">
+          <div class="field">
+            <label>Generate tables (range)</label>
+            <div class="grid two">
+              <input id="genFrom" type="number" min="1" step="1" placeholder="From" />
+              <input id="genTo" type="number" min="1" step="1" placeholder="To" />
+            </div>
+            <div class="help">Example: From 1 To 30 → creates Table 1..30 (skip existing).</div>
+          </div>
+          <div class="field">
+            <label>&nbsp;</label>
+            <button class="btn btn-ghost" id="genBtn" type="button">Generate</button>
+            <div class="help">Tip: you can also set Zone before generating to apply to all.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- LIST -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h2>Tables</h2>
+        <div class="sub">Click a table row to edit.</div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div class="tool">
+        <div class="label">Zone filter</div>
+        <select id="zoneFilter">
+          <option value="all">All</option>
+        </select>
+      </div>
+      <div class="tool">
+        <div class="label">Status</div>
+        <select id="statusFilter">
+          <option value="all">All</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+      <div class="tool grow">
+        <div class="label">Search</div>
+        <input id="search" type="text" placeholder="Search table no / name / zone..." />
+      </div>
+    </div>
+
+    <div id="list" aria-live="polite"></div>
+  </div>
+
+</div>
+
+<div id="notice"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+  import { getDatabase, ref, onValue, set, update, remove, get, child } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+
+  // ---------------- Firebase ----------------
+  const firebaseConfig = {
+    apiKey: "AIzaSyAUO2ZoVhSFEtAyJAP5r5zxu3kGqoIAyQ4",
+    authDomain: "ordersystem-d710a.firebaseapp.com",
+    databaseURL: "https://ordersystem-d710a-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "ordersystem-d710a",
+    storageBucket: "ordersystem-d710a.firebasestorage.app",
+    messagingSenderId: "741444965493",
+    appId: "1:741444965493:web:9991535a9105035c80943c",
+    measurementId: "G-4P6YQDH0LL"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const tablesRef = ref(db, "tables");
+
+  // ---------------- DOM ----------------
+  const notice = document.getElementById("notice");
+  const listEl = document.getElementById("list");
+
+  const formTitle = document.getElementById("form-title");
+  const tableNoEl = document.getElementById("tableNo");
+  const displayNameEl = document.getElementById("displayName");
+  const zoneEl = document.getElementById("zone");
+  const capacityEl = document.getElementById("capacity");
+
+  const mapXEl = document.getElementById("mapX");
+  const mapYEl = document.getElementById("mapY");
+  const mapWEl = document.getElementById("mapW");
+  const mapHEl = document.getElementById("mapH");
+
+  const activeSwitch = document.getElementById("activeSwitch");
+
+  const saveBtn = document.getElementById("saveBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const deleteBtn = document.getElementById("deleteBtn");
+
+  const genFromEl = document.getElementById("genFrom");
+  const genToEl = document.getElementById("genTo");
+  const genBtn = document.getElementById("genBtn");
+
+  const zoneFilterEl = document.getElementById("zoneFilter");
+  const statusFilterEl = document.getElementById("statusFilter");
+  const searchEl = document.getElementById("search");
+
+  // ---------------- State ----------------
+  let editingKey = null; // string tableNo
+  let activeState = true;
+  let tablesCache = {};
+
+  // ---------------- Helpers ----------------
+  function showNotice(msg, time=2600){
+    notice.textContent = msg;
+    notice.style.display = "block";
+    setTimeout(()=> notice.style.display="none", time);
+  }
+
+  function toNumber(val){
+    const n = Number(val);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function clampInt(val){
+    const x = parseInt(String(val ?? ""), 10);
+    return Number.isFinite(x) ? Math.max(0, x) : 0;
+  }
+
+  function setSwitch(on){
+    activeState = !!on;
+    activeSwitch.classList.toggle("on", activeState);
+    activeSwitch.setAttribute("aria-checked", activeState ? "true" : "false");
+  }
+
+  function getTableKey(){
+    const n = clampInt(tableNoEl.value);
+    if(!n) return null;
+    return String(n);
+  }
+
+  function getPayload(){
+    const key = getTableKey();
+    if(!key) return null;
+
+    const name = (displayNameEl.value || "").trim();
+    const zone = (zoneEl.value || "").trim();
+    const cap = capacityEl.value === "" ? null : clampInt(capacityEl.value);
+
+    const x = mapXEl.value === "" ? null : Math.round(toNumber(mapXEl.value));
+    const y = mapYEl.value === "" ? null : Math.round(toNumber(mapYEl.value));
+    const w = mapWEl.value === "" ? null : Math.round(toNumber(mapWEl.value));
+    const h = mapHEl.value === "" ? null : Math.round(toNumber(mapHEl.value));
+
+    const map = (x===null && y===null && w===null && h===null) ? null : { x, y, w, h };
+
+    return {
+      tableNo: Number(key),
+      displayName: name || null,
+      zone: zone || null,
+      capacity: cap,
+      active: !!activeState,
+      map
+    };
+  }
+
+  function resetForm(){
+    editingKey = null;
+    formTitle.textContent = "Add New Table";
+    tableNoEl.value = "";
+    displayNameEl.value = "";
+    zoneEl.value = "";
+    capacityEl.value = "";
+    mapXEl.value = "";
+    mapYEl.value = "";
+    mapWEl.value = "";
+    mapHEl.value = "";
+    setSwitch(true);
+    deleteBtn.style.display = "none";
+    saveBtn.textContent = "Save";
+  }
+
+  function fillForm(key, t){
+    editingKey = String(key);
+    formTitle.textContent = `Edit: Table ${editingKey}`;
+    tableNoEl.value = editingKey;
+    displayNameEl.value = t?.displayName || "";
+    zoneEl.value = t?.zone || "";
+    capacityEl.value = (t?.capacity ?? "") === null ? "" : String(t?.capacity ?? "");
+    mapXEl.value = (t?.map?.x ?? "") === null ? "" : String(t?.map?.x ?? "");
+    mapYEl.value = (t?.map?.y ?? "") === null ? "" : String(t?.map?.y ?? "");
+    mapWEl.value = (t?.map?.w ?? "") === null ? "" : String(t?.map?.w ?? "");
+    mapHEl.value = (t?.map?.h ?? "") === null ? "" : String(t?.map?.h ?? "");
+    setSwitch(t?.active !== false);
+    deleteBtn.style.display = "inline-block";
+    saveBtn.textContent = "Update";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function formatZone(z){ return (z && String(z).trim()) ? String(z).trim() : "—"; }
+  function formatName(key, t){
+    const dn = (t?.displayName && String(t.displayName).trim()) ? String(t.displayName).trim() : "";
+    return dn || `Table ${key}`;
+  }
+
+  function renderFiltersFromCache(){
+    const zones = new Set();
+    Object.values(tablesCache || {}).forEach(t => {
+      const z = (t?.zone || "").trim();
+      if(z) zones.add(z);
+    });
+
+    const current = zoneFilterEl.value || "all";
+    zoneFilterEl.innerHTML = `<option value="all">All</option>` + Array.from(zones).sort((a,b)=>a.localeCompare(b))
+      .map(z => `<option value="${z.replace(/"/g,"&quot;")}">${z}</option>`).join("");
+
+    // keep selection if possible
+    zoneFilterEl.value = zones.has(current) ? current : "all";
+  }
+
+  function renderList(){
+    listEl.innerHTML = "";
+
+    const zoneFilter = zoneFilterEl.value || "all";
+    const statusFilter = statusFilterEl.value || "all";
+    const q = (searchEl.value || "").toLowerCase().trim();
+
+    const entries = Object.entries(tablesCache || {})
+      .map(([k,v]) => [String(k), v || {}])
+      .sort((a,b) => Number(a[0]) - Number(b[0]));
+
+    const filtered = entries.filter(([k,t]) => {
+      if(zoneFilter !== "all" && (t?.zone || "") !== zoneFilter) return false;
+
+      if(statusFilter === "active" && t?.active === false) return false;
+      if(statusFilter === "inactive" && t?.active !== false) return false;
+
+      if(!q) return true;
+      const hay = [
+        k,
+        formatName(k,t),
+        String(t?.zone || ""),
+        String(t?.capacity ?? ""),
+      ].join(" ").toLowerCase();
+      return hay.includes(q);
+    });
+
+    if(filtered.length === 0){
+      const empty = document.createElement("div");
+      empty.className = "meta";
+      empty.style.padding = "14px";
+      empty.textContent = "No tables found.";
+      listEl.appendChild(empty);
+      return;
+    }
+
+    filtered.forEach(([k,t]) => {
+      const row = document.createElement("div");
+      row.className = "row";
+
+      const badge = document.createElement("div");
+      badge.className = "badge";
+      badge.textContent = k;
+
+      const main = document.createElement("div");
+      main.className = "main";
+
+      const title = document.createElement("div");
+      title.className = "title";
+      title.textContent = formatName(k,t);
+
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      const z = formatZone(t?.zone);
+      const cap = (t?.capacity ?? null) === null ? "—" : String(t.capacity);
+      meta.textContent = `Zone: ${z} • Capacity: ${cap}`;
+
+      const chips = document.createElement("div");
+      chips.className = "chips";
+
+      const st = document.createElement("span");
+      st.className = "chip " + (t?.active === false ? "chip-off" : "chip-ok");
+      st.textContent = (t?.active === false) ? "Inactive" : "Active";
+      chips.appendChild(st);
+
+      if(t?.map && (t.map.x != null || t.map.y != null)){
+        const mp = document.createElement("span");
+        mp.className = "chip";
+        mp.textContent = `Map: (${t.map.x ?? "?"}, ${t.map.y ?? "?"})`;
+        chips.appendChild(mp);
+      }
+
+      const controls = document.createElement("div");
+      controls.className = "controls";
+
+      const editBtn = document.createElement("button");
+      editBtn.className = "mini-btn";
+      editBtn.textContent = "Edit";
+
+      const delBtn = document.createElement("button");
+      delBtn.className = "mini-btn mini-danger";
+      delBtn.textContent = "Delete";
+
+      controls.appendChild(editBtn);
+      controls.appendChild(delBtn);
+
+      editBtn.addEventListener("click", (e) => { e.stopPropagation(); fillForm(k,t); });
+      delBtn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        if(!confirm(`Delete Table ${k}?`)) return;
+        try{
+          await remove(ref(db, `tables/${k}`));
+          showNotice(`Deleted Table ${k}`);
+          if(editingKey === k) resetForm();
+        }catch(err){
+          console.error(err);
+          showNotice("Delete failed");
+        }
+      });
+
+      row.addEventListener("click", () => fillForm(k,t));
+
+      main.appendChild(title);
+      main.appendChild(chips);
+      main.appendChild(meta);
+      main.appendChild(controls);
+
+      row.appendChild(badge);
+      row.appendChild(main);
+      listEl.appendChild(row);
+    });
+  }
+
+  // ---------------- Events ----------------
+  activeSwitch.addEventListener("click", () => setSwitch(!activeState));
+
+  saveBtn.addEventListener("click", async () => {
+    const key = getTableKey();
+    if(!key){
+      alert("Please enter a valid Table number (>= 1).");
+      return;
+    }
+
+    const payload = getPayload();
+    try{
+      await set(ref(db, `tables/${key}`), payload);
+      showNotice(editingKey ? "Updated table" : "Saved table");
+      resetForm();
+    }catch(err){
+      console.error(err);
+      showNotice("Save failed");
+    }
+  });
+
+  resetBtn.addEventListener("click", () => resetForm());
+
+  deleteBtn.addEventListener("click", async () => {
+    if(!editingKey) return;
+    if(!confirm(`Delete Table ${editingKey}?`)) return;
+    try{
+      await remove(ref(db, `tables/${editingKey}`));
+      showNotice(`Deleted Table ${editingKey}`);
+      resetForm();
+    }catch(err){
+      console.error(err);
+      showNotice("Delete failed");
+    }
+  });
+
+  genBtn.addEventListener("click", async () => {
+    const from = clampInt(genFromEl.value);
+    const to = clampInt(genToEl.value);
+    if(!from || !to || to < from){
+      alert("Please enter a valid range: From <= To (>= 1).");
+      return;
+    }
+
+    const zone = (zoneEl.value || "").trim() || null;
+    const cap = capacityEl.value === "" ? null : clampInt(capacityEl.value);
+    let created = 0;
+    let skipped = 0;
+
+    try{
+      // Load existing once
+      const snap = await get(tablesRef);
+      const existing = snap.val() || {};
+
+      const updates = {};
+      for(let n=from;n<=to;n++){
+        const key = String(n);
+        if(existing[key]){ skipped++; continue; }
+        updates[`tables/${key}`] = {
+          tableNo: n,
+          displayName: null,
+          zone: zone,
+          capacity: cap,
+          active: true,
+          map: null
+        };
+        created++;
+      }
+
+      if(Object.keys(updates).length === 0){
+        showNotice(`Nothing created. Skipped ${skipped}.`);
+        return;
+      }
+
+      await update(ref(db), updates);
+      showNotice(`Generated ${created} table(s). Skipped ${skipped}.`);
+    }catch(err){
+      console.error(err);
+      showNotice("Generate failed");
+    }
+  });
+
+  zoneFilterEl.addEventListener("change", renderList);
+  statusFilterEl.addEventListener("change", renderList);
+  searchEl.addEventListener("input", renderList);
+
+  // ---------------- Live data ----------------
+  onValue(tablesRef, (snap) => {
+    tablesCache = snap.val() || {};
+    renderFiltersFromCache();
+    renderList();
+  });
+
+  // ---------------- Init ----------------
+  resetForm();
+</script>
+
+</body>
+</html>
