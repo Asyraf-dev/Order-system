@@ -28,6 +28,12 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
+      overscroll-behavior: contain;
+    }
+    body.nav-open { overflow: hidden; }
+    body.nav-open .main { filter: blur(1px); }
+
+    body {
       font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
       color: var(--text);
       background: radial-gradient(1400px 1000px at 20% 10%, rgba(34,197,94,0.25), transparent 60%),
@@ -38,7 +44,12 @@
     }
 
     .app { display: grid; grid-template-columns: 290px 1fr; height: 100vh; }
-    .sidebar { background: var(--card); backdrop-filter: blur(20px); border-right: 1px solid var(--border); box-shadow: var(--shadow); padding: 28px 20px; display: grid; grid-template-rows: auto 1fr auto; gap: 32px; transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 100; }
+    .sidebar { background: var(--card); backdrop-filter: blur(20px); border-right: 1px solid var(--border); box-shadow: var(--shadow); padding: 28px 20px; display: grid; grid-template-rows: auto 1fr auto; gap: 32px; transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 100;
+      height: 100vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
     .sidebar-header { display: flex; align-items: center; gap: 16px; }
     .logo { width: 56px; height: 56px; border-radius: 18px; background: linear-gradient(135deg, var(--brand), var(--brand-light)); color: white; font-weight: 900; font-size: 26px; display: grid; place-items: center; box-shadow: 0 12px 40px rgba(34,197,94,0.45); }
     .brand-title { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em; }
@@ -74,10 +85,27 @@
       .topbar { padding: 16px 20px; }
     }
     @media (max-width: 480px) {
+      .sidebar { width: min(92vw, 340px); }
+
       .page-title { font-size: 21px; }
       .content { padding: 16px; }
     }
-  </style>
+  
+    /* sidebar scroll */
+    .sidebar .nav,
+    .sidebar nav,
+    .sidebar .menu,
+    .sidebar .nav-links,
+    .sidebar .nav-items{
+      padding-bottom: 24px;
+    }
+
+    @supports(padding: max(0px)){
+      .sidebar{
+        padding-bottom: max(16px, env(safe-area-inset-bottom));
+      }
+    }
+</style>
 </head>
 <body>
 
@@ -133,13 +161,20 @@
 
   // Default permissions (can be customized by admin)
   defaultPermissions = {
-  admin:   ["home","orders","menu","materials","display","analysis","queue","clockin","staffdash","staff"],
+  admin:   ["home","orders","menu","materials","display","analysis","queue","clockin","staffdash","staff","tables"],
   cashier: ["home","orders","queue","clockin"],
   kitchen: ["home","display","clockin"],
   viewer:  ["home","clockin"]
 };
 
   let rolePermissions = JSON.parse(localStorage.getItem("rolePermissions") || JSON.stringify(defaultPermissions));
+
+  // Update/migrate: add new "tables" module for admin if missing
+  if (rolePermissions?.admin && !rolePermissions.admin.includes("tables")) {
+    rolePermissions.admin.push("tables");
+    try { localStorage.setItem("rolePermissions", JSON.stringify(rolePermissions)); } catch(e) {}
+  }
+
 
   // Ensure current role has permissions
   if (!rolePermissions[userRole]) rolePermissions[userRole] = defaultPermissions[userRole] || ["home"];
@@ -149,6 +184,7 @@ const pages = {
   orders: '<div class="iframe-wrapper"><iframe src="index.html"></iframe></div>',
   menu: '<div class="iframe-wrapper"><iframe src="menu.html"></iframe></div>',
   materials: '<div class="iframe-wrapper"><iframe src="materials.html"></iframe></div>',
+  tables: '<div class="iframe-wrapper"><iframe src="tables.html"></iframe></div>',
   display: '<div class="iframe-wrapper"><iframe src="display.html"></iframe></div>',
   analysis: '<div class="iframe-wrapper"><iframe src="analysis.html"></iframe></div>',
   queue: '<div class="iframe-wrapper"><iframe src="customer.html"></iframe></div>',
@@ -162,6 +198,7 @@ const pageLabels = {
   orders: "Customer Orders",
   menu: "Menu Stock",
   materials: "Materials",
+  tables: "Tables / Mapping",
   display: "Order Display",
   analysis: "Analytics",
   queue: "Customer Queue",
@@ -175,6 +212,7 @@ const pageIcons = {
   orders: "fa-cart-shopping",
   menu: "fa-burger",
   materials: "fa-boxes-stacked",
+  tables: "fa-table",
   display: "fa-clipboard-list",
   analysis: "fa-chart-pie",
   queue: "fa-users",
@@ -216,8 +254,7 @@ const pageIcons = {
       contentArea.innerHTML = pages[page] || pages.home;
 
       if (window.innerWidth <= 980) {
-        document.getElementById('sidebar').classList.remove('open');
-        document.getElementById('overlay').classList.remove('show');
+        closeSidebar();
       }
     });
   });
@@ -228,16 +265,23 @@ const pageIcons = {
   const hamburger = document.getElementById('hamburger');
 
   hamburger.addEventListener('click', () => {
-    sidebar.classList.add('open');
-    overlay.classList.add('show');
+    const isOpen = sidebar.classList.contains('open');
+    sidebar.classList.toggle('open', !isOpen);
+    overlay.classList.toggle('show', !isOpen);
+    document.body.classList.toggle('nav-open', !isOpen);
   });
 
-  overlay.addEventListener('click', () => {
+  function closeSidebar(){
     sidebar.classList.remove('open');
     overlay.classList.remove('show');
-  });
+    document.body.classList.remove('nav-open');
+  }
+overlay.addEventListener('click', () => closeSidebar());
 
-  function logout() {
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape') closeSidebar();
+  });
+function logout() {
     if (confirm("Are you sure you want to log out?")) {
       localStorage.clear();
       location.href = "auth.html";
