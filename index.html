@@ -262,11 +262,13 @@
   @media(min-width: 520px){ .grid{ gap: 12px; } }
   @media(min-width: 980px){ .grid{ gap: 14px; } }
   /* iPad fix: prevent overlapping cards */
-  @media (min-width: 700px) and (max-width: 1024px){
+  @media (min-width: 768px) and (max-width: 1024px){
   .grid{
-    grid-template-columns: 2fr; /* single column on iPad */
+    grid-template-columns: repeat(2, 1fr); /* SAFE 2 columns */
+    gap: 16px;
+   }
   }
-  }
+
   .grid{
   align-items: stretch;
   grid-auto-rows: auto;
