@@ -721,6 +721,9 @@
     let currentTab = "all";  // all | active | ready
     let fps = 0;
     let lastSpeedMbps = null;
+    // Keep Items panel open state (per order)
+    const expandedItems = new Set();
+
 
     // ---------- Helpers ----------
     function showToast(msg, ms=2200){
@@ -1164,13 +1167,30 @@
       });
 
       const details = document.createElement("details");
-      details.innerHTML = `
-        <summary>
-          <span>🧾 Items</span>
-          <span class="itemsCount">${countItems} item(s)</span>
-        </summary>
-      `;
-      details.appendChild(itemsList);
+
+details.innerHTML = `
+  <summary>
+    <span>🧾 Items</span>
+    <span class="itemsCount">${countItems} item(s)</span>
+  </summary>
+`;
+
+// 🔒 Restore open state (IMPORTANT)
+if (expandedItems.has(orderId)) {
+  details.open = true;
+}
+
+// 🧠 Track toggle manually
+details.addEventListener("toggle", () => {
+  if (details.open) {
+    expandedItems.add(orderId);
+  } else {
+    expandedItems.delete(orderId);
+  }
+});
+
+details.appendChild(itemsList);
+
 
       card.innerHTML = `
         <div class="orderHead">
@@ -1317,6 +1337,7 @@
     async function deleteOrder(orderId){
       try{
         await remove(ref(db, `orders/${orderId}`));
+        expandedItems.delete(orderId);
         delete ordersMap[orderId];
         render();
         showToast("Order deleted");
