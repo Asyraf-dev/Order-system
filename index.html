@@ -261,6 +261,17 @@
   }
   @media(min-width: 520px){ .grid{ gap: 12px; } }
   @media(min-width: 980px){ .grid{ gap: 14px; } }
+  /* iPad fix: prevent overlapping cards */
+  @media (min-width: 700px) and (max-width: 1024px){
+  .grid{
+    grid-template-columns: 2fr; /* single column on iPad */
+  }
+  }
+  .grid{
+  align-items: stretch;
+  grid-auto-rows: auto;
+}
+
 
   /* ====== MENU ITEM: chamfered box + outline ====== */
   .menuItem{
@@ -270,7 +281,7 @@
     overflow:hidden;
     display:flex;
     flex-direction:column;
-    min-height: 100%;
+    min-height: auto; /* SAFER for iPad Safari */
     min-width: 0;
     position: relative;
     transform: translateZ(0);
