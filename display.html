@@ -107,7 +107,7 @@
       cursor: pointer;
       font-weight: 900;
       border-radius: 14px;
-      padding: 10px 12px;
+      padding: 8px 10px;
       font-size: 13px;
       transition: transform .05s, box-shadow .18s, background .18s, opacity .18s;
       display:inline-flex;
@@ -389,6 +389,46 @@
     .itemTop{display:flex;align-items:flex-start;justify-content:space-between;gap: 10px;}
     .itemTop .name{font-weight: 1000; color: var(--text)}
     .itemTop .qty{color: var(--muted); font-weight: 900; white-space:nowrap}
+
+    /* ---------- Minimal quantity emphasis (mobile-friendly) ---------- */
+    .itemTop{align-items:center;}
+    .nameRow{display:flex;align-items:baseline;gap:8px;flex: 1 1 auto;min-width:0;}
+    .qtyPill{
+      flex: 0 0 auto;
+      font-weight: 1000;
+      font-size: 18px;
+      line-height: 1;
+      padding: 3px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,.10);
+      background: rgba(255,255,255,.70);
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      user-select:none;      white-space:nowrap;
+      min-width: 44px;
+      text-align: center;
+    }
+    .qtyPill.one{
+      border-color: transparent;
+      background: transparent;
+      color: var(--text);
+      opacity: .85;
+    }
+    .qtyPill.many{
+      border-color: rgba(245,158,11,.35);
+      background: rgba(245,158,11,.10);
+    }
+    .qtyPill.huge{
+      border-color: rgba(239,68,68,.35);
+      background: rgba(239,68,68,.10);
+    }
+    .lineTotal{
+      flex: 0 0 auto;
+      font-weight: 900;
+      color: var(--muted);
+      white-space:nowrap;
+    }
+
     .itemAdd{font-size: 12px; color: var(--muted);}
     .itemPrice{font-weight: 1000;}
 
@@ -506,7 +546,7 @@
       align-items:center;
       justify-content:space-between;
       gap: 10px;
-      padding: 10px 12px;
+      padding: 8px 10px;
       background: rgba(255,255,255,.06);
       font-weight: 1000;
     }
@@ -552,7 +592,122 @@
       text-align:center;
       box-shadow: 0 10px 22px rgba(2,6,23,.05);
     }
-  </style>
+  
+    /* ---------- Compact item rows for smartphone (less scrolling) ---------- */
+    .itemsList li{
+      padding: 8px 10px;       /* was larger */
+      margin: 6px 0;            /* tighter spacing */
+      border-radius: 16px;      /* slightly smaller radius */
+    }
+    .itemTop{
+      gap: 8px;
+    }
+    .name{
+      font-size: 15px;          /* slightly smaller but readable */
+      line-height: 1.2;
+    }
+    .qtyPill{
+      font-size: 16px;
+      padding: 2px 8px;
+      min-width: 40px;
+    }
+    .lineTotal{
+      font-size: 13px;
+    }
+    .itemAdd{
+      margin-top: 4px;
+      font-size: 12px;
+      line-height: 1.15;
+    }
+
+
+    /* ---------- Minimized stats bar (default collapsed) ---------- */
+    .statsMinBar{
+      width:100%;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      padding: 8px 10px;
+      margin-bottom: 10px;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      box-shadow: 0 8px 20px rgba(15,23,42,.06);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .statsMinLeft{
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      flex: 1 1 auto;
+      min-width: 0;
+      flex-wrap: wrap;
+    }
+    .statsMinTitle{
+      font-size: 12px;
+      font-weight: 1000;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-right: 2px;
+    }
+    .statsMinChip{
+      display:inline-flex;
+      align-items:baseline;
+      gap: 6px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(2,6,23,.08);
+      background: rgba(255,255,255,.65);
+      color: var(--text);
+      font-weight: 900;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    .statsMinChip .num{
+      font-variant-numeric: tabular-nums;
+    }
+    .statsMinChip .lbl{
+      font-weight: 800;
+      color: var(--muted);
+    }
+    .statsMinChev{
+      flex: 0 0 auto;
+      font-weight: 1000;
+      color: var(--muted);
+      padding-left: 6px;
+    }
+    .statsRow.collapsed{display:none;}
+
+
+    /* ---------- Ultra compact spacing (use vertical space better) ---------- */
+    .itemsList{padding-top: 0;}
+    .itemsList li{
+      margin: 6px 0;          /* tighter between item cards */
+      padding: 8px 10px;      /* slightly tighter inside card */
+    }
+    .nameRow{gap: 6px;}
+    .itemTop{gap: 6px;}
+    .itemAdd{margin-top: 3px;}
+
+    /* Section tags (FOOD / SIDE DISH) tighter */
+    .sectionTag{
+      margin: 10px 0 6px;
+      padding: 7px 12px;
+    }
+
+
+    /* ---------- Reduce spacing after category header (red arrow fix) ---------- */
+    .itemsList{ gap: 4px; }              /* was 8px */
+    .itemsList li{ margin: 0; }          /* gap controls spacing */
+    .sectionTag{
+      margin: 8px 0 2px;                /* tighter before/after */
+      padding: 6px 10px;
+    }
+
+</style>
 </head>
 
 <body>
@@ -593,7 +748,17 @@
   </div>
 
   <div class="container">
-    <div class="statsRow" id="statsRow">
+    <button class="statsMinBar" id="statsMinToggle" type="button" aria-expanded="false" aria-controls="statsRow">
+        <div class="statsMinLeft">
+          <span class="statsMinTitle">Stats</span>
+          <span class="statsMinChip"><span class="num" id="activeOrdersMini">0</span><span class="lbl">Active</span></span>
+          <span class="statsMinChip"><span class="lbl">Today</span><span class="num" id="totalOrdersTodayMini">0</span></span>
+          <span class="statsMinChip"><span class="num" id="onlineStatusMini">…</span></span>
+        </div>
+        <span class="statsMinChev" id="statsMinChev" aria-hidden="true">▾</span>
+      </button>
+
+      <div class="statsRow collapsed" id="statsRow">
       <div class="stat">
         <div class="k">Active Orders</div>
         <div class="v" id="activeOrders">0</div>
@@ -701,6 +866,31 @@
     const topItemEl = document.getElementById("topItem");
     const onlineStatusEl = document.getElementById("onlineStatus");
     const speedLineEl = document.getElementById("speedLine");
+
+    const statsRowEl = document.getElementById("statsRow");
+    const statsMinToggle = document.getElementById("statsMinToggle");
+    const statsMinChev = document.getElementById("statsMinChev");
+
+    const activeOrdersMiniEl = document.getElementById("activeOrdersMini");
+    const totalOrdersTodayMiniEl = document.getElementById("totalOrdersTodayMini");
+    const onlineStatusMiniEl = document.getElementById("onlineStatusMini");
+
+    function setStatsCollapsed(collapsed){
+      if(!statsRowEl || !statsMinToggle) return;
+      statsRowEl.classList.toggle("collapsed", collapsed);
+      statsMinToggle.setAttribute("aria-expanded", String(!collapsed));
+      if(statsMinChev) statsMinChev.textContent = collapsed ? "▾" : "▴";
+    }
+
+    // Default: always minimized (mobile-first)
+    setStatsCollapsed(true);
+
+    if(statsMinToggle){
+      statsMinToggle.addEventListener("click", () => {
+        const isCollapsed = statsRowEl?.classList.contains("collapsed");
+        setStatsCollapsed(!isCollapsed);
+      });
+    }
 
     const quoteEl = document.getElementById("dailyQuote");
 
@@ -1155,12 +1345,20 @@
           const price = getItemPrice(ci) * qty;
           const addons = getAddOns(ci);
 
+          const qtyClass = (qty >= 4) ? "huge" : (qty >= 2 ? "many" : "one");
+          const addonLine = (addons && addons !== "Tiada")
+            ? `<div class="itemAdd">Add-on: ${escapeHtml(addons)}</div>`
+            : "";
+
           li.innerHTML = `
             <div class="itemTop">
-              <div class="name">${escapeHtml(nm)}</div>
-              <div class="qty">x ${qty} <span class="itemPrice">• ${fmtMoney(price)}</span></div>
+              <div class="nameRow">
+                <span class="qtyPill ${qtyClass}" aria-label="Quantity ${qty}">${qty}×</span>
+                <div class="name">${escapeHtml(nm)}</div>
+              </div>
+              <div class="lineTotal">${fmtMoney(price)}</div>
             </div>
-            <div class="itemAdd">Add-on: ${escapeHtml(addons)}</div>
+            ${addonLine}
           `;
           itemsList.appendChild(li);
         }
@@ -1171,7 +1369,7 @@
 details.innerHTML = `
   <summary>
     <span>🧾 Items</span>
-    <span class="itemsCount">${countItems} item(s)</span>
+    <span class="itemsCount">Qty: ${countItems} • Lines: ${cart.length}</span>
   </summary>
 `;
 
@@ -1382,7 +1580,113 @@ details.appendChild(itemsList);
             .line{border-top:1px dashed #000;margin:6px 0;}
             .left{text-align:left; white-space:pre-wrap;}
             .footer{margin-top:10px;font-size:7px;opacity:.9;}
-          </style>
+          
+    /* ---------- Compact item rows for smartphone (less scrolling) ---------- */
+    .itemsList li{
+      padding: 8px 10px;       /* was larger */
+      margin: 6px 0;            /* tighter spacing */
+      border-radius: 16px;      /* slightly smaller radius */
+    }
+    .itemTop{
+      gap: 8px;
+    }
+    .name{
+      font-size: 15px;          /* slightly smaller but readable */
+      line-height: 1.2;
+    }
+    .qtyPill{
+      font-size: 16px;
+      padding: 2px 8px;
+      min-width: 40px;
+    }
+    .lineTotal{
+      font-size: 13px;
+    }
+    .itemAdd{
+      margin-top: 4px;
+      font-size: 12px;
+      line-height: 1.15;
+    }
+
+
+    /* ---------- Minimized stats bar (default collapsed) ---------- */
+    .statsMinBar{
+      width:100%;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      padding: 8px 10px;
+      margin-bottom: 10px;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      box-shadow: 0 8px 20px rgba(15,23,42,.06);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .statsMinLeft{
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      flex: 1 1 auto;
+      min-width: 0;
+      flex-wrap: wrap;
+    }
+    .statsMinTitle{
+      font-size: 12px;
+      font-weight: 1000;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-right: 2px;
+    }
+    .statsMinChip{
+      display:inline-flex;
+      align-items:baseline;
+      gap: 6px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(2,6,23,.08);
+      background: rgba(255,255,255,.65);
+      color: var(--text);
+      font-weight: 900;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    .statsMinChip .num{
+      font-variant-numeric: tabular-nums;
+    }
+    .statsMinChip .lbl{
+      font-weight: 800;
+      color: var(--muted);
+    }
+    .statsMinChev{
+      flex: 0 0 auto;
+      font-weight: 1000;
+      color: var(--muted);
+      padding-left: 6px;
+    }
+    .statsRow.collapsed{display:none;}
+
+
+    /* ---------- Ultra compact spacing (use vertical space better) ---------- */
+    .itemsList{padding-top: 0;}
+    .itemsList li{
+      margin: 6px 0;          /* tighter between item cards */
+      padding: 8px 10px;      /* slightly tighter inside card */
+    }
+    .nameRow{gap: 6px;}
+    .itemTop{gap: 6px;}
+    .itemAdd{margin-top: 3px;}
+
+    /* Section tags (FOOD / SIDE DISH) tighter */
+    .sectionTag{
+      margin: 10px 0 6px;
+      padding: 7px 12px;
+    }
+
+</style>
         </head>
         <body>
           <b>RESTORAN AYAM GEPUK NGENCES</b><br>
@@ -1611,6 +1915,10 @@ Total: ${fmtMoney(order.totalPrice ?? 0)}
       totalOrdersTodayEl.textContent = String(totalToday);
       topItemEl.textContent = `Top item: ${topItem}`;
 
+      // Mini (collapsed) stats bar
+      if(activeOrdersMiniEl) activeOrdersMiniEl.textContent = String(active);
+      if(totalOrdersTodayMiniEl) totalOrdersTodayMiniEl.textContent = String(totalToday);
+
       drawerTotalToday.textContent = `Total Orders Today: ${totalToday}`;
       drawerActive.textContent = `Active Orders: ${active}`;
       drawerTop.textContent = `Top Item: ${topItem}${topItem !== "-" ? " 🔝🔥" : ""}`;
@@ -1625,6 +1933,7 @@ Total: ${fmtMoney(order.totalPrice ?? 0)}
       const txt = isOnline ? "🌐 Online" : "❌ Offline";
       onlineStatusEl.textContent = txt;
       drawerOnline.textContent = `Status: ${txt}`;
+      if(onlineStatusMiniEl) onlineStatusMiniEl.textContent = (isOnline ? "Online" : "Offline");
 
       miniOnlineText.textContent = `Status: ${isOnline ? "Online" : "Offline"}`;
       miniOnlineDot.className = `iconDot ${isOnline ? "dot-ok" : "dot-off"}`;
