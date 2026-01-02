@@ -707,6 +707,206 @@
       padding: 6px 10px;
     }
 
+
+    /* ---------- Add-on collapse (default) ---------- */
+    .addonDetails{ margin-top: 3px; }
+    .addonDetails summary{ list-style:none; cursor:pointer; user-select:none; }
+    .addonDetails summary::-webkit-details-marker{ display:none; }
+    .addonSummary{
+      font-size: 12px;
+      font-weight: 900;
+      color: var(--muted);
+      display:inline-flex;
+      align-items:center;
+      gap: 6px;
+    }
+    .addonSummary::after{
+      content:"▾";
+      font-weight: 1000;
+      opacity: .7;
+    }
+    .addonDetails[open] .addonSummary::after{ content:"▴"; }
+    .addonDetails .itemAdd{ margin-top: 2px; }
+
+    /* ---------- Category header (with totals) ---------- */
+    .sectionTag{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      padding: 6px 10px;
+      margin: 8px 0 2px;
+      border-radius: 14px;
+      border: 1px dashed rgba(2,6,23,.10);
+      background: rgba(255,255,255,.55);
+      font-weight: 1000;
+      text-transform: uppercase;
+      letter-spacing: .10em;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .sectionTag .sectionMeta{
+      text-transform:none;
+      letter-spacing: 0;
+      font-weight: 900;
+      font-size: 12px;
+      color: var(--text);
+      opacity: .85;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ---------- High quantity marker ---------- */
+    .qtyWarn{
+      font-size: 12px;
+      margin-left: 4px;
+      opacity: .95;
+      vertical-align: middle;
+    }
+
+    /* ---------- Change flash (new/updated item) ---------- */
+    @keyframes flashOutline{
+      0%{ box-shadow: 0 0 0 2px rgba(245,158,11,.55); }
+      100%{ box-shadow: 0 0 0 0 rgba(245,158,11,0); }
+    }
+    .itemLine.flash{ animation: flashOutline 1.2s ease-out; }
+
+    @keyframes flashCard{
+      0%{ box-shadow: 0 0 0 3px rgba(37,99,235,.35), 0 10px 24px rgba(15,23,42,.08); }
+      100%{ box-shadow: 0 10px 24px rgba(15,23,42,.08); }
+    }
+    .order.flashOrder{ animation: flashCard 1.2s ease-out; }
+
+    /* ---------- Auto dense mode for big orders ---------- */
+    .order.dense .itemsList{ gap: 2px; }
+    .order.dense .itemLine{ padding: 6px 8px; }
+    .order.dense .name{ font-size: 14px; }
+    .order.dense .qtyPill{ font-size: 15px; padding: 2px 7px; min-width: 38px; }
+    .order.dense .lineTotal{ font-size: 12px; }
+    .order.dense .sectionTag{ margin: 6px 0 1px; padding: 5px 9px; }
+
+
+    /* ---------- Add-ons: always visible (no click) ---------- */
+    .addonLabel{
+      font-weight: 900;
+      color: var(--muted);
+      margin-right: 4px;
+      white-space: nowrap;
+    }
+    .itemAdd{
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;   /* keep compact, no interaction */
+      overflow: hidden;
+    }
+    .order.dense .itemAdd{
+      -webkit-line-clamp: 1;   /* even denser for big orders */
+    }
+
+
+    /* ---------- Action buttons: aligned + space-efficient ---------- */
+    .actionsRow{
+      padding: 8px 10px 10px;     /* tighter, more usable area */
+      gap: 8px;                   /* tighter grid gap */
+      grid-auto-rows: 44px;       /* consistent height for perfect alignment */
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .aBtn{
+      width: 100%;
+      height: 44px;
+      padding: 0 10px;            /* remove extra vertical padding */
+      border-radius: 12px;
+      font-size: 12.5px;
+      line-height: 1;
+      gap: 6px;
+      white-space: nowrap;        /* prevent wrapping that breaks alignment */
+      overflow: hidden;
+      text-overflow: ellipsis;
+      border: 1px solid rgba(2,6,23,.08);
+      box-shadow: 0 1px 0 rgba(255,255,255,.75) inset;
+      touch-action: manipulation;
+    }
+    /* Slightly smaller in dense mode to reduce card height */
+    .order.dense .actionsRow{ grid-auto-rows: 40px; gap: 6px; padding: 6px 8px 8px; }
+    .order.dense .aBtn{ height: 40px; font-size: 12px; border-radius: 11px; }
+
+
+    /* ---------- Action buttons: 4 per row ---------- */
+    .actionsRow{
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 6px;
+      padding: 6px 8px 8px;
+      grid-auto-rows: 38px;
+    }
+    .aBtn{
+      height: 38px;
+      padding: 0 6px;
+      font-size: 11px;
+      border-radius: 11px;
+      gap: 4px;
+    }
+    .order.dense .actionsRow{ gap: 5px; grid-auto-rows: 36px; padding: 6px 8px 8px; }
+    .order.dense .aBtn{ height: 36px; font-size: 10.5px; }
+
+    /* On very narrow screens, favor icon readability */
+    @media (max-width: 360px){
+      .aBtn{ font-size: 10.5px; padding: 0 5px; }
+    }
+
+
+    /* ---------- Completed order: key info only ---------- */
+    .order.ready .pillRow .pill:nth-child(n+2){ display:none; }  /* hide food/drink pills */
+    .order.ready .meta-request{ display:none; }                  /* hide request field */
+    .order.ready .divider{ display:none; }
+    .order.ready .itemsWrap{ display:none; }
+    .order.ready .actionsRow{ display:none; }                    /* hide all buttons */
+    .order.ready{
+      padding-bottom: 10px;
+    }
+    .order.ready .metaRow{
+      padding-bottom: 6px;
+    }
+
+
+    /* ---------- Completed order: view toggle ---------- */
+    .doneToggleRow{ padding: 6px 8px 10px; }
+    .doneToggleRow .aViewDone{ width:100%; }
+
+    /* Hide details for completed by default, allow expand */
+    .order.ready .itemsArea{ display:none; }
+    .order.ready .doneActionsRow{ display:none; }
+    .order.ready.showDone .itemsArea{ display:block; }
+    .order.ready.showDone .doneActionsRow{ display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 6px; padding: 0 8px 10px; }
+
+    /* Keep completed cards compact */
+    .order.ready .actionsRow{ display:none; } /* never show status buttons for completed */
+
+
+    /* ---------- Completed order: showDone overrides ---------- */
+    .order.ready.showDone .divider{ display:block; }
+    .order.ready.showDone .itemsWrap{ display:block; }
+
+
+    /* ---------- Priority indicator ---------- */
+    .pill.prio{
+      border: 1px solid rgba(2,6,23,.08);
+      background: rgba(255,255,255,.70);
+      color: var(--text);
+      font-weight: 1000;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+    .pill.prioSoon{
+      border-color: rgba(245,158,11,.35);
+      background: rgba(245,158,11,.10);
+    }
+    .pill.prioOver{
+      border-color: rgba(239,68,68,.35);
+      background: rgba(239,68,68,.10);
+    }
+    .order.prioSoon{ box-shadow: 0 0 0 2px rgba(245,158,11,.15), 0 10px 24px rgba(15,23,42,.08); }
+    .order.prioOver{ box-shadow: 0 0 0 2px rgba(239,68,68,.18), 0 10px 24px rgba(15,23,42,.08); }
+
 </style>
 </head>
 
@@ -735,6 +935,7 @@
         <option value="newest">Sort: Newest</option>
         <option value="oldest">Sort: Oldest</option>
         <option value="queue">Sort: Queue Number</option>
+        <option value="priority">Sort: Priority (Due Soon)</option>
         <option value="totalHigh">Sort: Total (High → Low)</option>
         <option value="totalLow">Sort: Total (Low → High)</option>
       </select>
@@ -772,7 +973,7 @@
       <div class="stat">
         <div class="k">Connection</div>
         <div class="v" id="onlineStatus">…</div>
-        <div class="s" id="speedLine">Speed: … • FPS: …</div>
+        <div class="s" id="speedLine"><span id="speedText">Speed: …</span> • <span id="fpsText">FPS: …</span> • <span id="lastSyncText">Last: —</span></div>
       </div>
     </div>
 
@@ -839,6 +1040,7 @@
     const ordersRef = ref(db, "orders");
     const menuRef = ref(db, "menuItems");
     const statsVisibleRef = ref(db, "settings/liveStatsVisible");
+    const connectedRef = ref(db, ".info/connected");
 
     // ---------- UI refs ----------
     const ordersEl = document.getElementById("orders");
@@ -866,6 +1068,10 @@
     const topItemEl = document.getElementById("topItem");
     const onlineStatusEl = document.getElementById("onlineStatus");
     const speedLineEl = document.getElementById("speedLine");
+    const speedTextEl = document.getElementById("speedText");
+    const fpsTextEl = document.getElementById("fpsText");
+    const lastSyncTextEl = document.getElementById("lastSyncText");
+
 
     const statsRowEl = document.getElementById("statsRow");
     const statsMinToggle = document.getElementById("statsMinToggle");
@@ -913,6 +1119,22 @@
     let lastSpeedMbps = null;
     // Keep Items panel open state (per order)
     const expandedItems = new Set();
+    // Keep Completed (Ready) order view open state
+    const expandedDone = new Set();
+
+    // Order card cache (avoid full re-render)
+    const cardCache = new Map(); // orderId -> { el, hash }
+
+    // Per-order item signature (for change flash)
+    const prevCartSig = new Map(); // orderId -> Map(key->qty)
+
+    // Track first time seen orders (new order flash)
+    const knownOrders = new Set();
+
+    // Connection / sync state
+    let firebaseConnected = true;
+    let lastSyncTs = null;
+
 
 
     // ---------- Helpers ----------
@@ -923,7 +1145,66 @@
       showToast._t = setTimeout(()=> toastEl.style.display = "none", ms);
     }
 
-    function setActiveTab(tab){
+    // ---------- Scroll preservation (avoid jump-to-top on updates) ----------
+    function captureScrollAnchor(){
+      // If user is at top, don't anchor (let new orders show)
+      if(window.scrollY <= 10) return null;
+
+      const targetY = 110; // approx below top bar
+      const children = Array.from(ordersEl.children);
+      let best = null;
+      let bestDist = Infinity;
+
+      for(const el of children){
+        const rect = el.getBoundingClientRect();
+        // choose the element closest to targetY that is at least partially visible
+        if(rect.bottom <= 0 || rect.top >= window.innerHeight) continue;
+        const dist = Math.abs(rect.top - targetY);
+        if(dist < bestDist){
+          bestDist = dist;
+          best = { id: el.id, offsetTop: rect.top };
+        }
+      }
+      // Fallback to scrollY if none visible
+      return best || { y: window.scrollY };
+    }
+
+    function restoreScrollAnchor(anchor){
+      if(!anchor) return;
+      if(anchor.id){
+        const el = document.getElementById(anchor.id);
+        if(el){
+          const rect = el.getBoundingClientRect();
+          const dy = rect.top - anchor.offsetTop;
+          // Adjust only if meaningful (prevents jitter)
+          if(Math.abs(dy) > 2) window.scrollBy(0, dy);
+          return;
+        }
+      }
+      if(typeof anchor.y === "number"){
+        window.scrollTo(0, anchor.y);
+      }
+    }
+
+
+    
+    // ---------- Offline cache restore (keeps last known orders on refresh) ----------
+    (function restoreOfflineCache(){
+      try{
+        const cached = JSON.parse(localStorage.getItem("ordersCache") || "null");
+        const cachedSync = Number(localStorage.getItem("lastSyncTs") || 0) || null;
+        if(cached && typeof cached === "object" && Object.keys(cached).length){
+          ordersMap = cached;
+          lastSyncTs = cachedSync;
+          updateLastSync();
+          // Render something immediately (helpful when offline)
+          render();
+          showToast("Loaded last orders (cache)", 1800);
+        }
+      }catch(e){}
+    })();
+
+function setActiveTab(tab){
       currentTab = tab;
       tabAll.classList.toggle("active", tab==="all");
       tabActive.classList.toggle("active", tab==="active");
@@ -951,7 +1232,139 @@
       if(Array.isArray(a) && a.length) return a.map(x => String(x)).join(", ");
       return "Tiada";
     }
-    function fmtMoney(n){
+    
+    // ---------- Cart helpers (merge duplicates / signatures) ----------
+    function itemKeyFromParts(name, addons, unitPrice){
+      return `${normalizeStr(name)}||${normalizeStr(addons)}||${Number(unitPrice||0).toFixed(2)}`;
+    }
+
+    function itemKey(ci){
+      const nm = getItemName(ci);
+      const addons = getAddOns(ci);
+      const unit = getItemPrice(ci);
+      return itemKeyFromParts(nm, addons, unit);
+    }
+
+    function mergeCart(cart){
+      const map = new Map();
+      for(const ci of cart){
+        const key = itemKey(ci);
+        const prev = map.get(key);
+        if(prev){
+          prev.quantity = getItemQty(prev) + getItemQty(ci);
+        } else {
+          // clone minimal fields while keeping original structure as much as possible
+          const copy = (ci && typeof ci === "object") ? JSON.parse(JSON.stringify(ci)) : { name: getItemName(ci) };
+          copy.quantity = getItemQty(ci);
+          map.set(key, copy);
+        }
+      }
+      return [...map.values()];
+    }
+
+    function cartSignature(cart){
+      const sig = new Map();
+      for(const ci of cart){
+        sig.set(itemKey(ci), getItemQty(ci));
+      }
+      return sig;
+    }
+
+    // ---------- Priority / due-time helpers ----------
+    function parseTs(ts){
+      // Supports number, numeric string, ISO string, Firebase Timestamp-like {seconds, nanoseconds}
+      if(ts === null || ts === undefined) return 0;
+      if(typeof ts === "number"){
+        return Number.isFinite(ts) ? ts : 0;
+      }
+      if(typeof ts === "string"){
+        const asNum = Number(ts);
+        if(Number.isFinite(asNum) && asNum > 0) return asNum;
+        const parsed = Date.parse(ts);
+        return Number.isFinite(parsed) ? parsed : 0;
+      }
+      if(typeof ts === "object"){
+        if(typeof ts.seconds === "number"){
+          const ms = ts.seconds * 1000 + Math.floor((ts.nanoseconds || 0) / 1e6);
+          return Number.isFinite(ms) ? ms : 0;
+        }
+      }
+      return 0;
+    }
+
+    function fallbackPrepMin(category){
+      const c = String(category || "").toLowerCase();
+      if(c.includes("food")) return 12;
+      if(c.includes("side")) return 6;
+      if(c.includes("air panas")) return 4;
+      if(c.includes("air sejuk")) return 3;
+      if(c.includes("drink")) return 3;
+      return 5;
+    }
+
+    function getItemPrepMin(ci){
+      const nm = getItemName(ci);
+      const menu = (menuByName && menuByName[nm]) ? menuByName[nm] : null;
+      const category = (ci?.category) || (menu?.category) || (ci?.cat) || "Others";
+      const raw = Number(menu?.prepMinutes ?? menu?.prepTime ?? menu?.prep ?? ci?.prepMinutes ?? ci?.prepTime ?? ci?.prep);
+      if(Number.isFinite(raw) && raw > 0) return raw;
+      return fallbackPrepMin(category);
+    }
+
+    function estimatePrepMinutesFromCart(cart){
+      const merged = mergeCart(Array.isArray(cart) ? cart : []);
+      let mins = 0;
+      for(const ci of merged){
+        const q = getItemQty(ci);
+        const p = getItemPrepMin(ci);
+        mins += p * q;
+      }
+      // small overhead per distinct line (packing/serving), capped
+      mins += Math.min(6, merged.length) * 0.5;
+      // sane bounds
+      mins = Math.max(3, Math.min(90, mins));
+      return mins;
+    }
+
+    function dueInfo(order){
+      const expectedMin = estimatePrepMinutesFromCart(order?.cart);
+      const ts = parseTs(order?.timestamp);
+      const dueTs = ts ? (ts + expectedMin * 60_000) : 0;
+      const remMs = dueTs ? (dueTs - Date.now()) : 0;
+      return { expectedMin, dueTs, remMs };
+    }
+
+    function fmtMin(ms){
+      const m = Math.ceil(Math.abs(ms) / 60_000);
+      return m <= 0 ? 0 : m;
+    }
+
+
+    function fmtClock(ts){
+      if(!ts) return "—";
+      try{
+        const d = new Date(ts);
+        return d.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+      }catch{
+        return "—";
+      }
+    }
+
+    function updateLastSync(){
+      if(lastSyncTextEl){
+        lastSyncTextEl.textContent = `Last: ${fmtClock(lastSyncTs)}`;
+      }
+      // Also keep cache for offline reload
+      try{
+        if(lastSyncTs) localStorage.setItem("lastSyncTs", String(lastSyncTs));
+      }catch(e){}
+    }
+
+    function orderHash(order){
+      try{ return JSON.stringify(order); }catch(e){ return String(Math.random()); }
+    }
+
+function fmtMoney(n){
       return `RM${Number(n || 0).toFixed(2)}`;
     }
     function fmtTime(ts){
@@ -1184,6 +1597,13 @@
       const getTotal = (o) => Number(o.order.totalPrice || 0);
 
       const sorted = [...list];
+      const now = Date.now();
+      const prioScore = (o) => {
+        const ts = getTs(o);
+        const exp = estimatePrepMinutesFromCart(o.order?.cart);
+        const due = ts ? (ts + exp * 60_000) : ts;
+        return (due || 0) - now; // smaller => more urgent
+      };
 
       // IMPORTANT:
       // "Newest" / "Oldest" should be pure time order so new orders ALWAYS appear at the top.
@@ -1219,6 +1639,12 @@
           case "queue": return getQueue(a) - getQueue(b);
           case "totalHigh": return getTotal(b) - getTotal(a);
           case "totalLow": return getTotal(a) - getTotal(b);
+          case "priority": {
+            const pa = prioScore(a);
+            const pb = prioScore(b);
+            if(pa !== pb) return pa - pb;
+            return getTs(b) - getTs(a);
+          }
           default: return getTs(b) - getTs(a);
         }
       });
@@ -1245,6 +1671,8 @@
 
     // ---------- Rendering ----------
     function render(){
+      const _scrollAnchor = captureScrollAnchor();
+
       const query = searchInput.value.trim();
       const sortMode = sortSelect.value;
 
@@ -1264,7 +1692,9 @@
       // Sort
       list = sortOrders(list, sortMode);
 
-      ordersEl.innerHTML = "";
+      // Incremental render (keeps DOM stable, less jank on phones)
+      const keep = new Set();
+
       if(list.length === 0){
         emptyStateEl.style.display = "block";
       } else {
@@ -1272,18 +1702,53 @@
       }
 
       for(const {id, order} of list){
-        ordersEl.appendChild(renderCard(id, order));
+        keep.add(id);
+        const hash = orderHash(order);
+        const cached = cardCache.get(id);
+
+        if(!cached){
+          const card = renderCard(id, order);
+          cardCache.set(id, { el: card, hash });
+          ordersEl.appendChild(card);
+          if(card.__cartSig) prevCartSig.set(id, card.__cartSig);
+        } else {
+          if(cached.hash !== hash){
+            const newCard = renderCard(id, order);
+            cached.el.replaceWith(newCard);
+            cached.el = newCard;
+            cached.hash = hash;
+            if(newCard.__cartSig) prevCartSig.set(id, newCard.__cartSig);
+          }
+          // Move (or keep) in correct order
+          ordersEl.appendChild(cached.el);
+        }
+      }
+
+      // Remove cards not in current view
+      for(const [id, cached] of [...cardCache.entries()]){
+        if(!keep.has(id)){
+          cached.el.remove();
+          cardCache.delete(id);
+        }
       }
 
       miniCount.textContent = `Showing ${list.length}`;
       updateStatsPanels();
-    }
+    
+      requestAnimationFrame(() => restoreScrollAnchor(_scrollAnchor));
+}
 
     function renderCard(orderId, order){
       const card = document.createElement("div");
       const { overall, pillClass, label } = computeOverall(order);
       card.className = `order ${overall === "ready" ? "ready" : (overall === "preparing" ? "preparing" : "received")}`;
       card.id = `order-${orderId}`;
+
+      // New order flash (first time seen)
+      if(!knownOrders.has(orderId)){
+        knownOrders.add(orderId);
+        card.classList.add("flashOrder");
+      }
 
       const q = (order.queueNumber ?? "N/A");
       const name = order.name ?? "-";
@@ -1300,21 +1765,55 @@
 
       const elapsed = computeElapsed(order.timestamp);
 
-      const cart = Array.isArray(order.cart) ? order.cart : [];
+      // Priority (based on estimated prep time)
+      let prioPillHtml = "";
+      if(overall !== "ready"){
+        const prio = dueInfo(order);
+        const rem = prio.remMs;
+        const expected = Math.round(prio.expectedMin);
+        let cls = "prio";
+        let txt = `⏱ ETA ${expected}m`;
+        if(prio.dueTs){
+          if(rem <= 0){
+            cls += " prioOver";
+            txt = `⚠ Overdue ${fmtMin(rem)}m`;
+          } else if(rem <= 5*60_000){
+            cls += " prioSoon";
+            txt = `⏱ Due ${fmtMin(rem)}m`;
+          } else {
+            txt = `⏱ Due ${fmtMin(rem)}m`;
+          }
+        }
+        prioPillHtml = `<span class="pill ${cls}">${txt}</span>`;
+
+        // subtle card emphasis for urgent
+        card.classList.toggle("prioOver", rem <= 0 && prio.dueTs);
+        card.classList.toggle("prioSoon", rem > 0 && rem <= 5*60_000);
+      }
+
+      const rawCart = Array.isArray(order.cart) ? order.cart : [];
+      const cart = mergeCart(rawCart);
       const countItems = cart.reduce((acc, ci) => acc + getItemQty(ci), 0);
+      const linesCount = cart.length;
+
+      // Auto dense mode for big orders (less scrolling)
+      const isBig = (countItems >= 12 || linesCount >= 10);
+      if(isBig) card.classList.add("dense");
+
+      // Signatures for change flash (qty/item changes)
+      const prevSig = prevCartSig.get(orderId);
+      const nextSig = cartSignature(cart);
 
       // Build grouped items
       const grouped = {};
       for(const ci of cart){
-        const menuId = ci?.menuId;
-        const nm = getItemName(ci);
+        const nm0 = getItemName(ci);
         const cat =
-          (menuId && menuById?.[menuId]?.category) ||
-          (menuByName?.[nm]?.category) ||
+          (ci?.category) ||
+          (menuByName?.[nm0]?.category) ||
+          (ci?.cat) ||
           "Others";
-
-        if(!grouped[cat]) grouped[cat] = [];
-        grouped[cat].push(ci);
+        (grouped[cat] ||= []).push(ci);
       }
 
       const categoryOrder = [
@@ -1329,12 +1828,12 @@
         const items = grouped[cat];
         if(!items || !items.length) return;
 
-        // category header as a subtle line
+        const catQty = items.reduce((a, ci) => a + getItemQty(ci), 0);
+
+        // Category header with totals
         const catLi = document.createElement("li");
-        catLi.className = "itemLine";
-        catLi.style.background = "rgba(255,255,255,.74)";
-        catLi.style.borderStyle = "dashed";
-        catLi.innerHTML = `<div style="font-weight:1000;color:#334155;letter-spacing:.08em;text-transform:uppercase;font-size:12px;">${cat}</div>`;
+        catLi.className = "sectionTag";
+        catLi.innerHTML = `<span class="sectionName">${escapeHtml(cat)}</span><span class="sectionMeta">Qty ${catQty}</span>`;
         itemsList.appendChild(catLi);
 
         for(const ci of items){
@@ -1342,34 +1841,48 @@
           li.className = "itemLine";
           const nm = getItemName(ci);
           const qty = getItemQty(ci);
-          const price = getItemPrice(ci) * qty;
+          const unit = getItemPrice(ci);
+          const price = unit * qty;
           const addons = getAddOns(ci);
 
-          const qtyClass = (qty >= 4) ? "huge" : (qty >= 2 ? "many" : "one");
-          const addonLine = (addons && addons !== "Tiada")
-            ? `<div class="itemAdd">Add-on: ${escapeHtml(addons)}</div>`
-            : "";
+          const key = itemKeyFromParts(nm, addons, unit);
+          if(prevSig && prevSig.get(key) !== qty){
+            li.classList.add("flash");
+          }
 
-          li.innerHTML = `
+          const qtyClass = (qty >= 4) ? "huge" : (qty >= 2 ? "many" : "one");
+          const warn = (qty >= 4) ? `<span class="qtyWarn" aria-hidden="true">⚠︎</span>` : "";
+
+          let addonBlock = "";
+          if(addons && addons !== "Tiada"){
+            const parts = String(addons).split(",").map(x=>x.trim()).filter(Boolean);
+            const n = parts.length || 1;
+            const label = n > 1 ? `Add-on (${n}):` : "Add-on:";
+            addonBlock = `<div class="itemAdd"><span class="addonLabel">${label}</span>${escapeHtml(addons)}</div>`;
+          }
+li.innerHTML = `
             <div class="itemTop">
               <div class="nameRow">
-                <span class="qtyPill ${qtyClass}" aria-label="Quantity ${qty}">${qty}×</span>
+                <span class="qtyPill ${qtyClass}" aria-label="Quantity ${qty}">${qty}×${warn}</span>
                 <div class="name">${escapeHtml(nm)}</div>
               </div>
               <div class="lineTotal">${fmtMoney(price)}</div>
             </div>
-            ${addonLine}
+            ${addonBlock}
           `;
           itemsList.appendChild(li);
         }
       });
+
+      // Expose signature for incremental renderer
+      card.__cartSig = nextSig;
 
       const details = document.createElement("details");
 
 details.innerHTML = `
   <summary>
     <span>🧾 Items</span>
-    <span class="itemsCount">Qty: ${countItems} • Lines: ${cart.length}</span>
+    <span class="itemsCount">Qty: ${countItems} • Lines: ${linesCount}</span>
   </summary>
 `;
 
@@ -1390,7 +1903,44 @@ details.addEventListener("toggle", () => {
 details.appendChild(itemsList);
 
 
-      card.innerHTML = `
+      const isDone = overall === "ready";
+      const showDone = isDone && expandedDone.has(orderId);
+      card.classList.toggle("showDone", showDone);
+
+      const doneToggleHtml = isDone ? `
+        <div class="doneToggleRow">
+          <button class="aBtn aViewDone" type="button" data-act="viewDone">${showDone ? "▴ Hide order" : "👁️ View order"}</button>
+        </div>
+        <div class="doneActionsRow">
+          <button class="aBtn aPrint" type="button" data-act="print">🖨️ Print</button>
+          <button class="aBtn aDelete" type="button" data-act="delete">🗑️ Del</button>
+          <button class="aBtn aCopy" type="button" data-act="copy">📋 Copy</button>
+        </div>
+      ` : "";
+
+      const itemsWrapHtml = `
+        ${doneToggleHtml}
+        <div class="itemsArea">
+          <div class="divider"></div>
+          <div class="itemsWrap"></div>
+        </div>
+      `;
+
+      const actionsHtml = isDone ? "" : `
+        <div class="actionsRow">
+          <button class="aBtn aFoodPrep" type="button" data-act="foodPrep">🔥 F Prep</button>
+          <button class="aBtn aFoodReady" type="button" data-act="foodReady">✅ F Ready</button>
+          <button class="aBtn aDrinkPrep" type="button" data-act="drinkPrep">🔥 D Prep</button>
+          <button class="aBtn aDrinkReady" type="button" data-act="drinkReady">✅ D Ready</button>
+
+          <button class="aBtn aAllReady" type="button" data-act="allReady">✅ All</button>
+          <button class="aBtn aDelete" type="button" data-act="delete">🗑️ Del</button>
+
+          <button class="aBtn aPrint" type="button" data-act="print">🖨️ Print</button>
+          <button class="aBtn aCopy" type="button" data-act="copy">📋 Copy</button>
+        </div>
+      `;
+card.innerHTML = `
         <div class="orderHead">
           <div class="queue">
             <div>
@@ -1401,6 +1951,7 @@ details.appendChild(itemsList);
 
           <div class="pillRow">
             <span class="pill ${pillClass}">${label}</span>
+            ${prioPillHtml}
             <span class="pill"><span class="iconDot ${foodDot}"></span>🍴 ${niceStatus(order.foodStatus)}</span>
             <span class="pill"><span class="iconDot ${drinkDot}"></span>🥤 ${niceStatus(order.drinkStatus)}</span>
           </div>
@@ -1414,18 +1965,16 @@ details.appendChild(itemsList);
           <div class="meta"><strong>Time</strong> <span class="val" title="${escapeHtml(time)}">${escapeHtml(time)}</span></div>
         </div>
 
-        <div class="divider"></div>
-
-        <div class="itemsWrap"></div>
+        ${itemsWrapHtml}
 
         <div class="actionsRow">
-          <button class="aBtn aFoodPrep" type="button" data-act="foodPrep">🔥 Food Preparing</button>
-          <button class="aBtn aFoodReady" type="button" data-act="foodReady">✅ Food Ready</button>
-          <button class="aBtn aDrinkPrep" type="button" data-act="drinkPrep">🔥 Drink Preparing</button>
-          <button class="aBtn aDrinkReady" type="button" data-act="drinkReady">✅ Drink Ready</button>
+          <button class="aBtn aFoodPrep" type="button" data-act="foodPrep">🔥 F Prep</button>
+          <button class="aBtn aFoodReady" type="button" data-act="foodReady">✅ F Ready</button>
+          <button class="aBtn aDrinkPrep" type="button" data-act="drinkPrep">🔥 D Prep</button>
+          <button class="aBtn aDrinkReady" type="button" data-act="drinkReady">✅ D Ready</button>
 
-          <button class="aBtn aAllReady" type="button" data-act="allReady">✅ All Ready</button>
-          <button class="aBtn aDelete" type="button" data-act="delete">🗑️ Delete</button>
+          <button class="aBtn aAllReady" type="button" data-act="allReady">✅ All</button>
+          <button class="aBtn aDelete" type="button" data-act="delete">🗑️ Del</button>
 
           <button class="aBtn aPrint" type="button" data-act="print">🖨️ Print</button>
           <button class="aBtn aCopy" type="button" data-act="copy">📋 Copy</button>
@@ -1438,22 +1987,37 @@ details.appendChild(itemsList);
       `;
 
       // Insert items details
-      card.querySelector(".itemsWrap").appendChild(details);
+      const wrap = card.querySelector(".itemsWrap");
+      if(wrap) wrap.appendChild(details);
 
       // Button handlers
-      card.querySelector('[data-act="foodPrep"]').addEventListener("click", (e) => {
+      const bindAct = (sel, fn) => {
+        const el = card.querySelector(sel);
+        if(el) el.addEventListener("click", fn);
+      };
+
+      // Completed order: view/hide items
+      bindAct('[data-act="viewDone"]', (e) => {
+        e.stopPropagation();
+        const now = card.classList.toggle("showDone");
+        if(now) expandedDone.add(orderId); else expandedDone.delete(orderId);
+        const btn = e.currentTarget;
+        if(btn) btn.textContent = now ? "▴ Hide order" : "👁️ View order";
+      });
+
+      bindAct('[data-act="foodPrep"]', (e) => {
         e.stopPropagation();
         updateStatus(orderId, "food preparing", "foodStatus");
       });
-      card.querySelector('[data-act="foodReady"]').addEventListener("click", (e) => {
+      bindAct('[data-act="foodReady"]', (e) => {
         e.stopPropagation();
         updateStatus(orderId, "food ready", "foodStatus");
       });
-      card.querySelector('[data-act="drinkPrep"]').addEventListener("click", (e) => {
+      bindAct('[data-act="drinkPrep"]', (e) => {
         e.stopPropagation();
         updateStatus(orderId, "drink preparing", "drinkStatus");
       });
-      card.querySelector('[data-act="drinkReady"]').addEventListener("click", (e) => {
+      bindAct('[data-act="drinkReady"]', (e) => {
         e.stopPropagation();
         updateStatus(orderId, "drink ready", "drinkStatus");
       });
@@ -1463,15 +2027,15 @@ details.appendChild(itemsList);
         await updateStatus(orderId, "drink ready", "drinkStatus", { silent:true });
         showToast("Marked Food + Drink as READY");
       });
-      card.querySelector('[data-act="delete"]').addEventListener("click", (e) => {
+      bindAct('[data-act="delete"]', (e) => {
         e.stopPropagation();
         confirmDelete(orderId);
       });
-      card.querySelector('[data-act="print"]').addEventListener("click", (e) => {
+      bindAct('[data-act="print"]', (e) => {
         e.stopPropagation();
         printOrder(orderId);
       });
-      card.querySelector('[data-act="copy"]').addEventListener("click", (e) => {
+      bindAct('[data-act="copy"]', (e) => {
         e.stopPropagation();
         copyOrderToClipboard(orderId);
       });
@@ -1929,7 +2493,7 @@ Total: ${fmtMoney(order.totalPrice ?? 0)}
 
     // ---------- Online/FPS/Speed ----------
     function updateOnlineStatus(){
-      const isOnline = navigator.onLine;
+      const isOnline = navigator.onLine && firebaseConnected;
       const txt = isOnline ? "🌐 Online" : "❌ Offline";
       onlineStatusEl.textContent = txt;
       drawerOnline.textContent = `Status: ${txt}`;
@@ -1949,7 +2513,9 @@ Total: ${fmtMoney(order.totalPrice ?? 0)}
           fps = frames;
           frames = 0;
           last = now;
-          speedLineEl.textContent = `Speed: ${lastSpeedMbps ?? "…"} • FPS: ${fps}`;
+          if(speedTextEl) speedTextEl.textContent = `Speed: ${lastSpeedMbps ?? "…"} `;
+          if(fpsTextEl) fpsTextEl.textContent = `FPS: ${fps}`;
+          updateLastSync();
           drawerFps.textContent = `FPS: ${fps}`;
         }
         requestAnimationFrame(loop);
@@ -2013,6 +2579,20 @@ Total: ${fmtMoney(order.totalPrice ?? 0)}
       if(isVisible) openDrawer(); else closeDrawer();
     });
 
+    // Firebase connection state (more reliable than navigator.onLine alone)
+    onValue(connectedRef, (snap) => {
+      const was = firebaseConnected;
+      firebaseConnected = !!snap.val();
+      updateOnlineStatus();
+      if(was === false && firebaseConnected === true){
+        showToast("Reconnected", 1200);
+      }
+      if(firebaseConnected === false){
+        showToast("Offline", 1200);
+      }
+    });
+
+
     statsToggleBtn.addEventListener("click", async () => {
       const isOpen = drawer.style.display === "block";
       const newState = !isOpen;
@@ -2049,6 +2629,11 @@ Total: ${fmtMoney(order.totalPrice ?? 0)}
         map[ch.key] = ch.val() || {};
       });
       ordersMap = map;
+
+      // Sync timestamp + local cache (for offline refresh)
+      lastSyncTs = Date.now();
+      updateLastSync();
+      try{ localStorage.setItem("ordersCache", JSON.stringify(ordersMap)); }catch(e){}
 
       // Backward compatibility: set status if missing (like your previous version)
       // but do it quietly to avoid loops
