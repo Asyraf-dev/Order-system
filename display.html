@@ -1909,7 +1909,7 @@ details.appendChild(itemsList);
 
       const doneToggleHtml = isDone ? `
         <div class="doneToggleRow">
-          <button class="aBtn aViewDone" type="button" data-act="viewDone">${showDone ? "▴ Hide order" : "👁️ View order"}</button>
+          <button class="aBtn aViewDone" type="button" data-act="viewDone">${showDone ? "▴ Hide order" : "▼ View order"}</button>
         </div>
         <div class="doneActionsRow">
           <button class="aBtn aPrint" type="button" data-act="print">🖨️ Print</button>
@@ -2002,7 +2002,7 @@ card.innerHTML = `
         const now = card.classList.toggle("showDone");
         if(now) expandedDone.add(orderId); else expandedDone.delete(orderId);
         const btn = e.currentTarget;
-        if(btn) btn.textContent = now ? "▴ Hide order" : "👁️ View order";
+        if(btn) btn.textContent = now ? "▴ Hide order" : "▼ View order";
       });
 
       bindAct('[data-act="foodPrep"]', (e) => {
