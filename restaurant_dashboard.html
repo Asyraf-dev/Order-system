@@ -1,292 +1,1432 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Restaurant Control Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <style>
-    /* (Keep all your existing beautiful styles here - unchanged for brevity) */
-    :root {
-      --bg0: #0a0f1e;
-      --bg1: #0d1426;
-      --card: rgba(20, 25, 40, 0.85);
-      --card-hover: rgba(25, 30, 50, 0.92);
-      --text: #f1f5f9;
-      --text-secondary: #cbd5e1;
-      --muted: #94a3b8;
-      --border: rgba(255, 255, 255, 0.12);
-      --border-strong: rgba(255, 255, 255, 0.22);
-      --shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
-      --shadow-sm: 0 8px 32px rgba(0, 0, 0, 0.3);
-      --brand: #16a34a;
-      --brand-light: #22c55e;
-      --brand-glow: rgba(34, 197, 94, 0.25);
-      --danger: #ef4444;
-      --warn: #f59e0b;
+    :root{
+      --bg:#f6f7fb;
+      --bg-soft:#fff8f8;
+      --surface:#ffffff;
+      --surface-2:#fffdfd;
+      --surface-3:#fef2f2;
+      --line:#eadfe2;
+      --line-2:#f3d2d8;
+      --text:#171717;
+      --text-2:#4b5563;
+      --muted:#8b5f66;
+      --brand:#dc2626;
+      --brand-2:#b91c1c;
+      --brand-3:#ef4444;
+      --brand-soft:#fee2e2;
+      --brand-softer:#fff1f2;
+      --brand-ring:rgba(220,38,38,.16);
+      --shadow:0 18px 40px rgba(15,23,42,.08);
+      --shadow-soft:0 10px 24px rgba(15,23,42,.06);
+      --radius-xl:28px;
+      --radius-lg:22px;
+      --radius-md:18px;
+      --safe-top:env(safe-area-inset-top);
+      --safe-bottom:env(safe-area-inset-bottom);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      overscroll-behavior: contain;
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+    body{
+      font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(900px 420px at 0% 0%, rgba(220,38,38,.07), transparent 60%),
+        radial-gradient(900px 420px at 100% 0%, rgba(239,68,68,.05), transparent 55%),
+        linear-gradient(180deg, #fffdfd 0%, #fbf7f7 28%, var(--bg) 100%);
+      min-height:100vh;
+      overflow:hidden;
+      overscroll-behavior:contain;
     }
-    body.nav-open { overflow: hidden; }
-    body.nav-open .main { filter: blur(1px); }
+    body.sidebar-collapsed .app{
+      grid-template-columns: 96px minmax(0,1fr);
+    }
+    body.nav-open{overflow:hidden}
+    body.nav-open .main-shell{filter:blur(1px)}
 
-    body {
-      font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      color: var(--text);
-      background: radial-gradient(1400px 1000px at 20% 10%, rgba(34,197,94,0.25), transparent 60%),
-                  radial-gradient(1400px 1000px at 80% 30%, rgba(59,130,246,0.15), transparent 55%),
-                  linear-gradient(180deg, var(--bg0), var(--bg1));
-      height: 100vh;
-      overflow: hidden;
-    }
-
-    .app { display: grid; grid-template-columns: 290px 1fr; height: 100vh; }
-    .sidebar { background: var(--card); backdrop-filter: blur(20px); border-right: 1px solid var(--border); box-shadow: var(--shadow); padding: 28px 20px; display: grid; grid-template-rows: auto 1fr auto; gap: 32px; transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 100;
-      height: 100vh;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      overscroll-behavior: contain;
-    }
-    .sidebar-header { display: flex; align-items: center; gap: 16px; }
-    .logo { width: 56px; height: 56px; border-radius: 18px; background: linear-gradient(135deg, var(--brand), var(--brand-light)); color: white; font-weight: 900; font-size: 26px; display: grid; place-items: center; box-shadow: 0 12px 40px rgba(34,197,94,0.45); }
-    .brand-title { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em; }
-    .brand-subtitle { font-size: 0.9rem; color: var(--text-secondary); margin-top: 2px; }
-    .nav { display: grid; gap: 8px; }
-    .nav button { width: 100%; padding: 16px 18px; border-radius: 16px; background: transparent; border: 1px solid transparent; color: var(--text-secondary); font-weight: 600; font-size: 15.5px; cursor: pointer; display: flex; align-items: center; gap: 16px; transition: all 0.3s ease; }
-    .nav button i { font-size: 18px; width: 24px; text-align: center; }
-    .nav button:hover { background: var(--brand-glow); border-color: rgba(34,197,94,0.4); color: var(--text); transform: translateX(6px); }
-    .nav button.active { background: linear-gradient(90deg, var(--brand-glow), transparent); border-color: rgba(34,197,94,0.55); color: var(--text); font-weight: 700; box-shadow: 0 8px 25px rgba(34,197,94,0.2); }
-    .nav button.danger { color: var(--danger); }
-    .nav button.danger:hover { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.4); transform: translateX(6px); }
-    .user-pill { padding: 12px 18px; background: var(--brand-glow); border: 1px solid rgba(34,197,94,0.4); border-radius: 16px; font-size: 14.5px; display: flex; align-items: center; gap: 10px; }
-    .main { display: grid; grid-template-rows: auto 1fr; overflow: hidden; }
-    .topbar { background: var(--card); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); padding: 18px 28px; display: flex; align-items: center; gap: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
-    .hamburger { display: none; background: none; border: none; color: var(--text); font-size: 26px; cursor: pointer; padding: 8px; border-radius: 12px; transition: background 0.2s; }
-    .hamburger:hover { background: var(--brand-glow); }
-    .page-title { font-size: 24px; font-weight: 800; letter-spacing: -0.03em; }
-    .content { padding: 28px; overflow-y: auto; background: rgba(0,0,0,0.1); }
-    .iframe-wrapper { width: 100%; height: 100%; min-height: 80vh; border-radius: 24px; overflow: hidden; box-shadow: var(--shadow); background: #ffffff; border: 1px solid var(--border); }
-    iframe { width: 100%; height: 100%; border: none; }
-    .home-message { height: 100%; display: grid; place-items: center; text-align: center; color: var(--text-secondary); }
-    .home-message h2 { font-size: 28px; margin-bottom: 16px; color: var(--text); }
-    .home-message p { font-size: 17px; max-width: 500px; line-height: 1.6; }
-    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); display: none; z-index: 50; }
-    .overlay.show { display: block; }
-
-    @media (max-width: 980px) {
-      .app { grid-template-columns: 1fr; }
-      .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 85vw; max-width: 340px; transform: translateX(-100%); box-shadow: var(--shadow); }
-      .sidebar.open { transform: translateX(0); }
-      .hamburger { display: block; }
-      .content { padding: 20px; }
-      .topbar { padding: 16px 20px; }
-    }
-    @media (max-width: 480px) {
-      .sidebar { width: min(92vw, 340px); }
-
-      .page-title { font-size: 21px; }
-      .content { padding: 16px; }
-    }
-  
-    /* sidebar scroll */
-    .sidebar .nav,
-    .sidebar nav,
-    .sidebar .menu,
-    .sidebar .nav-links,
-    .sidebar .nav-items{
-      padding-bottom: 24px;
+    .app{
+      height:100vh;
+      display:grid;
+      grid-template-columns: 310px minmax(0,1fr);
+      gap:18px;
+      padding:18px;
+      padding-top:max(18px, calc(18px + var(--safe-top)));
+      padding-bottom:max(18px, calc(18px + var(--safe-bottom)));
     }
 
-    @supports(padding: max(0px)){
-      .sidebar{
-        padding-bottom: max(16px, env(safe-area-inset-bottom));
+    .sidebar{
+      min-height:0;
+      display:grid;
+      grid-template-rows:auto auto 1fr auto;
+      gap:16px;
+      padding:20px;
+      border-radius:var(--radius-xl);
+      background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,252,252,.96));
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+      overflow-y:auto;
+      -webkit-overflow-scrolling:touch;
+      overscroll-behavior:contain;
+      position:relative;
+      z-index:3;
+    }
+    .sidebar::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      border-radius:inherit;
+      background:
+        radial-gradient(340px 220px at 12% 0%, rgba(220,38,38,.08), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,.4), transparent 18%);
+      opacity:.95;
+    }
+    .sidebar > *{position:relative;z-index:1}
+
+    .sidebar-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .sidebar-toggle{
+      width:42px;
+      height:42px;
+      border:none;
+      border-radius:14px;
+      background:var(--brand-softer);
+      border:1px solid rgba(220,38,38,.12);
+      color:var(--brand-2);
+      cursor:pointer;
+      display:grid;
+      place-items:center;
+      flex:0 0 auto;
+      box-shadow:var(--shadow-soft);
+      transition:transform .12s ease, background .18s ease, border-color .18s ease;
+    }
+    .sidebar-toggle:hover{
+      transform:translateY(-1px);
+      background:var(--brand-soft);
+      border-color:rgba(220,38,38,.18);
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      padding-bottom:2px;
+    }
+    .logo{
+      width:56px;
+      height:56px;
+      border-radius:18px;
+      display:grid;
+      place-items:center;
+      background:linear-gradient(135deg, var(--brand), var(--brand-3));
+      color:white;
+      font-size:24px;
+      font-weight:900;
+      box-shadow:0 18px 28px rgba(220,38,38,.18);
+      flex:0 0 auto;
+    }
+    .brand-copy h1{
+      font-size:21px;
+      letter-spacing:-.04em;
+      font-weight:900;
+      line-height:1.02;
+    }
+    .brand-copy p{
+      margin-top:5px;
+      color:var(--text-2);
+      font-size:13px;
+      line-height:1.45;
+      max-width:210px;
+    }
+
+    .side-summary{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+    .summary-card{
+      padding:12px 12px 13px;
+      border-radius:18px;
+      background:linear-gradient(180deg, #fffdfd, #fff6f7);
+      border:1px solid var(--line);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.85);
+    }
+    .summary-card .k{
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      color:var(--muted);
+      font-weight:800;
+    }
+    .summary-card .v{
+      margin-top:8px;
+      font-size:18px;
+      font-weight:900;
+      letter-spacing:-.03em;
+      color:var(--text);
+    }
+    .summary-card .s{
+      margin-top:4px;
+      color:var(--text-2);
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .nav{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      min-height:0;
+      padding-right:2px;
+    }
+    .nav-group-label{
+      margin:4px 2px 6px;
+      font-size:11px;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      color:var(--muted);
+      font-weight:800;
+    }
+    .nav button{
+      width:100%;
+      border:none;
+      text-align:left;
+      padding:13px 14px;
+      border-radius:18px;
+      background:transparent;
+      color:var(--text-2);
+      font-weight:700;
+      font-size:14px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      cursor:pointer;
+      transition:transform .12s ease, background .18s ease, border-color .18s ease, color .18s ease, box-shadow .18s ease;
+      border:1px solid transparent;
+      box-shadow:none;
+    }
+    .nav button i{
+      width:18px;
+      text-align:center;
+      font-size:15px;
+      flex:0 0 auto;
+      color:#9b5f67;
+    }
+    .nav button .label{
+      flex:1 1 auto;
+      min-width:0;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .nav button .dot{
+      width:8px;
+      height:8px;
+      border-radius:999px;
+      background:transparent;
+      flex:0 0 auto;
+    }
+    .nav button:hover{
+      transform:translateX(4px);
+      color:var(--text);
+      background:var(--brand-softer);
+      border-color:var(--line-2);
+    }
+    .nav button:hover i{color:var(--brand)}
+    .nav button.active{
+      color:var(--brand-2);
+      background:linear-gradient(90deg, rgba(220,38,38,.11), rgba(255,255,255,.4));
+      border-color:rgba(220,38,38,.18);
+      box-shadow:0 12px 24px rgba(220,38,38,.08), inset 0 1px 0 rgba(255,255,255,.8);
+    }
+    .nav button.active i{color:var(--brand)}
+    .nav button.active .dot{
+      background:var(--brand);
+      box-shadow:0 0 0 4px rgba(220,38,38,.10);
+    }
+    .nav button.danger{
+      color:#b42318;
+      margin-top:auto;
+    }
+    .nav button.danger i{color:#b42318}
+    .nav button.danger:hover{
+      background:#fff3f2;
+      border-color:#f6d2ce;
+      color:#8a1c13;
+    }
+
+    .user-panel{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:13px 14px;
+      border-radius:18px;
+      background:linear-gradient(180deg, #fffdfd, #fff8f8);
+      border:1px solid var(--line);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.85);
+    }
+    .user-meta{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+    .user-avatar{
+      width:40px;
+      height:40px;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      background:var(--brand-soft);
+      border:1px solid rgba(220,38,38,.16);
+      color:var(--brand-2);
+      font-weight:900;
+      flex:0 0 auto;
+    }
+    .user-meta strong{
+      display:block;
+      font-size:13px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .user-meta span{
+      display:block;
+      margin-top:2px;
+      color:var(--muted);
+      font-size:12px;
+    }
+    body.sidebar-collapsed .sidebar{
+      padding:20px 12px;
+    }
+    body.sidebar-collapsed .brand-copy,
+    body.sidebar-collapsed .side-summary,
+    body.sidebar-collapsed .nav-group-label,
+    body.sidebar-collapsed .user-meta > div:last-child,
+    body.sidebar-collapsed .status-chip,
+    body.sidebar-collapsed .nav button .label{
+      display:none;
+    }
+    body.sidebar-collapsed .sidebar-top{
+      justify-content:center;
+      flex-direction:column;
+      align-items:center;
+      gap:10px;
+    }
+    body.sidebar-collapsed .brand{
+      justify-content:center;
+    }
+    body.sidebar-collapsed .nav{
+      gap:10px;
+      align-items:center;
+    }
+    body.sidebar-collapsed .nav button{
+      width:56px;
+      height:56px;
+      padding:0;
+      border-radius:18px;
+      justify-content:center;
+    }
+    body.sidebar-collapsed .nav button i{
+      width:auto;
+      font-size:16px;
+      margin:0;
+    }
+    body.sidebar-collapsed .nav button .dot{
+      display:none;
+    }
+    body.sidebar-collapsed .user-panel{
+      justify-content:center;
+      padding:10px;
+    }
+    body.sidebar-collapsed .user-avatar{
+      margin:0;
+    }
+
+    .status-chip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      white-space:nowrap;
+      padding:8px 10px;
+      border-radius:999px;
+      background:var(--brand-softer);
+      border:1px solid rgba(220,38,38,.16);
+      color:var(--brand-2);
+      font-size:12px;
+      font-weight:800;
+    }
+    .status-chip .live{
+      width:8px;
+      height:8px;
+      border-radius:999px;
+      background:var(--brand);
+      box-shadow:0 0 0 4px rgba(220,38,38,.08);
+    }
+
+    .main-shell{
+      min-width:0;
+      min-height:0;
+      display:grid;
+      grid-template-rows:auto 1fr;
+      gap:18px;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding:20px 24px;
+      border-radius:var(--radius-xl);
+      background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,252,252,.95));
+      border:1px solid var(--line);
+      box-shadow:var(--shadow-soft);
+    }
+    .topbar-left{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      min-width:0;
+    }
+    .hamburger{
+      display:grid;
+      place-items:center;
+      width:46px;
+      height:46px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--brand-2);
+      font-size:18px;
+      cursor:pointer;
+      flex:0 0 auto;
+      box-shadow:var(--shadow-soft);
+    }
+    .page-copy{min-width:0}
+    .page-eyebrow{
+      color:var(--muted);
+      font-size:11px;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      font-weight:800;
+      margin-bottom:4px;
+    }
+    .page-title{
+      font-size:27px;
+      font-weight:900;
+      letter-spacing:-.05em;
+      line-height:1.02;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      color:#111827;
+    }
+    .page-subtitle{
+      margin-top:6px;
+      color:var(--text-2);
+      font-size:13px;
+      line-height:1.5;
+      max-width:760px;
+    }
+
+    .topbar-right{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      min-height:42px;
+      padding:0 14px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--text);
+      font-size:13px;
+      font-weight:800;
+      white-space:nowrap;
+      box-shadow:var(--shadow-soft);
+    }
+    .pill i{color:var(--muted)}
+    .pill.primary{
+      background:linear-gradient(180deg, #fff5f5, #fff1f2);
+      border-color:rgba(220,38,38,.16);
+      color:var(--brand-2);
+    }
+    .pill.primary i{color:var(--brand)}
+
+    .content{
+      min-width:0;
+      min-height:0;
+      overflow:hidden;
+      border-radius:var(--radius-xl);
+      background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,253,253,.96));
+      border:1px solid var(--line);
+      box-shadow:var(--shadow-soft);
+      position:relative;
+    }
+    .content::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      border-radius:inherit;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.55), transparent 18%),
+        radial-gradient(620px 220px at 0% 0%, rgba(220,38,38,.05), transparent 65%);
+      opacity:1;
+    }
+    .content-inner{
+      position:relative;
+      z-index:1;
+      height:100%;
+      padding:18px;
+      overflow:auto;
+      background:transparent;
+    }
+
+    .iframe-shell{
+      width:100%;
+      height:100%;
+      min-height:calc(100vh - 176px);
+      border-radius:24px;
+      overflow:hidden;
+      background:#ffffff;
+      border:1px solid #ede7e9;
+      box-shadow:0 16px 34px rgba(15,23,42,.08);
+    }
+    iframe{
+      width:100%;
+      height:100%;
+      border:none;
+      background:#fff;
+    }
+
+    .home{
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+      min-height:100%;
+    }
+    .hero{
+      border-radius:28px;
+      padding:26px;
+      background:
+        linear-gradient(135deg, rgba(220,38,38,.95), rgba(239,68,68,.86));
+      color:#fff;
+      box-shadow:0 24px 44px rgba(220,38,38,.18);
+      overflow:hidden;
+      position:relative;
+    }
+    .hero::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(220px 220px at 100% 0%, rgba(255,255,255,.18), transparent 55%),
+        radial-gradient(280px 220px at 0% 100%, rgba(255,255,255,.10), transparent 50%);
+      opacity:1;
+      pointer-events:none;
+    }
+    .hero-grid{
+      display:grid;
+      grid-template-columns:minmax(0, 1.32fr) minmax(260px, .68fr);
+      gap:18px;
+      position:relative;
+      z-index:1;
+    }
+    .hero-copy h2{
+      font-size:35px;
+      letter-spacing:-.06em;
+      line-height:1.02;
+      font-weight:900;
+      max-width:640px;
+    }
+    .hero-copy p{
+      margin-top:12px;
+      color:rgba(255,255,255,.86);
+      font-size:15px;
+      line-height:1.75;
+      max-width:680px;
+    }
+    .hero-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:18px;
+    }
+    .action-btn{
+      border:none;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      min-height:46px;
+      padding:0 16px;
+      border-radius:16px;
+      font-weight:800;
+      font-size:14px;
+      transition:transform .08s ease, filter .18s ease, background .18s ease, border-color .18s ease;
+    }
+    .action-btn:active{transform:translateY(1px)}
+    .action-btn.primary{
+      color:var(--brand-2);
+      background:#fff;
+      box-shadow:0 14px 26px rgba(0,0,0,.12);
+    }
+    .action-btn.ghost{
+      color:#fff;
+      background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.18);
+      backdrop-filter:blur(8px);
+    }
+
+    .hero-side{
+      display:grid;
+      gap:10px;
+      align-content:start;
+    }
+    .hero-stat{
+      padding:14px 16px;
+      border-radius:18px;
+      background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.14);
+      backdrop-filter:blur(10px);
+    }
+    .hero-stat .k{
+      color:rgba(255,255,255,.76);
+      font-size:11px;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      font-weight:800;
+    }
+    .hero-stat .v{
+      margin-top:8px;
+      font-size:22px;
+      font-weight:900;
+      letter-spacing:-.04em;
+      color:#fff;
+    }
+    .hero-stat .s{
+      margin-top:6px;
+      color:rgba(255,255,255,.82);
+      font-size:12px;
+      line-height:1.45;
+    }
+
+    .dashboard-grid{
+      display:grid;
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+      gap:18px;
+    }
+    .stack{
+      display:grid;
+      gap:18px;
+    }
+    .panel{
+      border-radius:24px;
+      padding:18px;
+      background:linear-gradient(180deg, #ffffff, #fffafa);
+      border:1px solid var(--line);
+      box-shadow:var(--shadow-soft);
+    }
+    .panel-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:14px;
+    }
+    .panel-head h3{
+      font-size:18px;
+      letter-spacing:-.03em;
+      font-weight:900;
+      color:#111827;
+    }
+    .panel-head p{
+      margin-top:4px;
+      color:var(--text-2);
+      font-size:13px;
+      line-height:1.5;
+    }
+
+    .module-grid{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0,1fr));
+      gap:12px;
+    }
+    .module-card{
+      border:none;
+      cursor:pointer;
+      text-align:left;
+      min-height:128px;
+      padding:16px;
+      border-radius:20px;
+      background:linear-gradient(180deg, #ffffff, #fff7f7);
+      border:1px solid var(--line);
+      color:var(--text);
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      box-shadow:0 8px 18px rgba(15,23,42,.04);
+      transition:transform .12s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease;
+    }
+    .module-card:hover{
+      transform:translateY(-2px);
+      border-color:rgba(220,38,38,.20);
+      background:linear-gradient(180deg, #ffffff, #fff1f2);
+      box-shadow:0 14px 26px rgba(220,38,38,.08);
+    }
+    .module-card .icon{
+      width:44px;
+      height:44px;
+      border-radius:15px;
+      display:grid;
+      place-items:center;
+      background:var(--brand-softer);
+      border:1px solid rgba(220,38,38,.12);
+      color:var(--brand);
+      font-size:16px;
+    }
+    .module-card strong{
+      font-size:15px;
+      letter-spacing:-.02em;
+      font-weight:900;
+      color:#111827;
+    }
+    .module-card span{
+      color:var(--text-2);
+      font-size:12px;
+      line-height:1.5;
+      display:block;
+    }
+
+    .info-list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .info-row{
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
+      padding:12px 0;
+      border-top:1px solid #f1e7e9;
+    }
+    .info-row:first-child{
+      padding-top:0;
+      border-top:none;
+    }
+    .info-icon{
+      width:40px;
+      height:40px;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      background:var(--brand-softer);
+      border:1px solid rgba(220,38,38,.10);
+      color:var(--brand);
+      flex:0 0 auto;
+    }
+    .info-row strong{
+      display:block;
+      font-size:14px;
+      font-weight:800;
+      letter-spacing:-.02em;
+      color:#111827;
+    }
+    .info-row span{
+      display:block;
+      margin-top:4px;
+      color:var(--text-2);
+      font-size:12px;
+      line-height:1.55;
+    }
+
+    .quick-links{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:4px;
+    }
+    .quick-link{
+      border:none;
+      cursor:pointer;
+      min-height:40px;
+      padding:0 12px;
+      border-radius:14px;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      font-size:13px;
+      font-weight:800;
+      color:var(--brand-2);
+      background:var(--brand-softer);
+      border:1px solid rgba(220,38,38,.12);
+      transition:background .18s ease, border-color .18s ease, transform .12s ease;
+    }
+    .quick-link:hover{
+      background:var(--brand-soft);
+      border-color:rgba(220,38,38,.16);
+      transform:translateY(-1px);
+    }
+
+    .overlay{
+      position:fixed;
+      inset:0;
+      display:none;
+      background:rgba(15,23,42,.24);
+      backdrop-filter:blur(4px);
+      z-index:2;
+    }
+    .overlay.show{display:block}
+
+    @media (max-width: 1160px){
+      .hero-grid,
+      .dashboard-grid{
+        grid-template-columns:1fr;
+      }
+      .hero-copy h2{
+        font-size:31px;
       }
     }
-</style>
+
+    @media (max-width: 980px){
+      body.sidebar-collapsed .app{
+        grid-template-columns:1fr;
+      }
+      body.sidebar-collapsed .sidebar{
+        padding:20px;
+      }
+      body.sidebar-collapsed .brand-copy,
+      body.sidebar-collapsed .side-summary,
+      body.sidebar-collapsed .nav-group-label,
+      body.sidebar-collapsed .user-meta > div:last-child,
+      body.sidebar-collapsed .status-chip,
+      body.sidebar-collapsed .nav button .label{
+        display:initial;
+      }
+      body.sidebar-collapsed .sidebar-top{
+        justify-content:space-between;
+        flex-direction:row;
+        align-items:flex-start;
+      }
+      body.sidebar-collapsed .brand{
+        justify-content:flex-start;
+      }
+      body.sidebar-collapsed .nav{
+        gap:8px;
+        align-items:stretch;
+      }
+      body.sidebar-collapsed .nav button{
+        width:100%;
+        height:auto;
+        padding:13px 14px;
+        border-radius:18px;
+        justify-content:flex-start;
+      }
+      body.sidebar-collapsed .nav button i{
+        width:18px;
+        font-size:15px;
+      }
+      body.sidebar-collapsed .nav button .dot{
+        display:block;
+      }
+      body.sidebar-collapsed .user-panel{
+        justify-content:space-between;
+        padding:13px 14px;
+      }
+      body.sidebar-collapsed .user-avatar{
+        margin:0;
+      }
+
+      .sidebar{
+        position:fixed;
+        top:12px;
+        left:12px;
+        bottom:12px;
+        width:min(86vw, 340px);
+        transform:translateX(calc(-100% - 20px));
+        transition:transform .26s ease;
+      }
+      .sidebar.open{
+        transform:translateX(0);
+      }
+      .hamburger{
+        display:grid;
+        place-items:center;
+      }
+      .topbar{
+        padding:16px 18px;
+      }
+      .content-inner{
+        padding:14px;
+      }
+      .iframe-shell{
+        min-height:calc(100vh - 168px);
+      }
+    }
+
+    @media (max-width: 720px){
+      .topbar{
+        align-items:flex-start;
+        flex-direction:column;
+      }
+      .topbar-right{
+        width:100%;
+        justify-content:flex-start;
+      }
+      .page-title{
+        font-size:22px;
+      }
+      .hero{
+        padding:18px;
+      }
+      .hero-copy h2{
+        font-size:27px;
+      }
+      .module-grid{
+        grid-template-columns:1fr;
+      }
+      .side-summary{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media (max-width: 540px){
+      .app{
+        padding:10px;
+      }
+      .sidebar{
+        top:10px;
+        left:10px;
+        bottom:10px;
+        width:min(92vw, 340px);
+        padding:16px;
+      }
+      .topbar,
+      .content{
+        border-radius:22px;
+      }
+      .page-subtitle{
+        font-size:12px;
+      }
+      .pill{
+        min-height:38px;
+        padding:0 12px;
+        font-size:12px;
+      }
+      .iframe-shell{
+        min-height:calc(100vh - 158px);
+        border-radius:20px;
+      }
+      .hero-copy h2{
+        font-size:24px;
+      }
+      .hero-copy p{
+        font-size:14px;
+      }
+    }
+  </style>
 </head>
 <body>
-
-<div class="app">
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <div class="logo">🍽</div>
-      <div>
-        <div class="brand-title">Restaurant</div>
-        <div class="brand-subtitle">Control Center</div>
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-top">
+        <div class="brand">
+          <div class="logo">🍽</div>
+          <div class="brand-copy">
+            <h1>Restaurant<br>Control Center</h1>
+            <p>Modern admin workspace for orders, stock, service flow, staff, and reporting.</p>
+          </div>
+        </div>
+        <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Toggle sidebar">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
       </div>
-    </div>
 
-    <nav class="nav" id="navMenu">
-      <!-- Menu items will be generated by JavaScript based on role permissions -->
-    </nav>
-
-    <div class="user-pill">
-      <i class="fa-solid fa-circle" style="color:var(--brand-light);"></i>
-      <span id="userStatus">Loading...</span>
-    </div>
-  </aside>
-
-  <main class="main">
-    <header class="topbar">
-      <button class="hamburger" id="hamburger"><i class="fa-solid fa-bars"></i></button>
-      <div class="page-title" id="pageTitle">Home</div>
-    </header>
-
-    <section class="content" id="contentArea">
-      <div class="home-message">
-        <div>
-          <h2>Welcome back! 👋</h2>
-          <p>Select a module from the navigation menu to manage orders, inventory, analytics, and more efficiently.</p>
+      <div class="side-summary">
+        <div class="summary-card">
+          <div class="k">Access</div>
+          <div class="v" id="roleName">—</div>
+          <div class="s">Role-based workspace</div>
+        </div>
+        <div class="summary-card">
+          <div class="k">Modules</div>
+          <div class="v" id="moduleCount">0</div>
+          <div class="s">Tools ready to open</div>
         </div>
       </div>
-    </section>
-  </main>
-</div>
 
-<div class="overlay" id="overlay"></div>
+      <div class="nav-wrap">
+        <div class="nav-group-label">Navigation</div>
+        <nav class="nav" id="navMenu"></nav>
+      </div>
 
-<script>
-  const currentUser = localStorage.getItem("currentUser");
-  const userRole = localStorage.getItem("userRole");
+      <div class="user-panel">
+        <div class="user-meta">
+          <div class="user-avatar" id="userAvatar">R</div>
+          <div>
+            <strong id="userName">Loading...</strong>
+            <span id="userStatus">Preparing session</span>
+          </div>
+        </div>
+        <div class="status-chip">
+          <span class="live"></span>
+          Active
+        </div>
+      </div>
+    </aside>
 
-  if (!currentUser || !userRole) {
-    location.href = "auth.html";
-  }
+    <main class="main-shell">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="hamburger" id="hamburger" type="button" aria-label="Open navigation">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="page-copy">
+            <div class="page-eyebrow">Control Center</div>
+            <div class="page-title" id="pageTitle">Home</div>
+            <div class="page-subtitle" id="pageSubtitle">Use the navigation to move between restaurant operations, inventory, staff tools, and reporting modules.</div>
+          </div>
+        </div>
 
-  const capitalizedRole = userRole.charAt(0).toUpperCase() + userRole.slice(1);
-  document.getElementById("userStatus").textContent = `${currentUser} • ${capitalizedRole}`;
+        <div class="topbar-right">
+          <div class="pill primary">
+            <i class="fa-solid fa-shield-halved"></i>
+            <span id="roleChip">—</span>
+          </div>
+          <div class="pill">
+            <i class="fa-regular fa-clock"></i>
+            <span id="liveTime">—</span>
+          </div>
+        </div>
+      </header>
 
-  // Default permissions (can be customized by admin)
-  defaultPermissions = {
-  admin:   ["home","orders","menu","materials","display","analysis","queue","clockin","staffdash","staff","tables"],
-  cashier: ["home","orders","queue","clockin"],
-  kitchen: ["home","display","clockin"],
-  viewer:  ["home","clockin"]
-};
+      <section class="content">
+        <div class="content-inner" id="contentArea"></div>
+      </section>
+    </main>
+  </div>
 
-  let rolePermissions = JSON.parse(localStorage.getItem("rolePermissions") || JSON.stringify(defaultPermissions));
+  <div class="overlay" id="overlay"></div>
 
-  // Update/migrate: add new "tables" module for admin if missing
-  if (rolePermissions?.admin && !rolePermissions.admin.includes("tables")) {
-    rolePermissions.admin.push("tables");
-    try { localStorage.setItem("rolePermissions", JSON.stringify(rolePermissions)); } catch(e) {}
-  }
+  <script>
+    const currentUser = localStorage.getItem("currentUser");
+    const userRole = localStorage.getItem("userRole");
 
-
-  // Ensure current role has permissions
-  if (!rolePermissions[userRole]) rolePermissions[userRole] = defaultPermissions[userRole] || ["home"];
-
-const pages = {
-  home: `<div class="home-message"><div><h2>Welcome back! 👋</h2><p>Select a module from the navigation menu to manage orders, inventory, analytics, and more efficiently.</p></div></div>`,
-  orders: '<div class="iframe-wrapper"><iframe src="index.html"></iframe></div>',
-  menu: '<div class="iframe-wrapper"><iframe src="menu.html"></iframe></div>',
-  materials: '<div class="iframe-wrapper"><iframe src="materials.html"></iframe></div>',
-  tables: '<div class="iframe-wrapper"><iframe src="tables.html"></iframe></div>',
-  display: '<div class="iframe-wrapper"><iframe src="display.html"></iframe></div>',
-  analysis: '<div class="iframe-wrapper"><iframe src="analysis.html"></iframe></div>',
-  queue: '<div class="iframe-wrapper"><iframe src="customer.html"></iframe></div>',
-  clockin: '<div class="iframe-wrapper"><iframe src="staff_clockin.html"></iframe></div>',
-  staffdash: '<div class="iframe-wrapper"><iframe src="staff_dashboard.html"></iframe></div>',
-  staff: '<div class="iframe-wrapper"><iframe src="staff_management.html"></iframe></div>'
-};
-
-const pageLabels = {
-  home: "Home",
-  orders: "Customer Orders",
-  menu: "Menu Stock",
-  materials: "Materials",
-  tables: "Tables / Mapping",
-  display: "Order Display",
-  analysis: "Analytics",
-  queue: "Customer Queue",
-  clockin: "Staff Clock In",
-  staffdash: "Staff Dashboard & Payslips",
-  staff: "Staff Management"
-};
-
-const pageIcons = {
-  home: "fa-house",
-  orders: "fa-cart-shopping",
-  menu: "fa-burger",
-  materials: "fa-boxes-stacked",
-  tables: "fa-table",
-  display: "fa-clipboard-list",
-  analysis: "fa-chart-pie",
-  queue: "fa-users",
-  clockin: "fa-clock",
-  staffdash: "fa-file-invoice-dollar",
-  staff: "fa-users-gear"
-};
-
-  // Generate menu dynamically
-  const navMenu = document.getElementById("navMenu");
-  navMenu.innerHTML = "";
-
-  rolePermissions[userRole].forEach(page => {
-    const btn = document.createElement("button");
-    btn.dataset.page = page;
-    btn.innerHTML = `<i class="fa-solid ${pageIcons[page]}"></i> ${pageLabels[page] || page}`;
-    if (page === "home") btn.classList.add("active");
-    navMenu.appendChild(btn);
-  });
-
-  // Logout button always visible
-  const logoutBtn = document.createElement("button");
-  logoutBtn.className = "danger";
-  logoutBtn.innerHTML = `<i class="fa-solid fa-right-from-bracket"></i> Logout`;
-  logoutBtn.onclick = logout;
-  navMenu.appendChild(logoutBtn);
-
-  // Navigation logic
-  const pageTitle = document.getElementById("pageTitle");
-  const contentArea = document.getElementById("contentArea");
-
-  document.querySelectorAll('#navMenu button[data-page]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('#navMenu button').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      const page = btn.dataset.page;
-      pageTitle.textContent = btn.textContent.trim();
-      contentArea.innerHTML = pages[page] || pages.home;
-
-      if (window.innerWidth <= 980) {
-        closeSidebar();
-      }
-    });
-  });
-
-  // Mobile sidebar
-  const sidebar = document.getElementById('sidebar');
-  const overlay = document.getElementById('overlay');
-  const hamburger = document.getElementById('hamburger');
-
-  hamburger.addEventListener('click', () => {
-    const isOpen = sidebar.classList.contains('open');
-    sidebar.classList.toggle('open', !isOpen);
-    overlay.classList.toggle('show', !isOpen);
-    document.body.classList.toggle('nav-open', !isOpen);
-  });
-
-  function closeSidebar(){
-    sidebar.classList.remove('open');
-    overlay.classList.remove('show');
-    document.body.classList.remove('nav-open');
-  }
-overlay.addEventListener('click', () => closeSidebar());
-
-  document.addEventListener('keydown', (e) => {
-    if(e.key === 'Escape') closeSidebar();
-  });
-function logout() {
-    if (confirm("Are you sure you want to log out?")) {
-      localStorage.clear();
+    if (!currentUser || !userRole) {
       location.href = "auth.html";
     }
-  }
-</script>
+
+    const capitalizedRole = userRole.charAt(0).toUpperCase() + userRole.slice(1);
+    const userInitial = (currentUser || "R").trim().charAt(0).toUpperCase() || "R";
+    document.getElementById("userAvatar").textContent = userInitial;
+    document.getElementById("userName").textContent = currentUser;
+    document.getElementById("userStatus").textContent = capitalizedRole + " access";
+    document.getElementById("roleName").textContent = capitalizedRole;
+    document.getElementById("roleChip").textContent = capitalizedRole;
+
+    const defaultPermissions = {
+      admin:   ["home","orders","menu","materials","display","analysis","queue","clockin","staffdash","staff","tables"],
+      cashier: ["home","orders","queue","clockin"],
+      kitchen: ["home","display","clockin"],
+      viewer:  ["home","clockin"]
+    };
+
+    let rolePermissions = JSON.parse(localStorage.getItem("rolePermissions") || JSON.stringify(defaultPermissions));
+
+    if (rolePermissions?.admin && !rolePermissions.admin.includes("tables")) {
+      rolePermissions.admin.push("tables");
+      try { localStorage.setItem("rolePermissions", JSON.stringify(rolePermissions)); } catch(e) {}
+    }
+
+    if (!rolePermissions[userRole]) rolePermissions[userRole] = defaultPermissions[userRole] || ["home"];
+
+    const pageLabels = {
+      home: "Home",
+      orders: "Customer Orders",
+      menu: "Menu Stock",
+      materials: "Materials",
+      tables: "Tables / Mapping",
+      display: "Order Display",
+      analysis: "Analytics",
+      queue: "Customer Queue",
+      clockin: "Staff Clock In",
+      staffdash: "Staff Dashboard & Payslips",
+      staff: "Staff Management"
+    };
+
+    const pageIcons = {
+      home: "fa-house",
+      orders: "fa-cart-shopping",
+      menu: "fa-burger",
+      materials: "fa-boxes-stacked",
+      tables: "fa-table",
+      display: "fa-clipboard-list",
+      analysis: "fa-chart-pie",
+      queue: "fa-users",
+      clockin: "fa-clock",
+      staffdash: "fa-file-invoice-dollar",
+      staff: "fa-users-gear"
+    };
+
+    const pageDescriptions = {
+      home: "A cleaner overview of your restaurant workspace with fast shortcuts to the modules you can access.",
+      orders: "Manage customer orders, checkout, and order flow in one place.",
+      menu: "Update menu items, pricing, stock behavior, fast-order tiles, and add-ons.",
+      materials: "Track inventory quantities, usage, and low-stock items.",
+      tables: "Configure active tables and dine-in mapping for the ordering flow.",
+      display: "Monitor incoming orders, kitchen progress, and payment status.",
+      analysis: "Review analytics, revenue trends, and operational insights.",
+      queue: "Show customer queue and status updates on a clean public-facing screen.",
+      clockin: "Allow staff to clock in, clock out, and manage breaks.",
+      staffdash: "Review staff attendance summaries, payroll estimates, and downloadable reports.",
+      staff: "Manage staff accounts, roles, shifts, and attendance settings."
+    };
+
+    const pageShortLabels = {
+      orders: "Orders",
+      menu: "Menu",
+      materials: "Materials",
+      display: "Display",
+      analysis: "Analytics",
+      queue: "Queue",
+      clockin: "Clock In",
+      staffdash: "Staff Dashboard",
+      staff: "Staff",
+      tables: "Tables"
+    };
+
+    const pages = {
+      home: "HOME_RENDER",
+      orders: '<div class="iframe-shell"><iframe src="index.html" title="Customer Orders"></iframe></div>',
+      menu: '<div class="iframe-shell"><iframe src="menu.html" title="Menu Admin"></iframe></div>',
+      materials: '<div class="iframe-shell"><iframe src="materials.html" title="Materials"></iframe></div>',
+      tables: '<div class="iframe-shell"><iframe src="tables.html" title="Tables"></iframe></div>',
+      display: '<div class="iframe-shell"><iframe src="display.html" title="Order Display"></iframe></div>',
+      analysis: '<div class="iframe-shell"><iframe src="analysis.html" title="Analytics"></iframe></div>',
+      queue: '<div class="iframe-shell"><iframe src="customer.html" title="Customer Queue"></iframe></div>',
+      clockin: '<div class="iframe-shell"><iframe src="staff_clockin.html" title="Staff Clock In"></iframe></div>',
+      staffdash: '<div class="iframe-shell"><iframe src="staff_dashboard.html" title="Staff Dashboard"></iframe></div>',
+      staff: '<div class="iframe-shell"><iframe src="staff_management.html" title="Staff Management"></iframe></div>'
+    };
+
+    const navMenu = document.getElementById("navMenu");
+    const pageTitle = document.getElementById("pageTitle");
+    const pageSubtitle = document.getElementById("pageSubtitle");
+    const contentArea = document.getElementById("contentArea");
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("overlay");
+    const hamburger = document.getElementById("hamburger");
+    const sidebarToggle = document.getElementById("sidebarToggle");
+    const liveTimeEl = document.getElementById("liveTime");
+    const moduleCountEl = document.getElementById("moduleCount");
+
+    const desktopSidebarCollapsed = localStorage.getItem("dashboardSidebarCollapsed");
+    if (window.innerWidth > 980) {
+      document.body.classList.toggle("sidebar-collapsed", desktopSidebarCollapsed !== "false");
+    }
+
+    function syncSidebarToggleIcon(){
+      const icon = sidebarToggle?.querySelector("i");
+      if (!icon) return;
+      const isMobile = window.innerWidth <= 980;
+      const isCollapsed = document.body.classList.contains("sidebar-collapsed");
+      if (isMobile) {
+        icon.className = "fa-solid fa-xmark";
+      } else {
+        icon.className = isCollapsed ? "fa-solid fa-chevron-right" : "fa-solid fa-chevron-left";
+      }
+    }
+
+    function setDesktopCollapsed(collapsed){
+      document.body.classList.toggle("sidebar-collapsed", collapsed);
+      localStorage.setItem("dashboardSidebarCollapsed", collapsed ? "true" : "false");
+      syncSidebarToggleIcon();
+    }
+
+    const visiblePages = rolePermissions[userRole].slice();
+    moduleCountEl.textContent = String(Math.max(0, visiblePages.filter(p => p !== "home").length));
+
+    function formatNow(){
+      const now = new Date();
+      return now.toLocaleString([], {
+        hour: "numeric",
+        minute: "2-digit",
+        weekday: "short",
+        day: "2-digit",
+        month: "short"
+      });
+    }
+
+    function tickClock(){
+      liveTimeEl.textContent = formatNow();
+    }
+    tickClock();
+    setInterval(tickClock, 30000);
+
+    function getHomeMarkup(){
+      const quickPages = visiblePages.filter(p => p !== "home");
+      const featured = quickPages.slice(0, 6).map(page => {
+        return `
+          <button class="module-card" type="button" data-open="${page}">
+            <div class="icon"><i class="fa-solid ${pageIcons[page] || "fa-window-maximize"}"></i></div>
+            <div>
+              <strong>${pageLabels[page] || page}</strong>
+              <span>${pageDescriptions[page] || "Open this module."}</span>
+            </div>
+          </button>
+        `;
+      }).join("");
+
+      const quickLinks = quickPages.slice(0, 5).map(page => {
+        return `<button class="quick-link" type="button" data-open="${page}"><i class="fa-solid ${pageIcons[page] || "fa-arrow-right"}"></i> ${pageShortLabels[page] || pageLabels[page] || page}</button>`;
+      }).join("");
+
+      return `
+        <div class="home">
+          <section class="hero">
+            <div class="hero-grid">
+              <div class="hero-copy">
+                <h2>Run daily restaurant operations from one cleaner, faster dashboard.</h2>
+                <p>
+                  Open ordering, stock, queue, staff, and analytics tools from a single control center.
+                  This version uses a brighter red-and-white theme with cleaner visual hierarchy, softer surfaces,
+                  and more professional spacing so the dashboard feels modern without looking crowded.
+                </p>
+                <div class="hero-actions">
+                  ${quickPages[0] ? `<button class="action-btn primary" type="button" data-open="${quickPages[0]}"><i class="fa-solid ${pageIcons[quickPages[0]]}"></i> Open ${pageShortLabels[quickPages[0]] || pageLabels[quickPages[0]]}</button>` : ""}
+                  <button class="action-btn ghost" type="button" data-open="home"><i class="fa-solid fa-border-all"></i> Workspace overview</button>
+                </div>
+              </div>
+
+              <div class="hero-side">
+                <div class="hero-stat">
+                  <div class="k">Role</div>
+                  <div class="v">${capitalizedRole}</div>
+                  <div class="s">Permissions adapt automatically based on the signed-in account.</div>
+                </div>
+                <div class="hero-stat">
+                  <div class="k">Available modules</div>
+                  <div class="v">${quickPages.length}</div>
+                  <div class="s">Only the tools this account can use are shown in navigation.</div>
+                </div>
+                <div class="hero-stat">
+                  <div class="k">Session</div>
+                  <div class="v">${currentUser}</div>
+                  <div class="s">Stay signed in until you log out from the sidebar.</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="dashboard-grid">
+            <div class="stack">
+              <div class="panel">
+                <div class="panel-head">
+                  <div>
+                    <h3>Quick access</h3>
+                    <p>Open the most-used restaurant modules without searching through the full menu.</p>
+                  </div>
+                </div>
+                <div class="module-grid">
+                  ${featured || '<div class="info-row"><div><strong>No modules available</strong><span>Your role currently has no linked modules.</span></div></div>'}
+                </div>
+              </div>
+
+              <div class="panel">
+                <div class="panel-head">
+                  <div>
+                    <h3>Suggested workflow</h3>
+                    <p>A simple flow for staying organized across service, prep, stock, and reporting.</p>
+                  </div>
+                </div>
+                <div class="info-list">
+                  <div class="info-row">
+                    <div class="info-icon"><i class="fa-solid fa-cart-shopping"></i></div>
+                    <div><strong>1. Capture and monitor orders</strong><span>Start from Customer Orders or the Order Display depending on whether you are taking orders or watching kitchen flow.</span></div>
+                  </div>
+                  <div class="info-row">
+                    <div class="info-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
+                    <div><strong>2. Keep stock and table setup aligned</strong><span>Use Menu, Materials, and Tables to keep pricing, ingredients, and dine-in mapping in sync.</span></div>
+                  </div>
+                  <div class="info-row">
+                    <div class="info-icon"><i class="fa-solid fa-chart-pie"></i></div>
+                    <div><strong>3. Review performance at the end of the day</strong><span>Use Analytics and staff modules to close service with clearer decisions and better records.</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="stack">
+              <div class="panel">
+                <div class="panel-head">
+                  <div>
+                    <h3>Session details</h3>
+                    <p>Helpful context about the current workspace session.</p>
+                  </div>
+                </div>
+                <div class="info-list">
+                  <div class="info-row">
+                    <div class="info-icon"><i class="fa-solid fa-user"></i></div>
+                    <div><strong>${currentUser}</strong><span>Signed in as ${capitalizedRole}.</span></div>
+                  </div>
+                  <div class="info-row">
+                    <div class="info-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                    <div><strong>Role-based access</strong><span>Navigation items only appear when the current role is allowed to open them.</span></div>
+                  </div>
+                  <div class="info-row">
+                    <div class="info-icon"><i class="fa-regular fa-clock"></i></div>
+                    <div><strong>Embedded modules</strong><span>Each page opens inside the dashboard shell so users keep a consistent admin experience.</span></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="panel">
+                <div class="panel-head">
+                  <div>
+                    <h3>Shortcuts</h3>
+                    <p>Launch common destinations with one click.</p>
+                  </div>
+                </div>
+                <div class="quick-links">
+                  ${quickLinks || '<span class="pill">No shortcuts</span>'}
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      `;
+    }
+
+    function renderPage(page){
+      const safePage = pages[page] ? page : "home";
+      pageTitle.textContent = pageLabels[safePage] || "Home";
+      pageSubtitle.textContent = pageDescriptions[safePage] || pageDescriptions.home;
+      contentArea.innerHTML = safePage === "home" ? getHomeMarkup() : pages[safePage];
+      wireHomeButtons();
+    }
+
+    function wireHomeButtons(){
+      contentArea.querySelectorAll("[data-open]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const target = btn.getAttribute("data-open");
+          setActivePage(target);
+        });
+      });
+    }
+
+    function setActivePage(page){
+      const targetPage = pages[page] ? page : "home";
+      document.querySelectorAll('#navMenu button[data-page]').forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.page === targetPage);
+      });
+      renderPage(targetPage);
+      if (window.innerWidth <= 980) closeSidebar();
+    }
+
+    navMenu.innerHTML = "";
+    visiblePages.forEach(page => {
+      const btn = document.createElement("button");
+      btn.dataset.page = page;
+      btn.title = pageLabels[page] || page;
+      btn.innerHTML = `<i class="fa-solid ${pageIcons[page] || "fa-window-maximize"}"></i><span class="label">${pageLabels[page] || page}</span><span class="dot"></span>`;
+      navMenu.appendChild(btn);
+    });
+
+    const logoutBtn = document.createElement("button");
+    logoutBtn.className = "danger";
+    logoutBtn.title = "Logout";
+    logoutBtn.innerHTML = `<i class="fa-solid fa-right-from-bracket"></i><span class="label">Logout</span>`;
+    logoutBtn.addEventListener("click", logout);
+    navMenu.appendChild(logoutBtn);
+
+    document.querySelectorAll('#navMenu button[data-page]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        setActivePage(btn.dataset.page);
+      });
+    });
+
+    function logout() {
+      if (confirm("Are you sure you want to log out?")) {
+        localStorage.clear();
+        location.href = "auth.html";
+      }
+    }
+
+    function openMobileSidebar(){
+      sidebar.classList.add('open');
+      overlay.classList.add('show');
+      document.body.classList.add('nav-open');
+      syncSidebarToggleIcon();
+    }
+
+    function closeSidebar(){
+      sidebar.classList.remove('open');
+      overlay.classList.remove('show');
+      document.body.classList.remove('nav-open');
+      syncSidebarToggleIcon();
+    }
+
+    hamburger.addEventListener('click', () => {
+      if (window.innerWidth <= 980) {
+        if (sidebar.classList.contains('open')) closeSidebar();
+        else openMobileSidebar();
+      } else {
+        const collapsed = document.body.classList.contains('sidebar-collapsed');
+        setDesktopCollapsed(!collapsed);
+      }
+    });
+
+    sidebarToggle.addEventListener('click', () => {
+      if (window.innerWidth <= 980) {
+        closeSidebar();
+      } else {
+        const collapsed = document.body.classList.contains('sidebar-collapsed');
+        setDesktopCollapsed(!collapsed);
+      }
+    });
+
+    overlay.addEventListener('click', closeSidebar);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeSidebar();
+    });
+
+    window.addEventListener('resize', () => {
+      if (window.innerWidth <= 980) {
+        document.body.classList.remove('sidebar-collapsed');
+        syncSidebarToggleIcon();
+      } else {
+        closeSidebar();
+        const collapsed = localStorage.getItem("dashboardSidebarCollapsed") !== "false";
+        document.body.classList.toggle('sidebar-collapsed', collapsed);
+        syncSidebarToggleIcon();
+      }
+    });
+
+    syncSidebarToggleIcon();
+    setActivePage("home");
+  </script>
 </body>
 </html>
