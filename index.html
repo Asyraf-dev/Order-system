@@ -646,6 +646,129 @@
   .summary .k{font-size:12px;color:var(--muted);font-weight:900;text-transform:uppercase;letter-spacing:.08em}
   .summary .v{font-weight:900;font-size:16px}
 
+
+  /* Ad popup */
+  .ad-popup-overlay{
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(2,6,23,.58);
+    backdrop-filter: blur(8px);
+  }
+  .ad-popup-overlay.show{display:flex;}
+  .ad-popup-card{
+    width: min(520px, calc(100% - 24px));
+    background: rgba(255,255,255,.98);
+    border: 1px solid rgba(231,236,243,.95);
+    border-radius: 24px;
+    box-shadow: 0 30px 80px rgba(2,6,23,.30);
+    overflow: hidden;
+  }
+  .ad-popup-media{
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(37,99,235,.14), rgba(245,158,11,.14));
+  }
+  .ad-popup-slide{
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity .55s ease;
+    pointer-events: none;
+  }
+  .ad-popup-slide.active{
+    opacity: 1;
+  }
+  .ad-popup-slide img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .ad-popup-dots{
+    position: absolute;
+    left: 50%;
+    bottom: 12px;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    z-index: 2;
+  }
+  .ad-popup-dot{
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.45);
+    border: 1px solid rgba(255,255,255,.75);
+  }
+  .ad-popup-dot.active{
+    background: rgba(255,255,255,.98);
+  }
+  .ad-popup-body{
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .ad-popup-kicker{
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--primary);
+  }
+  .ad-popup-title{
+    margin: 0;
+    font-size: 22px;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+  .ad-popup-text{
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+  .ad-popup-actions{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:space-between;
+    margin-top: 4px;
+  }
+  .ad-popup-right{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .ad-popup-close{
+    border:none;
+    background: rgba(2,6,23,.06);
+    color: var(--text);
+    font-weight: 900;
+    border-radius: 999px;
+    padding: 10px 12px;
+    cursor:pointer;
+  }
+  .ad-popup-note{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .ad-popup-note input{
+    width: 16px;
+    height: 16px;
+  }
+
   /* Loading + success overlays */
   .center-overlay{
     position: fixed;
@@ -920,6 +1043,32 @@
   </div>
 
 
+
+  <!-- Ad popup -->
+  <div class="ad-popup-overlay" id="ad-popup-overlay" aria-hidden="true">
+    <div class="ad-popup-card" role="dialog" aria-modal="true" aria-label="Promotion">
+      <div id="ad-popup-media" class="ad-popup-media" aria-label="Promotion images">
+        <div class="ad-popup-dots" id="ad-popup-dots" aria-hidden="true"></div>
+      </div>
+      <div class="ad-popup-body">
+        <div class="ad-popup-kicker">Special Promotion</div>
+        <h2 class="ad-popup-title" id="ad-popup-title">Free drink for combo orders</h2>
+        <p class="ad-popup-text" id="ad-popup-text">Order any selected combo today and get a free iced lemon tea while stocks last.</p>
+        <div class="ad-popup-actions">
+          <label class="ad-popup-note">
+            <input type="checkbox" id="ad-popup-hide-today" />
+            <span>Do not show again today</span>
+          </label>
+          <div class="ad-popup-right">
+            <button class="ad-popup-close" id="ad-popup-close" type="button">Close</button>
+            <a class="btn btn-primary" id="ad-popup-cta" href="#menu-area">View promo</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
   <!-- Order type (Take Away / Dine In) -->
   <div class="center-overlay show" id="ordertype-overlay" aria-hidden="false">
     <div class="center-card" role="dialog" aria-modal="true" aria-label="Choose order type">
@@ -1045,6 +1194,131 @@
     const tableSelectDesktop = document.getElementById("table-number");
     const tableSelectMobile = document.getElementById("table-number-mobile");
 
+
+
+
+    // Ad popup config
+    const adPopupConfig = {
+      enabled: true,
+      delayMs: 900,
+      storageKey: "adPopupHideUntil",
+      dismissHours: 24,
+      title: "Sambal Dan Chocojar",
+      text: "Dapatkan produk kami dijamin padu bosku",
+      images: [
+        "Chocojar_Flyers.jpg",
+        "Sambal_Flyers.jpg"
+      ],
+      slideIntervalMs: 2200,
+      ctaText: "Dapatkan di kaunter",
+      ctaHref: "#menu-area"
+    };
+
+    const adPopupOverlay = document.getElementById("ad-popup-overlay");
+    const adPopupTitle = document.getElementById("ad-popup-title");
+    const adPopupText = document.getElementById("ad-popup-text");
+    const adPopupMedia = document.getElementById("ad-popup-media");
+    const adPopupDots = document.getElementById("ad-popup-dots");
+    const adPopupCta = document.getElementById("ad-popup-cta");
+    const adPopupClose = document.getElementById("ad-popup-close");
+    const adPopupHideToday = document.getElementById("ad-popup-hide-today");
+
+    function shouldShowAdPopup(){
+      if(!adPopupConfig.enabled) return false;
+      try{
+        const hideUntil = Number(localStorage.getItem(adPopupConfig.storageKey) || 0);
+        if(hideUntil && Date.now() < hideUntil) return false;
+      }catch(_){ }
+      return true;
+    }
+
+    let adPopupSlides = [];
+    let adPopupDotsList = [];
+    let adPopupCurrentSlide = 0;
+    let adPopupTimer = null;
+
+    function buildAdPopupSlides(){
+      if(!adPopupMedia) return;
+      const images = Array.isArray(adPopupConfig.images) ? adPopupConfig.images.filter(Boolean) : [];
+      adPopupMedia.querySelectorAll(".ad-popup-slide").forEach(el => el.remove());
+      if(adPopupDots) adPopupDots.innerHTML = "";
+      adPopupSlides = [];
+      adPopupDotsList = [];
+      adPopupCurrentSlide = 0;
+
+      images.forEach((src, index) => {
+        const slide = document.createElement("div");
+        slide.className = "ad-popup-slide" + (index === 0 ? " active" : "");
+        const img = document.createElement("img");
+        img.src = src;
+        img.alt = `Promotion image ${index + 1}`;
+        slide.appendChild(img);
+        adPopupMedia.appendChild(slide);
+        adPopupSlides.push(slide);
+
+        if(adPopupDots){
+          const dot = document.createElement("span");
+          dot.className = "ad-popup-dot" + (index === 0 ? " active" : "");
+          adPopupDots.appendChild(dot);
+          adPopupDotsList.push(dot);
+        }
+      });
+    }
+
+    function showAdPopupSlide(index){
+      if(!adPopupSlides.length) return;
+      adPopupSlides.forEach((slide, i) => slide.classList.toggle("active", i === index));
+      adPopupDotsList.forEach((dot, i) => dot.classList.toggle("active", i === index));
+      adPopupCurrentSlide = index;
+    }
+
+    function startAdPopupSlider(){
+      if(adPopupTimer){
+        clearInterval(adPopupTimer);
+        adPopupTimer = null;
+      }
+      if(adPopupSlides.length <= 1) return;
+      adPopupTimer = setInterval(() => {
+        const next = (adPopupCurrentSlide + 1) % adPopupSlides.length;
+        showAdPopupSlide(next);
+      }, Math.max(1200, Number(adPopupConfig.slideIntervalMs) || 2200));
+    }
+
+    function openAdPopup(){
+      if(!adPopupOverlay) return;
+      adPopupTitle.textContent = adPopupConfig.title || "Special Promotion";
+      adPopupText.textContent = adPopupConfig.text || "Check out our latest promotion.";
+      buildAdPopupSlides();
+      adPopupCta.textContent = adPopupConfig.ctaText || "Learn more";
+      adPopupCta.href = adPopupConfig.ctaHref || "#";
+      adPopupOverlay.classList.add("show");
+      adPopupOverlay.setAttribute("aria-hidden", "false");
+      startAdPopupSlider();
+    }
+
+    function closeAdPopup(){
+      if(!adPopupOverlay) return;
+      if(adPopupHideToday?.checked){
+        try{
+          const hideUntil = Date.now() + ((Number(adPopupConfig.dismissHours) || 24) * 60 * 60 * 1000);
+          localStorage.setItem(adPopupConfig.storageKey, String(hideUntil));
+        }catch(_){ }
+      }
+      if(adPopupTimer){
+        clearInterval(adPopupTimer);
+        adPopupTimer = null;
+      }
+      adPopupOverlay.classList.remove("show");
+      adPopupOverlay.setAttribute("aria-hidden", "true");
+    }
+
+    adPopupClose?.addEventListener("click", closeAdPopup);
+    adPopupOverlay?.addEventListener("click", (e) => {
+      if(e.target === adPopupOverlay) closeAdPopup();
+    });
+    adPopupCta?.addEventListener("click", () => {
+      closeAdPopup();
+    });
 
     // Quotes (keeps your vibe, but short for header)
     const quotes = [
@@ -1702,6 +1976,11 @@ function buildCategoryStrip(){
 
     // Ask for Take Away / Dine In at page open
     initOrderType();
+
+    // Show ad popup on page open
+    if(shouldShowAdPopup()) {
+      setTimeout(openAdPopup, Math.max(0, Number(adPopupConfig.delayMs) || 0));
+    }
 
 
     // Queue helper (fixed)
