@@ -907,6 +907,126 @@
     .order.prioSoon{ box-shadow: 0 0 0 2px rgba(245,158,11,.15), 0 10px 24px rgba(15,23,42,.08); }
     .order.prioOver{ box-shadow: 0 0 0 2px rgba(239,68,68,.18), 0 10px 24px rgba(15,23,42,.08); }
 
+
+    /* ---------- Payment + cleaner card buttons ---------- */
+    .pill-paid{
+      border-color: rgba(22,163,74,.22);
+      color: var(--success);
+      background: rgba(22,163,74,.08);
+    }
+    .pill-unpaid{
+      border-color: rgba(245,158,11,.28);
+      color: #b45309;
+      background: rgba(245,158,11,.10);
+    }
+
+    .actionsRow{
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      padding: 10px 12px 8px 14px;
+      grid-auto-rows: 40px;
+    }
+    .aBtn{
+      height: 40px;
+      padding: 0 10px;
+      border-radius: 12px;
+      font-size: 11.5px;
+      font-weight: 1000;
+      letter-spacing: -.01em;
+      border: 1px solid rgba(15,23,42,.08);
+      box-shadow:
+        0 1px 0 rgba(255,255,255,.9) inset,
+        0 6px 14px rgba(15,23,42,.05);
+      transition: background .16s ease, border-color .16s ease, transform .06s ease, box-shadow .16s ease;
+    }
+    .aBtn:hover{
+      box-shadow:
+        0 1px 0 rgba(255,255,255,.95) inset,
+        0 8px 18px rgba(15,23,42,.08);
+    }
+    .aBtn:active{ transform: translateY(1px); }
+
+    .aFoodPrep{background: #fff7ed; color:#c2410c; border-color:#fdba74;}
+    .aFoodReady{background: #ecfdf5; color:#15803d; border-color:#86efac;}
+    .aDrinkPrep{background: #eff6ff; color:#1d4ed8; border-color:#93c5fd;}
+    .aDrinkReady{background: #ecfdf5; color:#15803d; border-color:#86efac;}
+    .aAllReady{background: linear-gradient(180deg, #22c55e, #16a34a); color:#fff; border-color:transparent;}
+    .aPrint{background:#f8fafc; color:#334155; border-color:#cbd5e1;}
+    .aCopy{background:#f8fafc; color:#0f172a; border-color:#cbd5e1;}
+    .aDelete{background:#fef2f2; color:#dc2626; border-color:#fecaca;}
+
+    .payRow{
+      display:grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items:center;
+      padding: 0 12px 10px 14px;
+    }
+    .payIndicator{
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      min-height: 42px;
+      padding: 0 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(15,23,42,.08);
+      background: rgba(255,255,255,.86);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 1000;
+      white-space: nowrap;
+    }
+    .payIndicator .dot{
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      flex: 0 0 auto;
+    }
+    .payIndicator.paid{
+      border-color: rgba(22,163,74,.20);
+      background: rgba(22,163,74,.08);
+      color: #166534;
+    }
+    .payIndicator.paid .dot{ background: var(--success); }
+    .payIndicator.unpaid{
+      border-color: rgba(245,158,11,.26);
+      background: rgba(245,158,11,.10);
+      color: #b45309;
+    }
+    .payIndicator.unpaid .dot{ background: var(--warn); }
+
+    .aPaid{
+      min-width: 128px;
+      height: 42px;
+      border-radius: 12px;
+      padding: 0 14px;
+      background: linear-gradient(180deg, #2563eb, #1d4ed8);
+      color: #fff;
+      border: none;
+      box-shadow: 0 10px 18px rgba(37,99,235,.18);
+    }
+    .aPaid.isPaid{
+      background: #ecfdf5;
+      color: #166534;
+      border: 1px solid #86efac;
+      box-shadow:
+        0 1px 0 rgba(255,255,255,.9) inset,
+        0 6px 14px rgba(22,163,74,.08);
+    }
+
+    .doneActionsRow{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 8px;
+      padding: 0 12px 10px 14px;
+    }
+
+    @media (max-width: 640px){
+      .actionsRow{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .payRow{ grid-template-columns: 1fr; }
+      .aPaid{ width: 100%; min-width: 0; }
+    }
+
 </style>
 </head>
 
@@ -1762,6 +1882,9 @@ function fmtMoney(n){
 
       const foodDot = (foodKey === "food-ready") ? "dot-ok" : (foodKey === "food-preparing" ? "dot-warn" : "");
       const drinkDot = (drinkKey === "drink-ready") ? "dot-ok" : (drinkKey === "drink-preparing" ? "dot-warn" : "");
+      const paymentPaid = String(order.paymentStatus || "").toLowerCase() === "paid";
+      const paymentLabel = paymentPaid ? "Paid" : "Unpaid";
+      const paymentPillClass = paymentPaid ? "pill-paid" : "pill-unpaid";
 
       const elapsed = computeElapsed(order.timestamp);
 
@@ -1951,6 +2074,7 @@ card.innerHTML = `
 
           <div class="pillRow">
             <span class="pill ${pillClass}">${label}</span>
+            <span class="pill ${paymentPillClass}">💳 ${paymentLabel}</span>
             ${prioPillHtml}
             <span class="pill"><span class="iconDot ${foodDot}"></span>🍴 ${niceStatus(order.foodStatus)}</span>
             <span class="pill"><span class="iconDot ${drinkDot}"></span>🥤 ${niceStatus(order.drinkStatus)}</span>
@@ -1978,6 +2102,16 @@ card.innerHTML = `
 
           <button class="aBtn aPrint" type="button" data-act="print">🖨️ Print</button>
           <button class="aBtn aCopy" type="button" data-act="copy">📋 Copy</button>
+        </div>
+
+        <div class="payRow">
+          <div class="payIndicator ${paymentPaid ? "paid" : "unpaid"}">
+            <span class="dot"></span>
+            <span>Payment: ${paymentLabel}</span>
+          </div>
+          <button class="aBtn aPaid ${paymentPaid ? "isPaid" : ""}" type="button" data-act="togglePaid">
+            ${paymentPaid ? "✓ Paid" : "💳 Mark Paid"}
+          </button>
         </div>
 
         <div class="footerRow">
@@ -2039,6 +2173,10 @@ card.innerHTML = `
         e.stopPropagation();
         copyOrderToClipboard(orderId);
       });
+      bindAct('[data-act="togglePaid"]', (e) => {
+        e.stopPropagation();
+        setPaymentStatus(orderId, paymentPaid ? "unpaid" : "paid");
+      });
 
       return card;
     }
@@ -2057,6 +2195,19 @@ card.innerHTML = `
     }
 
     // ---------- Actions ----------
+    async function setPaymentStatus(orderId, paymentStatus){
+      const orderRef = ref(db, `orders/${orderId}`);
+      try{
+        await update(orderRef, { paymentStatus });
+        ordersMap[orderId] = { ...(ordersMap[orderId] || {}), paymentStatus };
+        render();
+        showToast(paymentStatus === "paid" ? "Marked as paid" : "Marked as unpaid");
+      }catch(err){
+        console.error("Payment update error:", err);
+        showToast("Payment update failed");
+      }
+    }
+
     async function updateStatus(orderId, status, field="status", opts={}){
       const orderRef = ref(db, `orders/${orderId}`);
       try{
@@ -2261,6 +2412,7 @@ card.innerHTML = `
           Name: ${escapeHtml(order.name ?? "-")}<br>
           Table: ${escapeHtml(order.table ?? "-")}<br>
           Special Request: ${escapeHtml(order.request ?? "None")}<br>
+          Payment: ${escapeHtml(String(order.paymentStatus || "unpaid").toUpperCase())}<br>
           <div class="line"></div>
           <b>Order List</b>
           <div class="left">${escapeHtml(lines)}</div>
@@ -2302,6 +2454,7 @@ Order No: ${order.queueNumber ?? "N/A"}
 Name: ${order.name ?? "-"}
 Table: ${order.table ?? "-"}
 Special Request: ${order.request ?? "None"}
+Payment: ${String(order.paymentStatus || "unpaid").toUpperCase()}
 ----------------------------------------
 Order List:
 ${lines}
@@ -2350,13 +2503,14 @@ Total: ${fmtMoney(order.totalPrice ?? 0)}
           items,
           total: fmtMoney(order.totalPrice ?? 0),
           status: overall,
+          paymentStatus: String(order.paymentStatus || "unpaid"),
           id: orderId
         });
       }
 
       rows.sort((a,b)=> b.timestamp - a.timestamp);
 
-      const header = ["Date","Time","Queue","Name","Table","Special Request","Items","Total Price","Status","OrderId"];
+      const header = ["Date","Time","Queue","Name","Table","Special Request","Items","Total Price","Status","Payment Status","OrderId"];
       const lines = [header.join(",")];
 
       for(const r of rows){
@@ -2370,6 +2524,7 @@ Total: ${fmtMoney(order.totalPrice ?? 0)}
           csvEscape(r.items),
           csvEscape(r.total),
           csvEscape(r.status),
+          csvEscape(r.paymentStatus),
           csvEscape(r.id)
         ].join(",");
         lines.push(row);
