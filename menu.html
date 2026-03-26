@@ -221,6 +221,7 @@
   .chip-hot{border-color: rgba(239,68,68,.25); color:#dc2626; background: rgba(239,68,68,.06)}
   .chip-rec{border-color: rgba(245,158,11,.35); color:#b45309; background: rgba(245,158,11,.08)}
   .chip-mode{border-color: rgba(100,116,139,.30); color: #334155; background: rgba(100,116,139,.06)}
+  .chip-code{border-color: rgba(37,99,235,.25); color: var(--primary); background: rgba(37,99,235,.08)}
 
   .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px}
   .mini-btn{
@@ -295,11 +296,12 @@
       <div class="logo">M</div>
       <div>
         <h1>Menu Admin</h1>
-        <p>Manage items, stock tracking, category availability, and badges.</p>
+        <p>Manage items, stock tracking, category availability, fast-order tiles, and add-ons.</p>
       </div>
     </div>
     <div class="top-actions">
       <div class="hint">Stock-tracked item becomes unavailable automatically when stock is 0 (manual or material-linked).</div>
+      <button class="btn btn-ghost" id="assignMissingCodesBtn" type="button">🏷️ Auto Assign Missing Codes</button>
       <a class="btn-link btn-outline" href="materials.html">📦 Materials</a>
     </div>
   </div>
@@ -346,6 +348,27 @@
             <label>Image URL (optional)</label>
             <input id="image" placeholder="https://...jpg" type="text"/>
             <div class="help">If empty, a placeholder image is used.</div>
+          </div>
+
+          <div class="section-title">Unique Code</div>
+          <div class="grid two">
+            <div class="field">
+              <label>Code mode</label>
+              <select id="uniqueCodeMode">
+                <option value="auto">Auto assign</option>
+                <option value="manual">Manual assign</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Unique code</label>
+              <input id="uniqueCode" maxlength="12" placeholder="e.g. F01" type="text"/>
+              <div class="help" id="uniqueCodeHelp">Auto code will be suggested based on category.</div>
+              <div class="help">When code display is selected for fast order, the tile uses a solid background for easier reading.</div>
+            </div>
+          </div>
+
+          <div class="btn-row" style="margin-top:0">
+            <button class="mini-btn" id="generateCodeBtn" type="button">⚡ Generate Code</button>
           </div>
 
           <div class="section-title">Badges</div>
@@ -425,12 +448,33 @@
             </div>
           </div>
 
+          <div class="section-title">Fast Order Tile</div>
+          <div class="grid two">
+            <div class="field">
+              <label>Fast order display</label>
+              <select id="fastOrderDisplayMode">
+                <option value="image">Show image only</option>
+                <option value="code">Show unique code only</option>
+              </select>
+              <div class="help">Used by the owner fast-order page. Owner fast-order cards show either image or unique code, plus item name and price. Code-only tiles use automatic solid category colors.</div>
+            </div>
+            <div class="toggle-row">
+              <div class="toggle-left">
+                <div class="title">Enable Add-ons</div>
+                <div class="desc">Turn on only if this menu item should have selectable add-ons.</div>
+              </div>
+              <span aria-checked="false" class="switch" id="allowAddOnsSwitch" role="switch"><span class="knob"></span></span>
+            </div>
+          </div>
+
           <div class="section-title">Add-ons</div>
-          <div class="field">
-            <label>Add-ons (one per line, format: name:price)</label>
-            <textarea id="addons" placeholder="Nasi Tambah:2.00&#10;Tempe Tambah:1.50"></textarea>
-            <div class="help">
-              Avoid characters <b>. # $ / [ ]</b> in add-on names (Firebase key rules). If used, they will be removed automatically.
+          <div id="addonsSection">
+            <div class="field">
+              <label>Add-ons (one per line, format: name:price)</label>
+              <textarea id="addons" placeholder="Nasi Tambah:2.00&#10;Tempe Tambah:1.50"></textarea>
+              <div class="help">
+                Avoid characters <b>. # $ / [ ]</b> in add-on names (Firebase key rules). If used, they will be removed automatically.
+              </div>
             </div>
           </div>
 
@@ -553,6 +597,14 @@
   const categoryEl = document.getElementById("category");
   const imageEl = document.getElementById("image");
   const addonsEl = document.getElementById("addons");
+  const addonsSectionEl = document.getElementById("addonsSection");
+  const fastOrderDisplayModeEl = document.getElementById("fastOrderDisplayMode");
+  const allowAddOnsSwitch = document.getElementById("allowAddOnsSwitch");
+  const uniqueCodeModeEl = document.getElementById("uniqueCodeMode");
+  const uniqueCodeEl = document.getElementById("uniqueCode");
+  const uniqueCodeHelpEl = document.getElementById("uniqueCodeHelp");
+  const generateCodeBtn = document.getElementById("generateCodeBtn");
+  const assignMissingCodesBtn = document.getElementById("assignMissingCodesBtn");
 
   const isNewSwitch = document.getElementById("isNewSwitch");
   const isHotSwitch = document.getElementById("isHotSwitch");
@@ -597,6 +649,7 @@
   let currentCategoryStatus = {};
   let materialsCache = {};
   let formBadges = { isNew:false, isHot:false, isRecommended:false };
+  let allowAddOnsEnabled = false;
 
   // ---------------- UI helpers ----------------
   function showNotice(msg, time=2500){
@@ -625,6 +678,127 @@
   function clampInt(n){
     const x = parseInt(String(n ?? "0"), 10);
     return Number.isFinite(x) ? Math.max(0, x) : 0;
+  }
+
+  function normalizeUniqueCode(raw){
+    return String(raw || "")
+      .toUpperCase()
+      .replace(/[^A-Z0-9-]/g, "")
+      .replace(/-{2,}/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 12);
+  }
+
+  function codePrefixForCategory(category){
+    const map = {
+      "food": "F",
+      "Side Dish": "S",
+      "Air Panas": "HP",
+      "Air Sejuk": "HS",
+      "Little Ngences Food": "LF",
+      "Little Ngences Drink": "LD",
+      "Others": "O"
+    };
+    return map[category] || "X";
+  }
+
+  function isUniqueCodeTaken(code, excludeId=null, sourceItems=null){
+    const wanted = normalizeUniqueCode(code);
+    if(!wanted) return false;
+    return Object.entries(sourceItems || lastItemsCache || {}).some(([id, item]) => {
+      if(id === excludeId) return false;
+      return normalizeUniqueCode(item?.uniqueCode || "") === wanted;
+    });
+  }
+
+  function generateNextUniqueCode(category, excludeId=null, sourceItems=null){
+    const items = sourceItems || lastItemsCache || {};
+    const used = new Set(
+      Object.entries(items)
+        .filter(([id]) => id !== excludeId)
+        .map(([, item]) => normalizeUniqueCode(item?.uniqueCode || ""))
+        .filter(Boolean)
+    );
+
+    const prefix = codePrefixForCategory(category);
+    for(let i = 1; i <= 999; i++){
+      const candidate = `${prefix}${String(i).padStart(2, "0")}`;
+      if(!used.has(candidate)) return candidate;
+    }
+    return `${prefix}${String(Date.now()).slice(-4)}`;
+  }
+
+  function updateUniqueCodeUI(opts={}){
+    if(!uniqueCodeModeEl || !uniqueCodeEl) return;
+    const mode = uniqueCodeModeEl.value || "auto";
+    const suggestion = generateNextUniqueCode(categoryEl?.value || "Others", editingId);
+    const persisted = normalizeUniqueCode(uniqueCodeEl.dataset.persisted || "");
+    const current = normalizeUniqueCode(uniqueCodeEl.value || "");
+
+    if(mode === "manual"){
+      uniqueCodeEl.disabled = false;
+      if(!current) uniqueCodeEl.placeholder = suggestion;
+      if(uniqueCodeHelpEl){
+        uniqueCodeHelpEl.textContent = `Manual code must be unique. Suggested: ${suggestion}`;
+      }
+      return;
+    }
+
+    uniqueCodeEl.disabled = true;
+    if(opts.forceGenerate || !current || (!editingId && !persisted)){
+      uniqueCodeEl.value = suggestion;
+    }
+    if(uniqueCodeHelpEl){
+      uniqueCodeHelpEl.textContent = `Auto code will use ${uniqueCodeEl.value || suggestion}.`;
+    }
+  }
+
+  function updateAddOnsUI(){
+    if(addonsSectionEl){
+      addonsSectionEl.style.display = allowAddOnsEnabled ? "block" : "none";
+    }
+    if(addonsEl){
+      addonsEl.disabled = !allowAddOnsEnabled;
+    }
+    if(allowAddOnsSwitch){
+      setSwitch(allowAddOnsSwitch, allowAddOnsEnabled);
+    }
+  }
+
+  async function autoAssignMissingCodes(){
+    const items = JSON.parse(JSON.stringify(lastItemsCache || {}));
+    const updates = {};
+    let count = 0;
+
+    const rows = Object.entries(items).sort((a,b) => {
+      const catA = String(a[1]?.category || "");
+      const catB = String(b[1]?.category || "");
+      if(catA !== catB) return catA.localeCompare(catB);
+      return String(a[1]?.name || "").localeCompare(String(b[1]?.name || ""));
+    });
+
+    for(const [id, item] of rows){
+      const current = normalizeUniqueCode(item?.uniqueCode || "");
+      if(current) continue;
+      const nextCode = generateNextUniqueCode(item?.category || "Others", id, items);
+      items[id] = { ...(items[id] || {}), uniqueCode: nextCode, uniqueCodeMode: "auto" };
+      updates[`menuItems/${id}/uniqueCode`] = nextCode;
+      updates[`menuItems/${id}/uniqueCodeMode`] = "auto";
+      count += 1;
+    }
+
+    if(!count){
+      showNotice("All menu items already have unique codes.");
+      return;
+    }
+
+    try{
+      await update(ref(db), updates);
+      showNotice(`Assigned ${count} unique code${count === 1 ? "" : "s"}.`, 3500);
+    }catch(err){
+      console.error(err);
+      showNotice("Failed to assign unique codes.");
+    }
   }
 
   // ---------------- Materials helpers ----------------
@@ -893,6 +1067,10 @@
     formBadges.isRecommended = !formBadges.isRecommended;
     setSwitch(isRecSwitch, formBadges.isRecommended);
   });
+  allowAddOnsSwitch?.addEventListener("click", () => {
+    allowAddOnsEnabled = !allowAddOnsEnabled;
+    updateAddOnsUI();
+  });
 
   stockModeEl.addEventListener("change", () => {
     setStockUIFromMode(stockModeEl.value);
@@ -905,6 +1083,19 @@
 
   stockMaterialEl.addEventListener("change", () => updateMaterialComputedUI());
   stockMaterialPerMenuEl.addEventListener("input", () => updateMaterialComputedUI());
+
+  uniqueCodeModeEl?.addEventListener("change", () => updateUniqueCodeUI());
+  uniqueCodeEl?.addEventListener("input", () => {
+    uniqueCodeEl.value = normalizeUniqueCode(uniqueCodeEl.value);
+  });
+  categoryEl?.addEventListener("change", () => updateUniqueCodeUI());
+  generateCodeBtn?.addEventListener("click", () => {
+    uniqueCodeEl.dataset.persisted = "";
+    uniqueCodeEl.value = generateNextUniqueCode(categoryEl.value, editingId);
+    if(uniqueCodeModeEl.value === "auto") uniqueCodeEl.disabled = true;
+    updateUniqueCodeUI({ forceGenerate:true });
+  });
+  assignMissingCodesBtn?.addEventListener("click", () => autoAssignMissingCodes());
 
   useMaterialsToggle.addEventListener("change", ()=> setRecipeEnabled(useMaterialsToggle.checked));
   addRecipeRowBtn.addEventListener("click", () => addRecipeRow("", ""));
@@ -922,7 +1113,14 @@
     priceEl.value = Number(data?.price || 0).toFixed(2);
     categoryEl.value = data?.category || "food";
     imageEl.value = data?.image || "";
+    fastOrderDisplayModeEl.value = data?.fastOrderDisplayMode === "code" ? "code" : "image";
+    allowAddOnsEnabled = (data?.allowAddOns === true) || Object.keys(data?.addOns || {}).length > 0;
     addonsEl.value = addonsToText(data?.addOns || {});
+    updateAddOnsUI();
+    uniqueCodeModeEl.value = data?.uniqueCodeMode || (data?.uniqueCode ? "manual" : "auto");
+    uniqueCodeEl.value = normalizeUniqueCode(data?.uniqueCode || "");
+    uniqueCodeEl.dataset.persisted = uniqueCodeEl.value;
+    updateUniqueCodeUI();
 
     // Recipe materials (optional advanced)
     setRecipeFromObject(data?.recipeMaterials || data?.materials || data?.recipe || {});
@@ -969,7 +1167,13 @@
     priceEl.value = "0.00";
     categoryEl.value = "food";
     imageEl.value = "";
+    fastOrderDisplayModeEl.value = "image";
+    allowAddOnsEnabled = false;
     addonsEl.value = "";
+    updateAddOnsUI();
+    uniqueCodeModeEl.value = "auto";
+    uniqueCodeEl.value = "";
+    uniqueCodeEl.dataset.persisted = "";
 
     setRecipeFromObject({});
     setRecipeEnabled(false);
@@ -984,6 +1188,7 @@
     refreshMaterialDropdown(stockMaterialEl, "");
     stockMaterialPerMenuEl.value = "1";
     setStockUIFromMode("none");
+    updateUniqueCodeUI({ forceGenerate:true });
 
     deleteBtn.style.display = "none";
     saveBtn.innerText = "Save";
@@ -1014,6 +1219,26 @@
     const chips = document.createElement("div");
     chips.className = "chips";
 
+    const uniqueCode = normalizeUniqueCode(item?.uniqueCode || "");
+    if(uniqueCode){
+      const codeEl = document.createElement("span");
+      codeEl.className = "chip chip-code";
+      codeEl.innerText = `Code ${uniqueCode}`;
+      chips.appendChild(codeEl);
+    }
+
+    const posDisplayChip = document.createElement("span");
+    posDisplayChip.className = "chip chip-mode";
+    posDisplayChip.innerText = item?.fastOrderDisplayMode === "code" ? "POS: Code Only" : "POS: Image";
+    chips.appendChild(posDisplayChip);
+
+    if(item?.allowAddOns === true){
+      const addOnChip = document.createElement("span");
+      addOnChip.className = "chip chip-rec";
+      addOnChip.innerText = "Add-ons Enabled";
+      chips.appendChild(addOnChip);
+    }
+
     badgeChips(item).forEach(b => {
       const el = document.createElement("span");
       el.className = b.className;
@@ -1034,7 +1259,12 @@
 
     const meta = document.createElement("div");
     meta.className = "meta";
-    meta.innerText = `RM ${Number(item?.price||0).toFixed(2)} • ${item?.category||"Others"}`;
+    const metaParts = [];
+    if(uniqueCode) metaParts.push(`Code ${uniqueCode}`);
+    metaParts.push(`RM ${Number(item?.price||0).toFixed(2)}`);
+    metaParts.push(item?.category || "Others");
+    metaParts.push(item?.fastOrderDisplayMode === "code" ? "POS Code" : "POS Image");
+    meta.innerText = metaParts.join(" • ");
 
     const addonsBrief = document.createElement("div");
     addonsBrief.className = "meta";
@@ -1150,7 +1380,8 @@
           if(!q) return true;
           const name = String(item?.name || "").toLowerCase();
           const desc = String(item?.description || "").toLowerCase();
-          return name.includes(q) || desc.includes(q);
+          const code = normalizeUniqueCode(item?.uniqueCode || "").toLowerCase();
+          return name.includes(q) || desc.includes(q) || code.includes(q);
         })
         .sort((a,b) => String(a.item.name||"").localeCompare(String(b.item.name||"")));
 
@@ -1298,12 +1529,28 @@
     const image = imageEl.value.trim();
 
     // ✅ addOns remains object map, but keys are sanitized
-    const addOns = parseAddons(addonsEl.value);
+    const addOns = allowAddOnsEnabled ? parseAddons(addonsEl.value) : null;
 
     const recipeMaterials = getRecipeAsObject();
+    let uniqueCode = normalizeUniqueCode(uniqueCodeEl?.value || "");
 
     if(!name){
       alert("Please enter name");
+      return;
+    }
+
+    if(uniqueCodeModeEl?.value === "auto" && !uniqueCode){
+      uniqueCode = generateNextUniqueCode(category, editingId);
+      if(uniqueCodeEl) uniqueCodeEl.value = uniqueCode;
+    }
+
+    if(!uniqueCode){
+      alert("Please enter a unique code or choose auto assign.");
+      return;
+    }
+
+    if(isUniqueCodeTaken(uniqueCode, editingId)){
+      alert(`Unique code ${uniqueCode} is already used. Please choose another code.`);
       return;
     }
 
@@ -1339,10 +1586,14 @@
       // keep existing fields
       useMaterials: (useMaterialsToggle && useMaterialsToggle.checked) ? true : false,
       name,
+      uniqueCode,
+      uniqueCodeMode: uniqueCodeModeEl?.value || "auto",
       price: Number(price),
       category,
       image: image || null,
-      addOns: addOns,
+      fastOrderDisplayMode: fastOrderDisplayModeEl?.value === "code" ? "code" : "image",
+      allowAddOns: !!allowAddOnsEnabled,
+      addOns: addOns && Object.keys(addOns).length ? addOns : (allowAddOnsEnabled ? {} : null),
 
       // optional advanced recipe materials
       recipeMaterials: Object.keys(recipeMaterials).length ? recipeMaterials : null,
@@ -1445,6 +1696,7 @@
   setSwitch(isNewSwitch, false);
   setSwitch(isHotSwitch, false);
   setSwitch(isRecSwitch, false);
+  setSwitch(allowAddOnsSwitch, false);
 
   setRecipeEnabled(false);
   refreshMaterialDropdown(stockMaterialEl, "");
@@ -1455,6 +1707,7 @@
   }
 
   resetForm();
+  updateUniqueCodeUI({ forceGenerate:true });
 </script>
 </body>
 </html>
