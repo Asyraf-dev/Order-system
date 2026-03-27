@@ -94,12 +94,59 @@
       color: var(--muted);
     }
 
-    .actions{
-      display:flex;
+    .actionNavToggle{
+      min-width: 132px;
+      justify-content:center;
+    }
+
+    .actionNavPanel{
+      margin-top: 10px;
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
       gap: 10px;
-      align-items:center;
-      flex-wrap: wrap;
-      justify-content:flex-end;
+      padding: 10px;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.82);
+      box-shadow: var(--shadowSoft);
+      overflow: hidden;
+      transition: max-height .22s ease, opacity .18s ease, padding .18s ease, margin-top .18s ease;
+      max-height: 320px;
+      opacity: 1;
+    }
+    .actionNavPanel.collapsed{
+      max-height: 0;
+      opacity: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      margin-top: 0;
+      border-width: 0;
+      pointer-events: none;
+    }
+    .actionNavPanel .btn{
+      width: 100%;
+      min-height: 44px;
+      justify-content:center;
+      text-align:center;
+    }
+    .btn-success{
+      color:white;
+      background: linear-gradient(180deg, #22c55e, #16a34a);
+      box-shadow: 0 12px 22px rgba(22,163,74,.18);
+    }
+    .btn-warn{
+      color:#92400e;
+      background: linear-gradient(180deg, #fef3c7, #fde68a);
+      border: 1px solid rgba(245,158,11,.26);
+      box-shadow: 0 8px 18px rgba(245,158,11,.10);
+    }
+    @media (max-width: 640px){
+      .actionNavPanel{
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .actionNavToggle{
+        width: 100%;
+      }
     }
 
     .btn{
@@ -1041,12 +1088,16 @@
         </div>
       </div>
 
-      <div class="actions">
-        <button id="inventoryBtn" class="btn btn-ghost" type="button">📦 Inventory</button>
-        <button id="exportBtn" class="btn btn-primary" type="button">📁 Export CSV</button>
-        <button id="removeQueueBtn" class="btn btn-danger" type="button">🗑️ Clear Queue</button>
-        <button id="statsToggleBtn" class="btn btn-ghost" type="button">📊 Stats</button>
-      </div>
+      <button id="actionNavToggle" class="btn btn-ghost actionNavToggle" type="button" aria-expanded="true" aria-controls="actionNavPanel">☰ Actions</button>
+    </div>
+
+    <div id="actionNavPanel" class="actionNavPanel">
+      <button id="inventoryBtn" class="btn btn-ghost" type="button">📦 Inventory</button>
+      <button id="exportBtn" class="btn btn-primary" type="button">📁 Export CSV</button>
+      <button id="markAllPaidBtn" class="btn btn-primary" type="button">💳 Mark All Paid</button>
+      <button id="readyAllOrdersBtn" class="btn btn-success" type="button">✅ Ready All Orders</button>
+      <button id="removeQueueBtn" class="btn btn-danger" type="button">🗑️ Clear Queue</button>
+      <button id="statsToggleBtn" class="btn btn-ghost" type="button">📊 Stats</button>
     </div>
 
     <div class="controls">
@@ -1175,8 +1226,12 @@
 
     const inventoryBtn = document.getElementById("inventoryBtn");
     const exportBtn = document.getElementById("exportBtn");
+    const markAllPaidBtn = document.getElementById("markAllPaidBtn");
+    const readyAllOrdersBtn = document.getElementById("readyAllOrdersBtn");
     const removeQueueBtn = document.getElementById("removeQueueBtn");
     const statsToggleBtn = document.getElementById("statsToggleBtn");
+    const actionNavToggle = document.getElementById("actionNavToggle");
+    const actionNavPanel = document.getElementById("actionNavPanel");
 
     const miniOnlineDot = document.getElementById("miniOnlineDot");
     const miniOnlineText = document.getElementById("miniOnlineText");
@@ -1201,6 +1256,8 @@
     const totalOrdersTodayMiniEl = document.getElementById("totalOrdersTodayMini");
     const onlineStatusMiniEl = document.getElementById("onlineStatusMini");
 
+    let actionNavCollapsed = false;
+
     function setStatsCollapsed(collapsed){
       if(!statsRowEl || !statsMinToggle) return;
       statsRowEl.classList.toggle("collapsed", collapsed);
@@ -1210,6 +1267,23 @@
 
     // Default: always minimized (mobile-first)
     setStatsCollapsed(true);
+
+    try{
+      const savedActionNav = localStorage.getItem("actionNavCollapsed");
+      if(savedActionNav === null){
+        setActionNavCollapsed(window.innerWidth <= 720, { persist:false });
+      } else {
+        setActionNavCollapsed(savedActionNav === "1", { persist:false });
+      }
+    }catch(e){
+      setActionNavCollapsed(window.innerWidth <= 720, { persist:false });
+    }
+
+    if(actionNavToggle){
+      actionNavToggle.addEventListener("click", () => {
+        setActionNavCollapsed(!actionNavCollapsed);
+      });
+    }
 
     if(statsMinToggle){
       statsMinToggle.addEventListener("click", () => {
@@ -1259,10 +1333,40 @@
 
     // ---------- Helpers ----------
     function showToast(msg, ms=2200){
+      if(!toastEl) return;
       toastEl.textContent = msg;
       toastEl.style.display = "block";
       clearTimeout(showToast._t);
       showToast._t = setTimeout(()=> toastEl.style.display = "none", ms);
+    }
+
+    function setButtonBusy(btn, busy, busyText){
+      if(!btn) return;
+      if(busy){
+        if(!btn.dataset.originalText) btn.dataset.originalText = btn.textContent;
+        btn.disabled = true;
+        if(busyText) btn.textContent = busyText;
+      }else{
+        btn.disabled = false;
+        if(btn.dataset.originalText){
+          btn.textContent = btn.dataset.originalText;
+          delete btn.dataset.originalText;
+        }
+      }
+    }
+
+    function setActionNavCollapsed(collapsed, {persist=true} = {}){
+      actionNavCollapsed = !!collapsed;
+      if(actionNavPanel){
+        actionNavPanel.classList.toggle("collapsed", actionNavCollapsed);
+      }
+      if(actionNavToggle){
+        actionNavToggle.setAttribute("aria-expanded", String(!actionNavCollapsed));
+        actionNavToggle.textContent = actionNavCollapsed ? "☰ Actions" : "✕ Close Actions";
+      }
+      if(persist){
+        try{ localStorage.setItem("actionNavCollapsed", actionNavCollapsed ? "1" : "0"); }catch(e){}
+      }
     }
 
     // ---------- Scroll preservation (avoid jump-to-top on updates) ----------
@@ -2568,6 +2672,7 @@ Total: ${fmtMoney(order.totalPrice ?? 0)}
       const ok = confirm("Remove ALL queue numbers?");
       if(!ok) return;
 
+      setButtonBusy(removeQueueBtn, true, "⏳ Clearing...");
       try{
         const snap = await get(ordersRef);
         const updates = {};
@@ -2575,6 +2680,11 @@ Total: ${fmtMoney(order.totalPrice ?? 0)}
           const id = ch.key;
           updates[`${id}/queueNumber`] = null;
         });
+
+        if(!Object.keys(updates).length){
+          showToast("No queue numbers to clear");
+          return;
+        }
 
         // Update as one multi-location update
         await update(ordersRef, updates);
@@ -2587,6 +2697,81 @@ Total: ${fmtMoney(order.totalPrice ?? 0)}
       }catch(err){
         console.error(err);
         showToast("Failed to clear queue");
+      }finally{
+        setButtonBusy(removeQueueBtn, false);
+      }
+    }
+
+    async function markAllAsPaid(){
+      const unpaidIds = Object.entries(ordersMap)
+        .filter(([, order]) => order && String(order?.paymentStatus || "").toLowerCase() !== "paid")
+        .map(([id]) => id);
+
+      if(!unpaidIds.length){
+        showToast("All orders already paid");
+        return;
+      }
+
+      const ok = confirm(`Mark ${unpaidIds.length} order(s) as paid?`);
+      if(!ok) return;
+
+      const updates = {};
+      unpaidIds.forEach(id => {
+        updates[`${id}/paymentStatus`] = "paid";
+      });
+
+      setButtonBusy(markAllPaidBtn, true, "⏳ Marking Paid...");
+      try{
+        await update(ordersRef, updates);
+        unpaidIds.forEach(id => {
+          ordersMap[id] = { ...(ordersMap[id] || {}), paymentStatus: "paid" };
+        });
+        render();
+        showToast(`Marked ${unpaidIds.length} order(s) as paid`);
+      }catch(err){
+        console.error(err);
+        showToast("Failed to mark all as paid");
+      }finally{
+        setButtonBusy(markAllPaidBtn, false);
+      }
+    }
+
+    async function readyAllOrders(){
+      const targetIds = Object.entries(ordersMap)
+        .filter(([, order]) => order && computeOverall(order).overall !== "ready")
+        .map(([id]) => id);
+
+      if(!targetIds.length){
+        showToast("All orders already ready");
+        return;
+      }
+
+      const ok = confirm(`Mark ${targetIds.length} active order(s) as ready?`);
+      if(!ok) return;
+
+      const updates = {};
+      targetIds.forEach(id => {
+        updates[`${id}/foodStatus`] = "food ready";
+        updates[`${id}/drinkStatus`] = "drink ready";
+      });
+
+      setButtonBusy(readyAllOrdersBtn, true, "⏳ Updating Ready...");
+      try{
+        await update(ordersRef, updates);
+        targetIds.forEach(id => {
+          ordersMap[id] = {
+            ...(ordersMap[id] || {}),
+            foodStatus: "food ready",
+            drinkStatus: "drink ready"
+          };
+        });
+        render();
+        showToast(`Marked ${targetIds.length} order(s) ready`);
+      }catch(err){
+        console.error(err);
+        showToast("Failed to ready all orders");
+      }finally{
+        setButtonBusy(readyAllOrdersBtn, false);
       }
     }
 
@@ -2748,18 +2933,20 @@ Total: ${fmtMoney(order.totalPrice ?? 0)}
     });
 
 
-    statsToggleBtn.addEventListener("click", async () => {
-      const isOpen = drawer.style.display === "block";
-      const newState = !isOpen;
-      // apply instantly
-      if(newState) openDrawer(); else closeDrawer();
-      // save
-      try{ await set(statsVisibleRef, newState); }catch(e){}
-    });
-    drawerClose.addEventListener("click", async () => {
-      closeDrawer();
-      try{ await set(statsVisibleRef, false); }catch(e){}
-    });
+    if(statsToggleBtn){
+      statsToggleBtn.addEventListener("click", async () => {
+        const isOpen = drawer && drawer.style.display === "block";
+        const newState = !isOpen;
+        if(newState) openDrawer(); else closeDrawer();
+        try{ await set(statsVisibleRef, newState); }catch(e){}
+      });
+    }
+    if(drawerClose){
+      drawerClose.addEventListener("click", async () => {
+        closeDrawer();
+        try{ await set(statsVisibleRef, false); }catch(e){}
+      });
+    }
 
     // ---------- Load menu categories for grouping ----------
     onValue(menuRef, (snap) => {
@@ -2803,16 +2990,20 @@ Total: ${fmtMoney(order.totalPrice ?? 0)}
     });
 
     // ---------- Events ----------
-    tabAll.addEventListener("click", () => setActiveTab("all"));
-    tabActive.addEventListener("click", () => setActiveTab("active"));
-    tabReady.addEventListener("click", () => setActiveTab("ready"));
+    const bindClick = (el, handler) => { if(el) el.addEventListener("click", handler); };
 
-    searchInput.addEventListener("input", () => render());
-    sortSelect.addEventListener("change", () => render());
+    bindClick(tabAll, () => setActiveTab("all"));
+    bindClick(tabActive, () => setActiveTab("active"));
+    bindClick(tabReady, () => setActiveTab("ready"));
 
-    inventoryBtn.addEventListener("click", () => { window.location.href = "inventory.html"; });
-    exportBtn.addEventListener("click", () => exportWithSpinner());
-    removeQueueBtn.addEventListener("click", () => removeAllQueueNumbers());
+    if(searchInput) searchInput.addEventListener("input", () => render());
+    if(sortSelect) sortSelect.addEventListener("change", () => render());
+
+    bindClick(inventoryBtn, () => { window.location.href = "inventory.html"; });
+    bindClick(exportBtn, () => exportWithSpinner());
+    bindClick(markAllPaidBtn, () => markAllAsPaid());
+    bindClick(readyAllOrdersBtn, () => readyAllOrders());
+    bindClick(removeQueueBtn, () => removeAllQueueNumbers());
 
     // ---------- Init ----------
     setDailyQuote();
