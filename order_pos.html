@@ -35,6 +35,8 @@
       color:var(--text);
       font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       overflow:hidden;
+      color-scheme:dark;
+      transition:background .22s ease, color .22s ease;
     }
     button,input,select,textarea{font:inherit}
 
@@ -179,6 +181,30 @@
       border:1px solid rgba(255,255,255,.16);
       font-size:12px;font-weight:900;
     }
+    .top-actions{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex:0 0 auto;
+    }
+    .theme-toggle{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px 12px;
+      background:linear-gradient(180deg, var(--panel-2), var(--panel-3));
+      color:var(--text);
+      font-weight:900;
+      font-size:13px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      cursor:pointer;
+      box-shadow:var(--shadow);
+      transition:transform .12s ease, border-color .18s ease, background .18s ease, color .18s ease;
+    }
+    .theme-toggle:hover{transform:translateY(-1px);border-color:rgba(16,182,176,.4)}
+    .theme-toggle-icon{font-size:15px;line-height:1}
+    .theme-toggle-label{white-space:nowrap}
 
     .pos-layout{
       flex:1;
@@ -798,6 +824,108 @@
       .customer-bar{padding:10px}
       .avatar-badge{min-width:48px;height:48px;font-size:12px}
     }
+
+    body[data-theme="light"]{
+      background:radial-gradient(circle at top left, rgba(16,182,176,.12), transparent 28%), linear-gradient(180deg, #f7fbfc, #edf3f7);
+      color:#17212b;
+      color-scheme:light;
+    }
+    body[data-theme="light"] .top-rail,
+    body[data-theme="light"] .sidebar,
+    body[data-theme="light"] .center-panel,
+    body[data-theme="light"] .order-panel,
+    body[data-theme="light"] .drawer,
+    body[data-theme="light"] .center-card{
+      background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(244,248,251,.98));
+      border-color:#d9e4ea;
+      box-shadow:0 18px 42px rgba(31,41,55,.10);
+    }
+    body[data-theme="light"] .brand-logo-wrap,
+    body[data-theme="light"] .side-caption,
+    body[data-theme="light"] .search,
+    body[data-theme="light"] .menuTile,
+    body[data-theme="light"] .cart-item,
+    body[data-theme="light"] .emptyState,
+    body[data-theme="light"] .qty,
+    body[data-theme="light"] .field input,
+    body[data-theme="light"] .field select,
+    body[data-theme="light"] .field textarea,
+    body[data-theme="light"] .customer-input,
+    body[data-theme="light"] .summary-footer,
+    body[data-theme="light"] .form,
+    body[data-theme="light"] .bottom-bar{
+      background:#ffffff;
+      border-color:#d9e4ea;
+      color:#17212b;
+      box-shadow:none;
+    }
+    body[data-theme="light"] .table-pill,
+    body[data-theme="light"] .chip,
+    body[data-theme="light"] .side-action.ghost,
+    body[data-theme="light"] .close-btn,
+    body[data-theme="light"] .remove,
+    body[data-theme="light"] .qty button{
+      background:linear-gradient(180deg, #f8fbfd, #edf3f7);
+      border-color:#d2dde5;
+      color:#17212b;
+    }
+    body[data-theme="light"] .table-pill:hover,
+    body[data-theme="light"] .theme-toggle:hover,
+    body[data-theme="light"] .menuTile:hover{
+      border-color:#7bbab6;
+    }
+    body[data-theme="light"] .table-pill.active,
+    body[data-theme="light"] .chip.active{
+      background:linear-gradient(180deg, rgba(16,182,176,.18), rgba(16,182,176,.10));
+      border-color:rgba(16,182,176,.45);
+      color:#0f5b58;
+      box-shadow:0 0 0 1px rgba(16,182,176,.12) inset;
+    }
+    body[data-theme="light"] .table-pill.active .table-bottom{color:#0f5b58}
+    body[data-theme="light"] .tiny,
+    body[data-theme="light"] .small,
+    body[data-theme="light"] .small-text,
+    body[data-theme="light"] .rail-label,
+    body[data-theme="light"] .table-bottom,
+    body[data-theme="light"] .chip-text,
+    body[data-theme="light"] .sectionHead .meta,
+    body[data-theme="light"] .cart-sub,
+    body[data-theme="light"] .field label{
+      color:#5f7285;
+    }
+    body[data-theme="light"] .top-brand h1,
+    body[data-theme="light"] .title,
+    body[data-theme="light"] .tileName,
+    body[data-theme="light"] .price,
+    body[data-theme="light"] .cart-name,
+    body[data-theme="light"] .side-mode{
+      color:#17212b;
+    }
+    body[data-theme="light"] .theme-toggle{
+      background:linear-gradient(180deg, #ffffff, #edf3f7);
+      border-color:#d2dde5;
+      color:#17212b;
+      box-shadow:0 12px 28px rgba(31,41,55,.08);
+    }
+    body[data-theme="light"] .tileBody{background:rgba(255,255,255,.96)}
+    body[data-theme="light"] .tileMedia.mode-image{background:#eef4f8}
+    body[data-theme="light"] .tileMedia.mode-code{box-shadow:inset 0 0 0 1px rgba(255,255,255,.22)}
+    body[data-theme="light"] .summary{
+      border-color:rgba(24,165,91,.22);
+      box-shadow:0 12px 28px rgba(24,165,91,.14);
+    }
+    body[data-theme="light"] .customer-input::placeholder,
+    body[data-theme="light"] .search input::placeholder{color:#8ea0ae}
+    body[data-theme="light"] .search input,
+    body[data-theme="light"] .field input,
+    body[data-theme="light"] .field select,
+    body[data-theme="light"] .field textarea,
+    body[data-theme="light"] .customer-input,
+    body[data-theme="light"] .qty input{color:#17212b}
+    body[data-theme="light"] .drawer-header{border-color:rgba(23,33,43,.08)}
+    body[data-theme="light"] .overlay,
+    body[data-theme="light"] .center-overlay{background:rgba(17,24,39,.26)}
+
   </style>
 
 </head>
@@ -820,7 +948,13 @@
         <div class="table-rail" id="table-rail"></div>
       </div>
 
-      <button class="cart-btn" id="goToCartBtn" type="button">Order <span class="cart-count" id="cart-count">0</span></button>
+      <div class="top-actions">
+        <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle light and dark mode">
+          <span class="theme-toggle-icon" id="theme-toggle-icon">🌙</span>
+          <span class="theme-toggle-label" id="theme-toggle-label">Dark</span>
+        </button>
+        <button class="cart-btn" id="goToCartBtn" type="button">Order <span class="cart-count" id="cart-count">0</span></button>
+      </div>
     </header>
 
     <div class="pos-layout">
@@ -1006,6 +1140,11 @@
     const menuCountMeta = document.getElementById("menu-count-meta");
     const searchInput = document.getElementById("search-input");
     const categoryStrip = document.getElementById("category-strip");
+    const themeToggleBtn = document.getElementById("theme-toggle");
+    const themeToggleIcon = document.getElementById("theme-toggle-icon");
+    const themeToggleLabel = document.getElementById("theme-toggle-label");
+    const THEME_STORAGE_KEY = "owner-fast-order-theme";
+    const ALL_CATEGORY_EXCLUDED_KEYS = new Set(["Little Ngences Food", "Little Ngences Drink"]);
 
     const takeAwayBtn = document.getElementById("choose-takeaway");
     const dineInBtn = document.getElementById("choose-dinein");
@@ -1111,6 +1250,35 @@
         .replace(/-{2,}/g, "-")
         .replace(/^-+|-+$/g, "")
         .slice(0, 12);
+    }
+
+    function applyTheme(theme){
+      const nextTheme = theme === "light" ? "light" : "dark";
+      document.body.dataset.theme = nextTheme;
+      if(themeToggleIcon) themeToggleIcon.textContent = nextTheme === "light" ? "☀️" : "🌙";
+      if(themeToggleLabel) themeToggleLabel.textContent = nextTheme === "light" ? "Light" : "Dark";
+      if(themeToggleBtn) themeToggleBtn.setAttribute("aria-pressed", String(nextTheme === "dark"));
+    }
+
+    function initializeTheme(){
+      const stored = localStorage.getItem(THEME_STORAGE_KEY);
+      if(stored === "light" || stored === "dark"){
+        applyTheme(stored);
+        return;
+      }
+      const prefersLight = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
+      applyTheme(prefersLight ? "light" : "dark");
+    }
+
+    function toggleTheme(){
+      const current = document.body.dataset.theme === "light" ? "light" : "dark";
+      const nextTheme = current === "light" ? "dark" : "light";
+      applyTheme(nextTheme);
+      localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+    }
+
+    function isIncludedInAllCategory(category){
+      return !ALL_CATEGORY_EXCLUDED_KEYS.has(category);
     }
 
     function codePrefixForCategory(category){
@@ -1412,6 +1580,7 @@
       Object.keys(items).forEach(id => {
         const item = items[id] || {};
         const cat = normalizeCategory(item.category || "Others");
+        if(selectedCategory === "all" && !isIncludedInAllCategory(cat)) return;
         if(selectedCategory !== "all" && selectedCategory !== cat) return;
         if(!matchesSearch(id, item)) return;
         (groups[cat] ||= []).push({ id, item });
@@ -1419,7 +1588,9 @@
 
       menuArea.innerHTML = "";
       let totalShown = 0;
-      const categoryOrder = categories.map(c => c.key).filter(k => k !== "all");
+      const categoryOrder = categories
+        .map(c => c.key)
+        .filter(k => k !== "all" && isIncludedInAllCategory(k));
       const targetOrder = selectedCategory === "all" ? categoryOrder : [selectedCategory];
 
       targetOrder.forEach(cat => {
@@ -2113,8 +2284,11 @@
       refreshQuickContext();
     });
 
+    themeToggleBtn?.addEventListener("click", toggleTheme);
+
     customerNameDesktop.value = "Walk In";
     customerNameMobile.value = "Walk In";
+    initializeTheme();
     buildCategoryStrip();
     updateCartUI();
     applyOrderTypeToCheckout();
