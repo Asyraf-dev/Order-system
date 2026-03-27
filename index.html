@@ -1123,6 +1123,13 @@
     buildTableOptions(tableSelectDesktop, tablesCache);
     buildTableOptions(tableSelectMobile, tablesCache);
     applyOrderTypeToCheckout();
+
+    if(hasQrTablePrefill){
+      const qrExists = Array.from(tableSelectDesktop?.options || []).some(opt => opt.value === qrTableNo);
+      if(!qrExists){
+        showToast(`Table ${qrTableNo} is not available. Please ask staff.`);
+      }
+    }
   });
 
 
@@ -1377,6 +1384,20 @@
     let orderType = null;
     let tablesCache = {};
 
+    function getQrTableNo(){
+      try{
+        const params = new URLSearchParams(window.location.search);
+        const raw = (params.get("table") || params.get("tableNo") || params.get("t") || "").trim();
+        if(!/^\d+$/.test(raw)) return "";
+        return String(parseInt(raw, 10));
+      }catch(_){
+        return "";
+      }
+    }
+
+    const qrTableNo = getQrTableNo();
+    const hasQrTablePrefill = !!qrTableNo;
+
 
     // Helpers
     const RM = (n) => `RM ${Number(n||0).toFixed(2)}`;
@@ -1440,6 +1461,7 @@
       if(orderTypeEmojiEl) orderTypeEmojiEl.textContent = (orderType === "TAKEAWAY") ? "🥡" : "🍽️";
 
       const tables = [tableSelectDesktop, tableSelectMobile].filter(Boolean);
+      const canUseQrPrefill = hasQrTablePrefill && tables.every(el => Array.from(el.options || []).some(opt => opt.value === qrTableNo));
 
       // Prevent selecting Take Away when orderType is Dine In
       tables.forEach(el => {
@@ -1454,8 +1476,13 @@
         });
       }else if(orderType === "DINEIN"){
         tables.forEach(el => {
-          if(el.value === "TAKEAWAY") el.value = "";
-          el.disabled = false;
+          if(canUseQrPrefill){
+            el.value = qrTableNo;
+            el.disabled = true;
+          }else{
+            if(el.value === "TAKEAWAY") el.value = "";
+            el.disabled = false;
+          }
         });
       }else{
         tables.forEach(el => { el.disabled = false; });
@@ -1470,8 +1497,15 @@
     }
 
     function initOrderType(){
-      // Always ask on fresh open (per your request). If you want to remember, uncomment the localStorage lines.
-      // try{ orderType = localStorage.getItem("orderType") || null; }catch(_){ orderType = null; }
+      // If QR contains ?table=12 (or ?tableNo=12 / ?t=12), auto-set Dine In and prefill that table.
+      // Otherwise, ask customer to choose Take Away / Dine In on fresh open.
+      if(hasQrTablePrefill){
+        orderType = "DINEIN";
+        hideOrderTypeOverlay();
+        applyOrderTypeToCheckout();
+        return;
+      }
+
       orderType = null;
       applyOrderTypeToCheckout();
       showOrderTypeOverlay();
