@@ -1063,7 +1063,7 @@
 
     .doneActionsRow{
       display:grid;
-      grid-template-columns: repeat(3, minmax(0,1fr));
+      grid-template-columns: repeat(4, minmax(0,1fr));
       gap: 8px;
       padding: 0 12px 10px 14px;
     }
@@ -1072,6 +1072,301 @@
       .actionsRow{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .payRow{ grid-template-columns: 1fr; }
       .aPaid{ width: 100%; min-width: 0; }
+    }
+
+
+    .paymentTypeText{font-weight: 1000;}
+    .paymentTypeMeta{color: var(--muted); font-weight: 900;}
+
+    .paymentModal{
+      position: fixed;
+      inset: 0;
+      z-index: 130;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      background: rgba(2,6,23,.42);
+      padding: 14px;
+    }
+    .paymentModal.open{display:flex;}
+    .paymentSheet{
+      width: min(520px, 100%);
+      background: rgba(255,255,255,.98);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      box-shadow: 0 18px 40px rgba(2,6,23,.22);
+      padding: 14px;
+    }
+    .paymentSheetHead{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .paymentSheetTitle{
+      margin:0;
+      font-size: 16px;
+      font-weight: 1000;
+      letter-spacing: -.02em;
+    }
+    .paymentSheetSub{
+      margin: 4px 0 0;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 900;
+    }
+    .paymentTypeGrid{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .paymentTypeBtn{
+      min-height: 58px;
+      border-radius: 16px;
+      border: 1px solid rgba(15,23,42,.10);
+      background: rgba(255,255,255,.92);
+      cursor: pointer;
+      font-weight: 1000;
+      font-size: 14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 8px;
+      box-shadow: 0 1px 0 rgba(255,255,255,.92) inset;
+      transition: border-color .16s ease, background .16s ease, transform .06s ease;
+    }
+    .paymentTypeBtn.active{
+      border-color: rgba(37,99,235,.32);
+      background: rgba(37,99,235,.08);
+      color: var(--primary);
+    }
+    .paymentTypeBtn:active{transform: translateY(1px)}
+    .paymentSheetActions{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+    .paymentSheetMeta{
+      border: 1px solid var(--border);
+      background: rgba(248,250,252,.92);
+      border-radius: 16px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 900;
+      line-height: 1.45;
+    }
+    .paymentSheetMeta span{color: var(--muted); font-weight: 800;}
+    @media (max-width: 480px){
+      .paymentTypeGrid{grid-template-columns: 1fr;}
+      .paymentSheetActions{flex-direction: column-reverse; align-items: stretch;}
+      .paymentSheetActions .btn{width: 100%; justify-content: center;}
+    }
+
+
+
+    .sheetField{
+      display:grid;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .sheetLabel{
+      font-size: 12px;
+      font-weight: 900;
+      color: var(--muted);
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+    .sheetHelp{
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+
+
+    .order.cancelled::before{ background: linear-gradient(180deg, #f87171, #dc2626); }
+    .order.cancelled .actionsRow{ display:none; }
+    .pill-cancel{ border-color: rgba(239,68,68,.25); color: #b91c1c; background: rgba(239,68,68,.10); }
+    .aEdit{ background:#eff6ff; color:#1d4ed8; border-color:#93c5fd; }
+    .aCancel{ background:#fff1f2; color:#be123c; border-color:#fda4af; }
+
+    .editOrderModal{
+      position: fixed;
+      inset: 0;
+      z-index: 135;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      background: rgba(2,6,23,.42);
+      padding: 16px;
+    }
+    .editOrderModal.open{ display:flex; }
+    .editOrderSheet{
+      width: min(900px, 100%);
+      max-height: min(90vh, 940px);
+      overflow:auto;
+      background: rgba(255,255,255,.985);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: 0 22px 48px rgba(2,6,23,.22);
+      padding: 18px;
+    }
+    .editGrid{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .editGrid .span2{ grid-column: span 2; }
+    .editGrid .span3{ grid-column: 1 / -1; }
+    .editItemsList{
+      display:grid;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .editItemRow{
+      display:grid;
+      grid-template-columns: minmax(0, 1.55fr) 96px 132px 144px auto;
+      gap: 12px;
+      align-items:start;
+      padding: 14px;
+      border: 1px solid rgba(226,232,240,.95);
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(248,250,252,.94));
+      box-shadow: 0 8px 22px rgba(15,23,42,.05);
+    }
+    .editItemRow .span2{ grid-column: span 2; }
+    .editItemRow .span3{ grid-column: 1 / -1; }
+    .editItemRow .input,
+    .editItemRow select{ min-width:0; }
+    .editItemActions{
+      display:flex;
+      align-items:flex-end;
+      justify-content:flex-end;
+      min-width: 88px;
+    }
+    .menuPickerBadge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      margin-top:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(37,99,235,.18);
+      background: rgba(37,99,235,.08);
+      color:#1d4ed8;
+      font-size:12px;
+      font-weight:900;
+      line-height:1.2;
+      max-width:100%;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    .menuPickerMeta,
+    .editFieldHint,
+    .editOrderHint{
+      display:none;
+    }
+    .addonPicker{
+      border:1px solid rgba(226,232,240,.95);
+      border-radius:16px;
+      background: rgba(255,255,255,.9);
+      padding: 12px;
+    }
+    .addonPickerTitle{
+      font-size:12px;
+      font-weight:900;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    .addonPickerList{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 8px;
+    }
+    .addonChoice{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border:1px solid rgba(226,232,240,.9);
+      border-radius:14px;
+      background: rgba(248,250,252,.92);
+    }
+    .addonChoice label{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      min-width:0;
+      font-size:13px;
+      font-weight:800;
+      color: var(--text);
+    }
+    .addonChoicePrice{
+      font-size:12px;
+      font-weight:900;
+      color: var(--muted);
+      white-space:nowrap;
+    }
+    .editOrderFooter{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+    .editOrderTotal{
+      border: 1px solid var(--border);
+      background: rgba(248,250,252,.92);
+      border-radius: 16px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 1000;
+      box-shadow: 0 6px 16px rgba(15,23,42,.04);
+    }
+    @media (max-width: 820px){
+      .editGrid{ grid-template-columns: 1fr 1fr; }
+      .editGrid .span3{ grid-column: 1 / -1; }
+      .editItemRow{
+        grid-template-columns: minmax(0, 1fr) 96px 132px;
+      }
+      .editItemRow .editNameField,
+      .editItemRow .editAddonField,
+      .editItemRow .editCategoryField,
+      .editItemRow .editItemActions,
+      .editItemRow .span2,
+      .editItemRow .span3{
+        grid-column: 1 / -1;
+      }
+      .editItemActions{ justify-content:flex-start; }
+    }
+    @media (max-width: 640px){
+      .editOrderSheet{ padding: 14px; border-radius: 20px; }
+      .editGrid{ grid-template-columns: 1fr; }
+      .editGrid .span2, .editGrid .span3{ grid-column: auto; }
+      .editItemRow{ grid-template-columns: 1fr 1fr; }
+      .editItemRow .editNameField,
+      .editItemRow .editAddonField,
+      .editItemRow .editCategoryField,
+      .editItemRow .editItemActions,
+      .editItemRow .span2,
+      .editItemRow .span3{
+        grid-column: 1 / -1;
+      }
+      .addonPickerList{ grid-template-columns: 1fr; }
     }
 
 </style>
@@ -1098,6 +1393,7 @@
       <button id="readyAllOrdersBtn" class="btn btn-success" type="button">✅ Ready All Orders</button>
       <button id="removeQueueBtn" class="btn btn-danger" type="button">🗑️ Clear Queue</button>
       <button id="statsToggleBtn" class="btn btn-ghost" type="button">📊 Stats</button>
+      <button id="cashDrawerBtn" class="btn btn-warn" type="button">💵 Cash In</button>
     </div>
 
     <div class="controls">
@@ -1187,10 +1483,117 @@
     </div>
   </div>
 
+
+  <div id="paymentModal" class="paymentModal" aria-hidden="true">
+    <div class="paymentSheet" role="dialog" aria-modal="true" aria-labelledby="paymentSheetTitle">
+      <div class="paymentSheetHead">
+        <div>
+          <h3 id="paymentSheetTitle" class="paymentSheetTitle">Choose payment type</h3>
+          <p class="paymentSheetSub">Cash, QR, Transfer or Wave. You can edit it later if there is a misclick.</p>
+        </div>
+        <button id="paymentCancelTopBtn" class="btn btn-ghost" type="button">✕</button>
+      </div>
+      <div id="paymentOrderMeta" class="paymentSheetMeta">—</div>
+      <div class="paymentTypeGrid" id="paymentTypeGrid">
+        <button class="paymentTypeBtn" type="button" data-pay-type="cash">💵 Cash</button>
+        <button class="paymentTypeBtn" type="button" data-pay-type="qr">📱 QR</button>
+        <button class="paymentTypeBtn" type="button" data-pay-type="transfer">🏦 Transfer</button>
+        <button class="paymentTypeBtn" type="button" data-pay-type="wave">🌊 Wave</button>
+      </div>
+      <div class="paymentSheetActions">
+        <button id="paymentUnpaidBtn" class="btn btn-warn" type="button">↺ Mark Unpaid</button>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button id="paymentCancelBtn" class="btn btn-ghost" type="button">Cancel</button>
+          <button id="paymentSaveBtn" class="btn btn-primary" type="button">Save Payment</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="cashDrawerModal" class="paymentModal" aria-hidden="true">
+    <div class="paymentSheet" role="dialog" aria-modal="true" aria-labelledby="cashDrawerSheetTitle">
+      <div class="paymentSheetHead">
+        <div>
+          <h3 id="cashDrawerSheetTitle" class="paymentSheetTitle">Cash drawer adjustment</h3>
+          <p class="paymentSheetSub">Record manual cash added into the drawer, such as opening float or extra change money.</p>
+        </div>
+        <button id="cashDrawerCancelTopBtn" class="btn btn-ghost" type="button">✕</button>
+      </div>
+      <div class="paymentSheetMeta">This is stored on the server so the analytics report can trace manual cash added during operation.</div>
+      <div class="sheetField">
+        <label class="sheetLabel" for="cashDrawerAmountInput">Amount (RM)</label>
+        <input id="cashDrawerAmountInput" class="input" type="number" min="0.01" step="0.01" placeholder="0.00" />
+      </div>
+      <div class="sheetField">
+        <label class="sheetLabel" for="cashDrawerNoteInput">Note</label>
+        <input id="cashDrawerNoteInput" class="input" type="text" maxlength="120" placeholder="Example: Opening float, change top-up, petty cash return" />
+        <div class="sheetHelp">Tip: add a short reason so you can reconcile drawer cash later.</div>
+      </div>
+      <div class="paymentSheetActions">
+        <button id="cashDrawerClearBtn" class="btn btn-warn" type="button">Clear</button>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button id="cashDrawerCancelBtn" class="btn btn-ghost" type="button">Cancel</button>
+          <button id="cashDrawerSaveBtn" class="btn btn-primary" type="button">Save Cash In</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="editOrderModal" class="editOrderModal" aria-hidden="true">
+    <div class="editOrderSheet" role="dialog" aria-modal="true" aria-labelledby="editOrderSheetTitle">
+      <div class="paymentSheetHead">
+        <div>
+          <h3 id="editOrderSheetTitle" class="paymentSheetTitle">Edit submitted order</h3>
+          <p class="paymentSheetSub">Update the order details with a cleaner server-menu picker.</p>
+        </div>
+        <button id="editOrderCancelTopBtn" class="btn btn-ghost" type="button">✕</button>
+      </div>
+      <div class="editGrid">
+        <div class="sheetField">
+          <label class="sheetLabel" for="editOrderQueueInput">Queue No.</label>
+          <input id="editOrderQueueInput" class="input" type="text" placeholder="Queue number" />
+        </div>
+        <div class="sheetField">
+          <label class="sheetLabel" for="editOrderNameInput">Customer name</label>
+          <input id="editOrderNameInput" class="input" type="text" placeholder="Customer name" />
+        </div>
+        <div class="sheetField">
+          <label class="sheetLabel" for="editOrderTableInput">Table</label>
+          <input id="editOrderTableInput" class="input" type="text" placeholder="Table / takeaway" />
+        </div>
+        <div class="sheetField span3">
+          <label class="sheetLabel" for="editOrderRequestInput">Special request</label>
+          <input id="editOrderRequestInput" class="input" type="text" maxlength="180" placeholder="Any request or note" />
+        </div>
+      </div>
+      <div class="paymentSheetMeta">Items update instantly. Total is recalculated automatically.</div>
+      <div id="editItemsList" class="editItemsList"></div>
+      
+      <div class="editOrderFooter">
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button id="editOrderAddItemBtn" class="btn btn-ghost" type="button">＋ Add item</button>
+          <button id="editOrderCancelOrderBtn" class="btn btn-danger" type="button">Cancel order</button>
+          <button id="editOrderDeleteBtn" class="btn btn-danger" type="button">Delete order</button>
+        </div>
+        <div class="editOrderTotal" id="editOrderTotal">Total: RM0.00</div>
+      </div>
+      <div class="paymentSheetActions">
+        <button id="editOrderResetBtn" class="btn btn-warn" type="button">Reset items</button>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button id="editOrderCancelBtn" class="btn btn-ghost" type="button">Close</button>
+          <button id="editOrderSaveBtn" class="btn btn-primary" type="button">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <datalist id="serverMenuOptions"></datalist>
+  <datalist id="serverMenuCategories"></datalist>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
     import {
-      getDatabase, ref, onValue, onChildAdded, update, remove, set, get
+      getDatabase, ref, onValue, onChildAdded, update, remove, set, get, push
     } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
     // ---------- Firebase ----------
@@ -1230,6 +1633,7 @@
     const readyAllOrdersBtn = document.getElementById("readyAllOrdersBtn");
     const removeQueueBtn = document.getElementById("removeQueueBtn");
     const statsToggleBtn = document.getElementById("statsToggleBtn");
+    const cashDrawerBtn = document.getElementById("cashDrawerBtn");
     const actionNavToggle = document.getElementById("actionNavToggle");
     const actionNavPanel = document.getElementById("actionNavPanel");
 
@@ -1304,6 +1708,46 @@
     const drawerActive = document.getElementById("drawerActive");
     const drawerTop = document.getElementById("drawerTop");
 
+    const paymentModal = document.getElementById("paymentModal");
+    const paymentOrderMeta = document.getElementById("paymentOrderMeta");
+    const paymentTypeGrid = document.getElementById("paymentTypeGrid");
+    const paymentTypeButtons = Array.from(document.querySelectorAll("[data-pay-type]"));
+    const paymentSaveBtn = document.getElementById("paymentSaveBtn");
+    const paymentCancelBtn = document.getElementById("paymentCancelBtn");
+    const paymentCancelTopBtn = document.getElementById("paymentCancelTopBtn");
+    const paymentUnpaidBtn = document.getElementById("paymentUnpaidBtn");
+
+    const cashDrawerModal = document.getElementById("cashDrawerModal");
+    const cashDrawerAmountInput = document.getElementById("cashDrawerAmountInput");
+    const cashDrawerNoteInput = document.getElementById("cashDrawerNoteInput");
+    const cashDrawerSaveBtn = document.getElementById("cashDrawerSaveBtn");
+    const cashDrawerCancelBtn = document.getElementById("cashDrawerCancelBtn");
+    const cashDrawerCancelTopBtn = document.getElementById("cashDrawerCancelTopBtn");
+    const cashDrawerClearBtn = document.getElementById("cashDrawerClearBtn");
+
+    const editOrderModal = document.getElementById("editOrderModal");
+    const editOrderQueueInput = document.getElementById("editOrderQueueInput");
+    const editOrderNameInput = document.getElementById("editOrderNameInput");
+    const editOrderTableInput = document.getElementById("editOrderTableInput");
+    const editOrderRequestInput = document.getElementById("editOrderRequestInput");
+    const editItemsList = document.getElementById("editItemsList");
+    const editOrderTotal = document.getElementById("editOrderTotal");
+    const editOrderAddItemBtn = document.getElementById("editOrderAddItemBtn");
+    const editOrderSaveBtn = document.getElementById("editOrderSaveBtn");
+    const editOrderCancelBtn = document.getElementById("editOrderCancelBtn");
+    const editOrderCancelTopBtn = document.getElementById("editOrderCancelTopBtn");
+    const editOrderResetBtn = document.getElementById("editOrderResetBtn");
+    const editOrderCancelOrderBtn = document.getElementById("editOrderCancelOrderBtn");
+    const editOrderDeleteBtn = document.getElementById("editOrderDeleteBtn");
+    const serverMenuOptions = document.getElementById("serverMenuOptions");
+
+    const PAYMENT_TYPES = {
+      cash: { label: "Cash", icon: "💵" },
+      qr: { label: "QR", icon: "📱" },
+      transfer: { label: "Transfer", icon: "🏦" },
+      wave: { label: "Wave", icon: "🌊" }
+    };
+
     // ---------- State ----------
     let menuById = {};
     let menuByName = {};
@@ -1311,6 +1755,8 @@
     let currentTab = "all";  // all | active | ready
     let fps = 0;
     let lastSpeedMbps = null;
+    let paymentDialogState = { orderId: null, paymentType: "cash" };
+    let editOrderState = { orderId: null, originalItems: [], items: [] };
     // Keep Items panel open state (per order)
     const expandedItems = new Set();
     // Keep Completed (Ready) order view open state
@@ -1591,6 +2037,395 @@ function setActiveTab(tab){
 function fmtMoney(n){
       return `RM${Number(n || 0).toFixed(2)}`;
     }
+
+    function normalizePaymentType(v){
+      const raw = String(v || "").trim().toLowerCase();
+      if(raw === "cash") return "cash";
+      if(raw === "qr") return "qr";
+      if(raw === "transfer") return "transfer";
+      if(raw === "wave") return "wave";
+      return "";
+    }
+
+    function prettyPaymentType(v){
+      const key = normalizePaymentType(v);
+      return key ? PAYMENT_TYPES[key].label : "";
+    }
+
+    function paymentSummaryText(order){
+      const paid = String(order?.paymentStatus || "").toLowerCase() === "paid";
+      if(!paid) return "Unpaid";
+      const typeLabel = prettyPaymentType(order?.paymentType);
+      return typeLabel ? `Paid • ${typeLabel}` : "Paid";
+    }
+
+    function paymentReceiptText(order){
+      const paid = String(order?.paymentStatus || "").toLowerCase() === "paid";
+      const typeLabel = prettyPaymentType(order?.paymentType);
+      if(!paid) return "UNPAID";
+      return typeLabel ? `PAID (${typeLabel.toUpperCase()})` : "PAID";
+    }
+
+    function syncPaymentTypeButtons(){
+      paymentTypeButtons.forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.payType === paymentDialogState.paymentType);
+      });
+    }
+
+    function closePaymentModal(){
+      if(!paymentModal) return;
+      paymentModal.classList.remove("open");
+      paymentModal.setAttribute("aria-hidden", "true");
+      paymentDialogState = { orderId: null, paymentType: "cash" };
+    }
+
+    function openPaymentModal(orderId){
+      const order = ordersMap[orderId];
+      if(!order || !paymentModal) return;
+      paymentDialogState.orderId = orderId;
+      paymentDialogState.paymentType = normalizePaymentType(order.paymentType) || "cash";
+      const queue = safeText(order.queueNumber || "N/A");
+      const customer = safeText(order.name || "Walk-in");
+      const total = fmtMoney(order.totalPrice || 0);
+      paymentOrderMeta.innerHTML = `<div><span>Order</span> #${escapeHtml(queue)} • ${escapeHtml(customer)}</div><div><span>Total</span> ${escapeHtml(total)}</div>`;
+      syncPaymentTypeButtons();
+      paymentModal.classList.add("open");
+      paymentModal.setAttribute("aria-hidden", "false");
+    }
+
+    function closeCashDrawerModal(){
+      if(!cashDrawerModal) return;
+      cashDrawerModal.classList.remove("open");
+      cashDrawerModal.setAttribute("aria-hidden", "true");
+      if(cashDrawerAmountInput) cashDrawerAmountInput.value = "";
+      if(cashDrawerNoteInput) cashDrawerNoteInput.value = "";
+    }
+
+    function openCashDrawerModal(){
+      if(!cashDrawerModal) return;
+      cashDrawerModal.classList.add("open");
+      cashDrawerModal.setAttribute("aria-hidden", "false");
+      if(cashDrawerAmountInput){
+        setTimeout(() => cashDrawerAmountInput.focus(), 20);
+      }
+    }
+
+
+    function formatEditablePrice(v){
+      const n = Number(v || 0);
+      return Number.isFinite(n) ? n.toFixed(2) : "0.00";
+    }
+
+    function editableAddonLabel(raw){
+      return String(raw || "").replace(/_/g, " / ").trim();
+    }
+
+    function menuLookupKey(name){
+      return normalizeStr(String(name || ""));
+    }
+
+    function getServerMenuList(){
+      return Object.entries(menuById || {})
+        .map(([id, item]) => ({ id, item: item || {} }))
+        .filter(({ item }) => String(item?.name || "").trim())
+        .sort((a, b) => String(a.item?.name || "").localeCompare(String(b.item?.name || "")));
+    }
+
+    function refreshServerMenuOptions(){
+      if(!serverMenuOptions) return;
+      const list = getServerMenuList();
+      serverMenuOptions.innerHTML = list.map(({ id, item }) => {
+        const name = escapeHtml(String(item?.name || "Unnamed"));
+        const category = escapeHtml(String(item?.category || "Others"));
+        const price = formatEditablePrice(item?.price || 0);
+        return `<option value="${name}" label="${name} • ${category} • RM${price}"></option>`;
+      }).join("");
+    }
+
+    function getKnownCategories(){
+      const set = new Set(["food","Side Dish","Air Panas","Air Sejuk","Little Ngences Food","Little Ngences Drink","Others"]);
+      Object.values(menuById || {}).forEach(item => {
+        const category = String(item?.category || "").trim();
+        if(category) set.add(category);
+      });
+      return Array.from(set).filter(Boolean);
+    }
+
+    function findMenuMeta(query){
+      const raw = String(query || "").trim();
+      if(!raw) return null;
+      const normalized = menuLookupKey(raw);
+      if(!normalized) return null;
+
+      if(menuById?.[raw]) return { id: raw, item: menuById[raw] };
+
+      for(const [id, item] of Object.entries(menuById || {})){
+        const name = String(item?.name || "").trim();
+        if(menuLookupKey(name) === normalized) return { id, item };
+      }
+
+      for(const [id, item] of Object.entries(menuById || {})){
+        const name = String(item?.name || "").trim();
+        if(menuLookupKey(name).includes(normalized)) return { id, item };
+      }
+      return null;
+    }
+
+    function addonEntriesFromMenuMeta(meta){
+      if(!meta?.item?.addOns || typeof meta.item.addOns !== "object") return [];
+      return Object.entries(meta.item.addOns).map(([key, value]) => ({
+        key,
+        label: editableAddonLabel(key),
+        price: Math.max(0, Number(value || 0) || 0)
+      }));
+    }
+
+    function syncEditableItemPricing(item){
+      if(!item) return;
+      const base = Math.max(0, Number(item.basePrice ?? item.price ?? 0) || 0);
+      const addonMap = item.availableAddOns && typeof item.availableAddOns === "object" ? item.availableAddOns : {};
+      const addOnTotal = (Array.isArray(item.addOns) ? item.addOns : []).reduce((sum, label) => {
+        const match = Object.entries(addonMap).find(([key]) => editableAddonLabel(key) === String(label || "").trim());
+        return sum + (match ? (Math.max(0, Number(match[1] || 0) || 0)) : 0);
+      }, 0);
+      item.price = Number((base + addOnTotal).toFixed(2));
+    }
+
+    function applyMenuMetaToEditableItem(item, meta, { keepQty = true } = {}){
+      if(!item || !meta?.item) return;
+      const menu = meta.item || {};
+      item.menuId = meta.id || null;
+      item.item = String(menu.name || item.item || "");
+      item.name = item.item;
+      item.basePrice = Math.max(0, Number(menu.price || 0) || 0);
+      item.availableAddOns = menu.addOns && typeof menu.addOns === "object" ? { ...menu.addOns } : {};
+      item.addOns = Array.isArray(item.addOns) ? item.addOns.filter(label => {
+        return Object.keys(item.availableAddOns).some(key => editableAddonLabel(key) === String(label || "").trim());
+      }) : [];
+      item.category = String(menu.category || item.category || "Others").trim() || "Others";
+      if(!keepQty) item.quantity = 1;
+      syncEditableItemPricing(item);
+    }
+
+    function cloneEditableItem(item = {}){
+      const cloned = {
+        menuId: item.menuId ?? null,
+        item: String(item.item || item.name || ""),
+        name: String(item.name || item.item || ""),
+        quantity: Number(item.quantity || 1) || 1,
+        price: Number(item.price || 0) || 0,
+        basePrice: Number(item.basePrice ?? item.price ?? 0) || 0,
+        addOns: Array.isArray(item.addOns)
+          ? item.addOns.map(v => String(v || "").trim()).filter(Boolean)
+          : String(item.addOns || "").split(",").map(v => v.trim()).filter(Boolean),
+        category: String(item.category || item.cat || "") || "Others",
+        availableAddOns: item.availableAddOns && typeof item.availableAddOns === "object" ? { ...item.availableAddOns } : {}
+      };
+
+      if(!cloned.menuId){
+        const meta = findMenuMeta(cloned.item || cloned.name);
+        if(meta) applyMenuMetaToEditableItem(cloned, meta);
+      }else{
+        syncEditableItemPricing(cloned);
+      }
+      return cloned;
+    }
+
+    function buildDefaultEditableItem(){
+      return { menuId:null, item:"", name:"", quantity:1, price:0, basePrice:0, addOns:[], category:"Others", availableAddOns:{} };
+    }
+
+    function serializeEditItems(){
+      return (editOrderState.items || []).map(it => {
+        const name = String(it.item || it.name || "").trim();
+        return {
+          menuId: it.menuId || null,
+          item: name,
+          name,
+          quantity: Math.max(1, Number(it.quantity || 1) || 1),
+          price: Number(it.price || 0) || 0,
+          addOns: Array.isArray(it.addOns) ? it.addOns.filter(Boolean) : [],
+          category: String(it.category || "Others")
+        };
+      }).filter(it => it.name);
+    }
+
+    function computeEditedOrderTotal(items){
+      return (items || []).reduce((sum, it) => sum + ((Number(it.quantity || 0) || 0) * (Number(it.price || 0) || 0)), 0);
+    }
+
+    function updateEditOrderTotal(){
+      if(!editOrderTotal) return;
+      const items = serializeEditItems();
+      editOrderTotal.textContent = `Total: ${fmtMoney(computeEditedOrderTotal(items))}`;
+    }
+
+    function renderEditItems(){
+      if(!editItemsList) return;
+      editItemsList.innerHTML = "";
+      const items = editOrderState.items || [];
+      if(!items.length){
+        editOrderState.items = [buildDefaultEditableItem()];
+      }
+
+      const categoryOptions = getKnownCategories().map(cat => `<option value="${escapeHtml(cat)}" ${String(cat) === "Others" ? "" : ""}>${escapeHtml(cat)}</option>`).join("");
+
+      editOrderState.items.forEach((item, index) => {
+        const matchedMeta = item.menuId && menuById?.[item.menuId]
+          ? { id: item.menuId, item: menuById[item.menuId] }
+          : findMenuMeta(item.item || item.name);
+        if(matchedMeta && (!item.menuId || item.menuId !== matchedMeta.id)){
+          applyMenuMetaToEditableItem(item, matchedMeta);
+        }
+
+        const addonEntries = addonEntriesFromMenuMeta(matchedMeta);
+        const addonBlock = addonEntries.length ? `
+          <div class="sheetField span3">
+            <div class="addonPicker">
+              <div class="addonPickerTitle">Server add-ons</div>
+              <div class="addonPickerList">
+                ${addonEntries.map(({ key, label, price }) => {
+                  const checked = (item.addOns || []).includes(label) ? 'checked' : '';
+                  return `
+                    <div class="addonChoice">
+                      <label>
+                        <input type="checkbox" data-edit-addon="${escapeHtml(label)}" data-edit-addon-key="${escapeHtml(key)}" data-index="${index}" ${checked}>
+                        <span>${escapeHtml(label)}</span>
+                      </label>
+                      <span class="addonChoicePrice">+RM${formatEditablePrice(price)}</span>
+                    </div>
+                  `;
+                }).join("")}
+              </div>
+            </div>
+          </div>
+        ` : ``;
+
+        const menuBadge = matchedMeta ? `<div class="menuPickerBadge">📦 ${escapeHtml(String(matchedMeta.item?.name || item.item || ""))}</div>` : "";
+        const row = document.createElement("div");
+        row.className = "editItemRow";
+        row.innerHTML = `
+          <div class="sheetField editNameField span2">
+            <label class="sheetLabel">Select food / drink</label>
+            <input class="input" list="serverMenuOptions" type="text" data-edit-field="menuSearch" data-index="${index}" value="${escapeHtml(item.item || item.name || "")}" placeholder="Search server menu item" autocomplete="off" />
+            ${menuBadge}
+          </div>
+          <div class="sheetField">
+            <label class="sheetLabel">Qty</label>
+            <input class="input" type="number" min="1" step="1" data-edit-field="quantity" data-index="${index}" value="${Math.max(1, Number(item.quantity || 1) || 1)}" />
+          </div>
+          <div class="sheetField">
+            <label class="sheetLabel">Unit price</label>
+            <input class="input" type="number" min="0" step="0.01" data-edit-field="price" data-index="${index}" value="${formatEditablePrice(item.price)}" />
+          </div>
+          <div class="sheetField editCategoryField">
+            <label class="sheetLabel">Category</label>
+            <input class="input" list="serverMenuCategories" type="text" data-edit-field="category" data-index="${index}" value="${escapeHtml(item.category || "Others")}" placeholder="food / drink / others" />
+          </div>
+          <div class="sheetField editAddonField span2">
+            <label class="sheetLabel">Custom add-ons</label>
+            <input class="input" type="text" data-edit-field="addOns" data-index="${index}" value="${escapeHtml((item.addOns || []).join(", "))}" placeholder="Extra sauce, cheese, less spicy" />
+          </div>
+          <div class="editItemActions">
+            <button class="btn btn-danger" type="button" data-edit-remove="${index}">Remove</button>
+          </div>
+          ${addonBlock}
+        `;
+        editItemsList.appendChild(row);
+      });
+      updateEditOrderTotal();
+    }
+
+    function closeEditOrderModal(){
+      if(!editOrderModal) return;
+      editOrderModal.classList.remove("open");
+      editOrderModal.setAttribute("aria-hidden", "true");
+      editOrderState = { orderId: null, originalItems: [], items: [] };
+    }
+
+    function openEditOrderModal(orderId){
+      const order = ordersMap[orderId];
+      if(!order || !editOrderModal) return;
+      editOrderState = {
+        orderId,
+        originalItems: (Array.isArray(order.cart) ? order.cart : []).map(cloneEditableItem),
+        items: (Array.isArray(order.cart) ? order.cart : []).map(cloneEditableItem)
+      };
+      if(!editOrderState.items.length) editOrderState.items = [buildDefaultEditableItem()];
+      if(editOrderQueueInput) editOrderQueueInput.value = String(order.queueNumber ?? "");
+      if(editOrderNameInput) editOrderNameInput.value = String(order.name ?? "");
+      if(editOrderTableInput) editOrderTableInput.value = String(order.table ?? "");
+      if(editOrderRequestInput) editOrderRequestInput.value = String(order.request ?? "");
+      renderEditItems();
+      editOrderModal.classList.add("open");
+      editOrderModal.setAttribute("aria-hidden", "false");
+      setTimeout(() => editOrderNameInput?.focus(), 20);
+    }
+
+    async function cancelOrder(orderId){
+      const current = ordersMap[orderId] || {};
+      const queue = current.queueNumber ?? "N/A";
+      const ok = confirm(`Cancel order #${queue}?`);
+      if(!ok) return;
+      const now = Date.now();
+      const payload = {
+        status: "cancelled",
+        foodStatus: "cancelled",
+        drinkStatus: "cancelled",
+        cancelledAt: now,
+        updatedAt: now
+      };
+      try{
+        await update(ref(db, `orders/${orderId}`), payload);
+        ordersMap[orderId] = { ...(current || {}), ...payload };
+        render();
+        showToast(`Cancelled order #${queue}`);
+      }catch(err){
+        console.error("Cancel order error:", err);
+        showToast("Failed to cancel order");
+      }
+    }
+
+    async function saveEditedOrder(){
+      const orderId = editOrderState.orderId;
+      if(!orderId) return;
+      const current = ordersMap[orderId] || {};
+      const cart = serializeEditItems();
+      if(!cart.length){
+        showToast("Add at least one valid item");
+        return;
+      }
+      const nextOrder = {
+        ...(current || {}),
+        queueNumber: String(editOrderQueueInput?.value || current.queueNumber || "").trim() || null,
+        name: String(editOrderNameInput?.value || "").trim() || "Walk-in",
+        table: String(editOrderTableInput?.value || "").trim() || "-",
+        request: String(editOrderRequestInput?.value || "").trim(),
+        cart,
+        totalPrice: Number(computeEditedOrderTotal(cart).toFixed(2)),
+        updatedAt: Date.now()
+      };
+      nextOrder.status = deriveLegacyStatus(nextOrder);
+      try{
+        await update(ref(db, `orders/${orderId}`), {
+          queueNumber: nextOrder.queueNumber,
+          name: nextOrder.name,
+          table: nextOrder.table,
+          request: nextOrder.request,
+          cart: nextOrder.cart,
+          totalPrice: nextOrder.totalPrice,
+          updatedAt: nextOrder.updatedAt,
+          status: nextOrder.status
+        });
+        ordersMap[orderId] = nextOrder;
+        closeEditOrderModal();
+        render();
+        showToast("Order updated");
+      }catch(err){
+        console.error("Edit order save error:", err);
+        showToast("Failed to save order");
+      }
+    }
     function fmtTime(ts){
       if(!ts) return "-";
       try{ return new Date(ts).toLocaleString(); }catch{ return "-"; }
@@ -1603,17 +2438,27 @@ function fmtMoney(n){
     function isPreparingKey(k){ return k === "food-preparing" || k === "drink-preparing"; }
 
     function computeOverall(order){
+      const legacyStatus = statusKey(order?.status);
       const foodKey = statusKey(order.foodStatus);
       const drinkKey = statusKey(order.drinkStatus);
 
+      const cancelled = legacyStatus === "cancelled" || foodKey === "cancelled" || drinkKey === "cancelled";
       const foodReady = foodKey === "food-ready";
       const drinkReady = drinkKey === "drink-ready";
       const foodPrep = foodKey === "food-preparing";
       const drinkPrep = drinkKey === "drink-preparing";
 
+      if(cancelled) return { overall:"cancelled", pillClass:"pill-cancel", label:"Cancelled" };
       if(foodReady && drinkReady) return { overall:"ready", pillClass:"pill-ready", label:"All Ready" };
       if(foodPrep || drinkPrep || foodReady || drinkReady) return { overall:"preparing", pillClass:"pill-prep", label:"Preparing" };
       return { overall:"received", pillClass:"pill-new", label:"New Order" };
+    }
+
+    function deriveLegacyStatus(order){
+      const overall = computeOverall(order).overall;
+      if(overall === "cancelled") return "cancelled";
+      if(overall === "ready") return "completed";
+      return "pending";
     }
 
     function normalizeStr(s){
@@ -1719,9 +2564,10 @@ function fmtMoney(n){
 
       const overall = computeOverall(order).overall; // received / preparing / ready
       const overallNorm =
-        overall === "received" ? "new received" :
-        overall === "preparing" ? "preparing" :
-        overall === "ready" ? "ready completed" : normalizeStr(overall);
+        overall === "received" ? "new received pending" :
+        overall === "preparing" ? "preparing pending" :
+        overall === "ready" ? "ready completed" :
+        overall === "cancelled" ? "cancelled canceled" : normalizeStr(overall);
 
       // Helper to evaluate field requirements
       const fieldMatch = (fieldName, hayNorm) => {
@@ -1905,7 +2751,7 @@ function fmtMoney(n){
       // Tab filter
       list = list.filter(({order}) => {
         const overall = computeOverall(order).overall;
-        if(currentTab === "active") return overall !== "ready";
+        if(currentTab === "active") return overall !== "ready" && overall !== "cancelled";
         if(currentTab === "ready") return overall === "ready";
         return true;
       });
@@ -1965,7 +2811,7 @@ function fmtMoney(n){
     function renderCard(orderId, order){
       const card = document.createElement("div");
       const { overall, pillClass, label } = computeOverall(order);
-      card.className = `order ${overall === "ready" ? "ready" : (overall === "preparing" ? "preparing" : "received")}`;
+      card.className = `order ${overall === "cancelled" ? "cancelled" : (overall === "ready" ? "ready" : (overall === "preparing" ? "preparing" : "received"))}`;
       card.id = `order-${orderId}`;
 
       // New order flash (first time seen)
@@ -1987,7 +2833,9 @@ function fmtMoney(n){
       const foodDot = (foodKey === "food-ready") ? "dot-ok" : (foodKey === "food-preparing" ? "dot-warn" : "");
       const drinkDot = (drinkKey === "drink-ready") ? "dot-ok" : (drinkKey === "drink-preparing" ? "dot-warn" : "");
       const paymentPaid = String(order.paymentStatus || "").toLowerCase() === "paid";
-      const paymentLabel = paymentPaid ? "Paid" : "Unpaid";
+      const paymentType = normalizePaymentType(order.paymentType);
+      const paymentTypeLabel = prettyPaymentType(paymentType);
+      const paymentLabel = paymentPaid ? (paymentTypeLabel ? `Paid • ${paymentTypeLabel}` : "Paid") : "Unpaid";
       const paymentPillClass = paymentPaid ? "pill-paid" : "pill-unpaid";
 
       const elapsed = computeElapsed(order.timestamp);
@@ -2130,8 +2978,9 @@ details.addEventListener("toggle", () => {
 details.appendChild(itemsList);
 
 
-      const isDone = overall === "ready";
+      const isDone = overall === "ready" || overall === "cancelled";
       const showDone = isDone && expandedDone.has(orderId);
+      const isCancelled = overall === "cancelled";
       card.classList.toggle("showDone", showDone);
 
       const doneToggleHtml = isDone ? `
@@ -2139,8 +2988,9 @@ details.appendChild(itemsList);
           <button class="aBtn aViewDone" type="button" data-act="viewDone">${showDone ? "▴ Hide order" : "▼ View order"}</button>
         </div>
         <div class="doneActionsRow">
+          <button class="aBtn aEdit" type="button" data-act="edit">✏️ Edit</button>
+          ${isCancelled ? "" : '<button class="aBtn aCancel" type="button" data-act="cancel">🚫 Cancel</button>'}
           <button class="aBtn aPrint" type="button" data-act="print">🖨️ Print</button>
-          <button class="aBtn aDelete" type="button" data-act="delete">🗑️ Del</button>
           <button class="aBtn aCopy" type="button" data-act="copy">📋 Copy</button>
         </div>
       ` : "";
@@ -2161,8 +3011,8 @@ details.appendChild(itemsList);
           <button class="aBtn aDrinkReady" type="button" data-act="drinkReady">✅ D Ready</button>
 
           <button class="aBtn aAllReady" type="button" data-act="allReady">✅ All</button>
-          <button class="aBtn aDelete" type="button" data-act="delete">🗑️ Del</button>
-
+          <button class="aBtn aEdit" type="button" data-act="edit">✏️ Edit</button>
+          <button class="aBtn aCancel" type="button" data-act="cancel">🚫 Cancel</button>
           <button class="aBtn aPrint" type="button" data-act="print">🖨️ Print</button>
           <button class="aBtn aCopy" type="button" data-act="copy">📋 Copy</button>
         </div>
@@ -2195,6 +3045,7 @@ card.innerHTML = `
 
         ${itemsWrapHtml}
 
+        ${isDone ? "" : `
         <div class="actionsRow">
           <button class="aBtn aFoodPrep" type="button" data-act="foodPrep">🔥 F Prep</button>
           <button class="aBtn aFoodReady" type="button" data-act="foodReady">✅ F Ready</button>
@@ -2202,19 +3053,19 @@ card.innerHTML = `
           <button class="aBtn aDrinkReady" type="button" data-act="drinkReady">✅ D Ready</button>
 
           <button class="aBtn aAllReady" type="button" data-act="allReady">✅ All</button>
-          <button class="aBtn aDelete" type="button" data-act="delete">🗑️ Del</button>
-
+          <button class="aBtn aEdit" type="button" data-act="edit">✏️ Edit</button>
+          <button class="aBtn aCancel" type="button" data-act="cancel">🚫 Cancel</button>
           <button class="aBtn aPrint" type="button" data-act="print">🖨️ Print</button>
           <button class="aBtn aCopy" type="button" data-act="copy">📋 Copy</button>
-        </div>
+        </div>`}
 
         <div class="payRow">
           <div class="payIndicator ${paymentPaid ? "paid" : "unpaid"}">
             <span class="dot"></span>
-            <span>Payment: ${paymentLabel}</span>
+            <span class="paymentTypeText">Payment: ${paymentLabel}</span>
           </div>
           <button class="aBtn aPaid ${paymentPaid ? "isPaid" : ""}" type="button" data-act="togglePaid">
-            ${paymentPaid ? "✓ Paid" : "💳 Mark Paid"}
+            ${paymentPaid ? "✏️ Edit Pay" : "💳 Mark Paid"}
           </button>
         </div>
 
@@ -2259,11 +3110,19 @@ card.innerHTML = `
         e.stopPropagation();
         updateStatus(orderId, "drink ready", "drinkStatus");
       });
-      card.querySelector('[data-act="allReady"]').addEventListener("click", async (e) => {
+      bindAct('[data-act="allReady"]', async (e) => {
         e.stopPropagation();
         await updateStatus(orderId, "food ready", "foodStatus", { silent:true });
         await updateStatus(orderId, "drink ready", "drinkStatus", { silent:true });
         showToast("Marked Food + Drink as READY");
+      });
+      bindAct('[data-act="edit"]', (e) => {
+        e.stopPropagation();
+        openEditOrderModal(orderId);
+      });
+      bindAct('[data-act="cancel"]', (e) => {
+        e.stopPropagation();
+        cancelOrder(orderId);
       });
       bindAct('[data-act="delete"]', (e) => {
         e.stopPropagation();
@@ -2279,7 +3138,7 @@ card.innerHTML = `
       });
       bindAct('[data-act="togglePaid"]', (e) => {
         e.stopPropagation();
-        setPaymentStatus(orderId, paymentPaid ? "unpaid" : "paid");
+        openPaymentModal(orderId);
       });
 
       return card;
@@ -2287,6 +3146,7 @@ card.innerHTML = `
 
     function niceStatus(s){
       const k = statusKey(s);
+      if(k === "cancelled") return "Cancelled";
       if(k === "food-ready" || k === "drink-ready") return "Ready";
       if(k === "food-preparing" || k === "drink-preparing") return "Preparing";
       return "—";
@@ -2299,48 +3159,88 @@ card.innerHTML = `
     }
 
     // ---------- Actions ----------
-    async function setPaymentStatus(orderId, paymentStatus){
+    async function setPaymentStatus(orderId, paymentStatus, paymentType=""){
       const orderRef = ref(db, `orders/${orderId}`);
+      const current = ordersMap[orderId] || {};
+      const now = Date.now();
+      const normalizedType = paymentStatus === "paid"
+        ? normalizePaymentType(paymentType || current.paymentType || paymentDialogState.paymentType)
+        : "";
+
+      const payload = {
+        paymentStatus,
+        paymentType: normalizedType || null,
+        paymentUpdatedAt: now,
+        lastTransactionAt: now,
+        transactionStatus: paymentStatus === "paid" ? "recorded" : "pending"
+      };
+
+      if(paymentStatus === "paid"){
+        payload.transactionId = current.transactionId || `TX-${now}-${String(orderId).slice(-6).toUpperCase()}`;
+        if(String(current.paymentStatus || "").toLowerCase() !== "paid"){
+          payload.paidAt = now;
+        }else if(normalizePaymentType(current.paymentType) !== normalizedType){
+          payload.paymentEditedAt = now;
+        }
+      }
+
       try{
-        await update(orderRef, { paymentStatus });
-        ordersMap[orderId] = { ...(ordersMap[orderId] || {}), paymentStatus };
+        await update(orderRef, payload);
+        ordersMap[orderId] = { ...(current || {}), ...payload };
         render();
-        showToast(paymentStatus === "paid" ? "Marked as paid" : "Marked as unpaid");
+        const methodLabel = prettyPaymentType(normalizedType);
+        showToast(paymentStatus === "paid" ? `Payment saved${methodLabel ? `: ${methodLabel}` : ""}` : "Marked as unpaid");
       }catch(err){
         console.error("Payment update error:", err);
         showToast("Payment update failed");
       }
     }
 
+    async function saveCashDrawerEntry(){
+      const amount = Number(cashDrawerAmountInput?.value || 0);
+      const note = String(cashDrawerNoteInput?.value || "").trim();
+      if(!Number.isFinite(amount) || amount <= 0){
+        showToast("Enter a valid cash amount");
+        cashDrawerAmountInput?.focus();
+        return;
+      }
+
+      const now = Date.now();
+      const entry = {
+        type: "cash_in",
+        amount: Number(amount.toFixed(2)),
+        note: note || "Manual cash in",
+        source: "display",
+        timestamp: now,
+        createdAt: now
+      };
+
+      try{
+        const newRef = push(ref(db, "cashDrawerEvents"));
+        await set(newRef, entry);
+        showToast(`Cash drawer +RM${amount.toFixed(2)} saved`);
+        closeCashDrawerModal();
+      }catch(err){
+        console.error("Cash drawer save error:", err);
+        showToast("Cash drawer save failed");
+      }
+    }
+
     async function updateStatus(orderId, status, field="status", opts={}){
       const orderRef = ref(db, `orders/${orderId}`);
+      const current = ordersMap[orderId] || {};
+      const nextOrder = { ...(current || {}), [field]: status };
+      const payload = { [field]: status, status: deriveLegacyStatus(nextOrder), updatedAt: Date.now() };
       try{
-        await update(orderRef, { [field]: status });
+        await update(orderRef, payload);
         // Update local map for instant UI feedback
-        ordersMap[orderId] = { ...(ordersMap[orderId] || {}), [field]: status };
+        ordersMap[orderId] = { ...(current || {}), ...payload };
         render();
         if(!opts.silent) showToast(`Updated ${field}: ${status}`);
       }catch(err){
         console.error("Firebase update error:", err);
         showToast("Update failed");
       }
-
-      // Optional: clear queueNumber later when all ready (like your old behavior)
-      try{
-        const o = ordersMap[orderId] || {};
-        const foodReady = statusKey(o.foodStatus) === "food-ready";
-        const drinkReady = statusKey(o.drinkStatus) === "drink-ready";
-        if(foodReady && drinkReady){
-          // Shorter than previous 100000ms. 25s is more practical for kitchen flow.
-          setTimeout(async () => {
-            try{
-              await update(ref(db, `orders/${orderId}`), { queueNumber: null });
-              if(ordersMap[orderId]) ordersMap[orderId].queueNumber = null;
-              render();
-            }catch(e){}
-          }, 25000);
-        }
-      }catch(e){}
     }
     window.updateStatus = updateStatus;
 
@@ -2516,7 +3416,7 @@ card.innerHTML = `
           Name: ${escapeHtml(order.name ?? "-")}<br>
           Table: ${escapeHtml(order.table ?? "-")}<br>
           Special Request: ${escapeHtml(order.request ?? "None")}<br>
-          Payment: ${escapeHtml(String(order.paymentStatus || "unpaid").toUpperCase())}<br>
+          Payment: ${escapeHtml(paymentReceiptText(order))}<br>
           <div class="line"></div>
           <b>Order List</b>
           <div class="left">${escapeHtml(lines)}</div>
@@ -2558,7 +3458,7 @@ Order No: ${order.queueNumber ?? "N/A"}
 Name: ${order.name ?? "-"}
 Table: ${order.table ?? "-"}
 Special Request: ${order.request ?? "None"}
-Payment: ${String(order.paymentStatus || "unpaid").toUpperCase()}
+Payment: ${paymentReceiptText(order)}
 ----------------------------------------
 Order List:
 ${lines}
@@ -2608,13 +3508,15 @@ Total: ${fmtMoney(order.totalPrice ?? 0)}
           total: fmtMoney(order.totalPrice ?? 0),
           status: overall,
           paymentStatus: String(order.paymentStatus || "unpaid"),
+          paymentType: prettyPaymentType(order.paymentType) || "",
+          transactionId: String(order.transactionId || ""),
           id: orderId
         });
       }
 
       rows.sort((a,b)=> b.timestamp - a.timestamp);
 
-      const header = ["Date","Time","Queue","Name","Table","Special Request","Items","Total Price","Status","Payment Status","OrderId"];
+      const header = ["Date","Time","Queue","Name","Table","Special Request","Items","Total Price","Status","Payment Status","Payment Type","Transaction Id","OrderId"];
       const lines = [header.join(",")];
 
       for(const r of rows){
@@ -2629,6 +3531,8 @@ Total: ${fmtMoney(order.totalPrice ?? 0)}
           csvEscape(r.total),
           csvEscape(r.status),
           csvEscape(r.paymentStatus),
+          csvEscape(r.paymentType),
+          csvEscape(r.transactionId),
           csvEscape(r.id)
         ].join(",");
         lines.push(row);
@@ -2715,19 +3619,43 @@ Total: ${fmtMoney(order.totalPrice ?? 0)}
       const ok = confirm(`Mark ${unpaidIds.length} order(s) as paid?`);
       if(!ok) return;
 
+      const rawMethod = prompt("Payment type for all selected orders: cash, qr, transfer, or wave", "cash");
+      if(rawMethod === null) return;
+      const bulkType = normalizePaymentType(rawMethod);
+      if(!bulkType){
+        showToast("Invalid payment type");
+        return;
+      }
+
+      const now = Date.now();
       const updates = {};
       unpaidIds.forEach(id => {
         updates[`${id}/paymentStatus`] = "paid";
+        updates[`${id}/paymentType`] = bulkType;
+        updates[`${id}/paymentUpdatedAt`] = now;
+        updates[`${id}/lastTransactionAt`] = now;
+        updates[`${id}/transactionStatus`] = "recorded";
+        updates[`${id}/transactionId`] = ordersMap[id]?.transactionId || `TX-${now}-${String(id).slice(-6).toUpperCase()}`;
+        updates[`${id}/paidAt`] = ordersMap[id]?.paidAt || now;
       });
 
       setButtonBusy(markAllPaidBtn, true, "⏳ Marking Paid...");
       try{
         await update(ordersRef, updates);
         unpaidIds.forEach(id => {
-          ordersMap[id] = { ...(ordersMap[id] || {}), paymentStatus: "paid" };
+          ordersMap[id] = {
+            ...(ordersMap[id] || {}),
+            paymentStatus: "paid",
+            paymentType: bulkType,
+            paymentUpdatedAt: now,
+            lastTransactionAt: now,
+            transactionStatus: "recorded",
+            transactionId: ordersMap[id]?.transactionId || `TX-${now}-${String(id).slice(-6).toUpperCase()}`,
+            paidAt: ordersMap[id]?.paidAt || now
+          };
         });
         render();
-        showToast(`Marked ${unpaidIds.length} order(s) as paid`);
+        showToast(`Marked ${unpaidIds.length} order(s) paid • ${prettyPaymentType(bulkType)}`);
       }catch(err){
         console.error(err);
         showToast("Failed to mark all as paid");
@@ -2960,6 +3888,12 @@ Total: ${fmtMoney(order.totalPrice ?? 0)}
       });
       menuById = byId;
       menuByName = byName;
+      refreshServerMenuOptions();
+      const categoryDataList = document.getElementById("serverMenuCategories");
+      if(categoryDataList){
+        categoryDataList.innerHTML = getKnownCategories().map(cat => `<option value="${escapeHtml(cat)}"></option>`).join("");
+      }
+      if(editOrderModal?.classList.contains("open")) renderEditItems();
       render();
     });
 
@@ -2981,8 +3915,9 @@ Total: ${fmtMoney(order.totalPrice ?? 0)}
       // but do it quietly to avoid loops
       for(const [id, o] of Object.entries(ordersMap)){
         if(!o.status){
-          update(ref(db, `orders/${id}`), { status: "received order" }).catch(()=>{});
-          ordersMap[id].status = "received order";
+          const derived = deriveLegacyStatus(o);
+          update(ref(db, `orders/${id}`), { status: derived }).catch(()=>{});
+          ordersMap[id].status = derived;
         }
       }
 
@@ -3001,6 +3936,179 @@ Total: ${fmtMoney(order.totalPrice ?? 0)}
 
     bindClick(inventoryBtn, () => { window.location.href = "inventory.html"; });
     bindClick(exportBtn, () => exportWithSpinner());
+    bindClick(cashDrawerBtn, () => openCashDrawerModal());
+
+    if(paymentTypeGrid){
+      paymentTypeGrid.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-pay-type]");
+        if(!btn) return;
+        paymentDialogState.paymentType = btn.dataset.payType || "cash";
+        syncPaymentTypeButtons();
+      });
+    }
+    if(paymentSaveBtn){
+      paymentSaveBtn.addEventListener("click", async () => {
+        const orderId = paymentDialogState.orderId;
+        if(!orderId) return;
+        await setPaymentStatus(orderId, "paid", paymentDialogState.paymentType);
+        closePaymentModal();
+      });
+    }
+    if(paymentUnpaidBtn){
+      paymentUnpaidBtn.addEventListener("click", async () => {
+        const orderId = paymentDialogState.orderId;
+        if(!orderId) return;
+        await setPaymentStatus(orderId, "unpaid", "");
+        closePaymentModal();
+      });
+    }
+    if(paymentCancelBtn) paymentCancelBtn.addEventListener("click", closePaymentModal);
+    if(paymentCancelTopBtn) paymentCancelTopBtn.addEventListener("click", closePaymentModal);
+    if(paymentModal){
+      paymentModal.addEventListener("click", (e) => {
+        if(e.target === paymentModal) closePaymentModal();
+      });
+    }
+    if(cashDrawerSaveBtn) cashDrawerSaveBtn.addEventListener("click", saveCashDrawerEntry);
+    if(cashDrawerCancelBtn) cashDrawerCancelBtn.addEventListener("click", closeCashDrawerModal);
+    if(cashDrawerCancelTopBtn) cashDrawerCancelTopBtn.addEventListener("click", closeCashDrawerModal);
+    if(cashDrawerClearBtn) cashDrawerClearBtn.addEventListener("click", () => {
+      if(cashDrawerAmountInput) cashDrawerAmountInput.value = "";
+      if(cashDrawerNoteInput) cashDrawerNoteInput.value = "";
+      cashDrawerAmountInput?.focus();
+    });
+    if(cashDrawerModal){
+      cashDrawerModal.addEventListener("click", (e) => {
+        if(e.target === cashDrawerModal) closeCashDrawerModal();
+      });
+    }
+    if(editItemsList){
+      editItemsList.addEventListener("input", (e) => {
+        const el = e.target.closest("[data-edit-field]");
+        if(!el) return;
+        const index = Number(el.dataset.index);
+        const field = el.dataset.editField;
+        const item = editOrderState.items[index];
+        if(!item) return;
+
+        if(field === "quantity"){
+          item.quantity = Math.max(1, Number(el.value || 1) || 1);
+          updateEditOrderTotal();
+          return;
+        }
+
+        if(field === "price"){
+          item.price = Math.max(0, Number(el.value || 0) || 0);
+          item.basePrice = item.menuId ? item.price - (Array.isArray(item.addOns) ? item.addOns.reduce((sum, label) => {
+            const match = Object.entries(item.availableAddOns || {}).find(([key]) => editableAddonLabel(key) === String(label || "").trim());
+            return sum + (match ? (Math.max(0, Number(match[1] || 0) || 0)) : 0);
+          }, 0) : 0) : item.price;
+          updateEditOrderTotal();
+          return;
+        }
+
+        if(field === "addOns"){
+          item.addOns = String(el.value || "").split(",").map(v => v.trim()).filter(Boolean);
+          if(item.menuId) syncEditableItemPricing(item);
+          renderEditItems();
+          return;
+        }
+
+        if(field === "category"){
+          item.category = String(el.value || "").trim() || "Others";
+          updateEditOrderTotal();
+          return;
+        }
+
+        if(field === "menuSearch"){
+          item.item = String(el.value || "");
+          item.name = item.item;
+          const meta = findMenuMeta(item.item);
+          if(meta){
+            applyMenuMetaToEditableItem(item, meta);
+            renderEditItems();
+          }else{
+            item.menuId = null;
+            item.availableAddOns = {};
+            updateEditOrderTotal();
+          }
+          return;
+        }
+      });
+      editItemsList.addEventListener("change", (e) => {
+        const checkbox = e.target.closest("[data-edit-addon]");
+        if(!checkbox) return;
+        const index = Number(checkbox.dataset.index);
+        const item = editOrderState.items[index];
+        if(!item) return;
+        const label = String(checkbox.dataset.editAddon || "").trim();
+        const set = new Set(Array.isArray(item.addOns) ? item.addOns : []);
+        if(checkbox.checked) set.add(label);
+        else set.delete(label);
+        item.addOns = Array.from(set);
+        syncEditableItemPricing(item);
+        renderEditItems();
+      });
+      editItemsList.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-edit-remove]");
+        if(!btn) return;
+        const index = Number(btn.dataset.editRemove);
+        editOrderState.items.splice(index, 1);
+        if(!editOrderState.items.length) editOrderState.items.push(buildDefaultEditableItem());
+        renderEditItems();
+      });
+    }
+    if(editOrderAddItemBtn){
+      editOrderAddItemBtn.addEventListener("click", () => {
+        editOrderState.items.push(buildDefaultEditableItem());
+        renderEditItems();
+      });
+    }
+    if(editOrderResetBtn){
+      editOrderResetBtn.addEventListener("click", () => {
+        editOrderState.items = (editOrderState.originalItems || []).map(cloneEditableItem);
+        if(!editOrderState.items.length) editOrderState.items = [buildDefaultEditableItem()];
+        renderEditItems();
+      });
+    }
+    if(editOrderSaveBtn) editOrderSaveBtn.addEventListener("click", saveEditedOrder);
+    if(editOrderCancelBtn) editOrderCancelBtn.addEventListener("click", closeEditOrderModal);
+    if(editOrderCancelTopBtn) editOrderCancelTopBtn.addEventListener("click", closeEditOrderModal);
+    if(editOrderCancelOrderBtn){
+      editOrderCancelOrderBtn.addEventListener("click", async () => {
+        const orderId = editOrderState.orderId;
+        if(!orderId) return;
+        await cancelOrder(orderId);
+        closeEditOrderModal();
+      });
+    }
+    if(editOrderDeleteBtn){
+      editOrderDeleteBtn.addEventListener("click", () => {
+        const orderId = editOrderState.orderId;
+        if(!orderId) return;
+        closeEditOrderModal();
+        confirmDelete(orderId);
+      });
+    }
+    if(editOrderModal){
+      editOrderModal.addEventListener("click", (e) => {
+        if(e.target === editOrderModal) closeEditOrderModal();
+      });
+    }
+    window.addEventListener("keydown", (e) => {
+      if(e.key === "Escape" && paymentModal?.classList.contains("open")) closePaymentModal();
+      if(e.key === "Escape" && cashDrawerModal?.classList.contains("open")) closeCashDrawerModal();
+      if(e.key === "Escape" && editOrderModal?.classList.contains("open")) closeEditOrderModal();
+      if(e.key === "Enter" && cashDrawerModal?.classList.contains("open") && document.activeElement !== cashDrawerCancelBtn){
+        e.preventDefault();
+        saveCashDrawerEntry();
+      }
+      if(e.key === "Enter" && editOrderModal?.classList.contains("open") && !e.shiftKey && document.activeElement?.tagName !== "BUTTON"){
+        e.preventDefault();
+        saveEditedOrder();
+      }
+    });
+
     bindClick(markAllPaidBtn, () => markAllAsPaid());
     bindClick(readyAllOrdersBtn, () => readyAllOrders());
     bindClick(removeQueueBtn, () => removeAllQueueNumbers());
