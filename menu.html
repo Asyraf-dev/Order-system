@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
+<link rel="icon" href="logo.jpeg" type="image/jpeg"/>
+<link rel="preload" href="logo.jpeg" as="image"/>
 <title>Menu Admin — Restoran Ayam Gepuk Ngences</title>
 
 <style>
@@ -25,40 +27,50 @@
       radial-gradient(900px 480px at 18% 6%, rgba(37,99,235,.12), transparent 60%),
       radial-gradient(900px 520px at 90% 20%, rgba(245,158,11,.10), transparent 60%),
       var(--bg);
-    padding:18px;
+    padding:clamp(14px, 2vw, 24px);
   }
 
   .topbar{
-    max-width:1180px;
-    margin:0 auto 14px auto;
+    position:sticky;
+    top:0;
+    z-index:20;
+    max-width:1460px;
+    margin:0 auto 18px auto;
     display:flex;
     gap:14px;
     align-items:center;
     justify-content:space-between;
     flex-wrap:wrap;
+    padding:16px 0 6px;
+    background: linear-gradient(180deg, rgba(245,247,251,.96), rgba(245,247,251,.72));
+    backdrop-filter: blur(10px);
   }
   .brand{display:flex;align-items:center;gap:12px}
   .logo{
     width:40px;height:40px;border-radius:14px;
-    background: linear-gradient(135deg, var(--primary), #60a5fa);
+    background: #fff;
+    border:1px solid rgba(2,6,23,.08);
     box-shadow: var(--shadow-soft);
     display:grid;place-items:center;
-    color:#fff;font-weight:900;
+    overflow:hidden;
+    padding:4px;
     user-select:none;
   }
+  .logo img{width:100%;height:100%;object-fit:contain;display:block}
   .brand h1{margin:0;font-size:18px;letter-spacing:-0.02em}
   .brand p{margin:0;color:var(--muted);font-size:13px}
   .top-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
   .hint{
     font-size:12px;color:var(--muted);
-    background: rgba(255,255,255,.7);
+    background: rgba(255,255,255,.82);
     border:1px solid var(--border);
     padding:8px 10px;border-radius:999px;
     box-shadow: 0 1px 0 rgba(255,255,255,.9) inset;
   }
 
-  .container{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:1fr;gap:14px}
-  @media (min-width:980px){ .container{grid-template-columns: 410px 1fr;} }
+  .container{max-width:1460px;margin:0 auto;display:grid;grid-template-columns:1fr;gap:18px;align-items:start}
+  @media (min-width:1100px){ .container{grid-template-columns: minmax(420px, 470px) minmax(0, 1fr);} }
+  @media (min-width:1440px){ .container{grid-template-columns: minmax(460px, 520px) minmax(0, 1fr);} }
 
   .card{
     background: rgba(255,255,255,.92);
@@ -67,6 +79,14 @@
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     overflow:hidden;
+    position:relative;
+  }
+  .card::before{
+    content:"";
+    position:absolute;
+    inset:0 0 auto 0;
+    height:5px;
+    background:linear-gradient(90deg, rgba(37,99,235,.88), rgba(14,165,233,.76));
   }
   .card-header{
     padding:14px 14px 10px 14px;
@@ -167,7 +187,7 @@
 
   #items-list{
     padding:14px;
-    max-height:72vh;
+    max-height:min(76vh, 980px);
     overflow:auto;
     display:flex;
     flex-direction:column;
@@ -286,14 +306,41 @@
   }
 
   .btn-link{display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border-radius:14px;font-weight:800;text-decoration:none}
-  .btn-outline{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:rgba(255,255,255,.92)}
+  .btn-outline{border:1px solid rgba(2,6,23,.12);background:rgba(255,255,255,.82);color:rgba(2,6,23,.86)}
+  .btn-outline:hover{background:#fff}
+  @media (min-width:1100px){
+    .container > .card:first-child{
+      position:sticky;
+      top:106px;
+      align-self:start;
+      max-height:calc(100vh - 128px);
+      overflow:auto;
+    }
+    .container > .card:last-child{
+      min-height:calc(100vh - 128px);
+    }
+  }
+  @media (max-width:900px){
+    .topbar{padding-top:8px}
+    .top-actions{width:100%}
+    .hint{width:100%;border-radius:18px}
+  }
+  @media (max-width:640px){
+    .card-header,
+    .card-body,
+    .toolbar,
+    .category-panel,
+    #items-list{padding-left:12px;padding-right:12px}
+    .top-actions .btn-link,
+    .top-actions .btn{width:100%;justify-content:center}
+  }
 </style>
 </head>
 
 <body>
   <div class="topbar">
     <div class="brand">
-      <div class="logo">M</div>
+      <div class="logo"><img src="logo.jpeg" alt="Restoran Ayam Gepuk Ngences logo"></div>
       <div>
         <h1>Menu Admin</h1>
         <p>Manage items, stock tracking, category availability, fast-order tiles, and add-ons.</p>
@@ -1039,8 +1086,35 @@
   }
 
   // ---------------- Category status keys ----------------
+  function sanitizeCategoryKey(k){
+    return String(k || "")
+      .replace(/[.#$\/\[\]]/g,'')
+      .trim()
+      .replace(/\s+/g,'_')
+      .toLowerCase();
+  }
+
+  const CATEGORY_ALIAS_MAP = Object.freeze(categories.reduce((acc, cat) => {
+    acc[sanitizeCategoryKey(cat)] = cat;
+    return acc;
+  }, { food: "food", others: "Others" }));
+
+  function normalizeCategory(cat){
+    const raw = String(cat || "").trim();
+    if(!raw) return "Others";
+    return CATEGORY_ALIAS_MAP[sanitizeCategoryKey(raw)] || "Others";
+  }
+
+  function getCategoryStatusValue(rawMap, cat){
+    const target = sanitizeCategoryKey(normalizeCategory(cat));
+    for(const [key, value] of Object.entries(rawMap || {})){
+      if(sanitizeCategoryKey(normalizeCategory(key)) === target) return value;
+    }
+    return true;
+  }
+
   function sanitizeKey(k){
-    return String(k || "").replace(/[.#$\/\[\]]/g,'').trim().replace(/\\s+/g,'_');
+    return sanitizeCategoryKey(k);
   }
 
   // ---------------- Category panel toggle ----------------
@@ -1111,7 +1185,7 @@
 
     nameEl.value = data?.name || "";
     priceEl.value = Number(data?.price || 0).toFixed(2);
-    categoryEl.value = data?.category || "food";
+    categoryEl.value = normalizeCategory(data?.category || "food");
     imageEl.value = data?.image || "";
     fastOrderDisplayModeEl.value = data?.fastOrderDisplayMode === "code" ? "code" : "image";
     allowAddOnsEnabled = (data?.allowAddOns === true) || Object.keys(data?.addOns || {}).length > 0;
@@ -1202,8 +1276,10 @@
 
     const img = document.createElement("img");
     img.className = "thumb";
-    img.src = item?.image || "https://via.placeholder.com/200x140?text=No+Image";
+    img.src = item?.image || "logo.jpeg";
     img.alt = item?.name || id;
+    img.loading = "lazy";
+    img.decoding = "async";
 
     const main = document.createElement("div");
     main.className = "item-main";
@@ -1348,7 +1424,7 @@
     const grouped = {};
     Object.keys(data || {}).forEach(id => {
       const item = data[id] || {};
-      const cat = item.category || "Others";
+      const cat = normalizeCategory(item.category || "Others");
       if(!grouped[cat]) grouped[cat] = [];
       grouped[cat].push({ id, item });
     });
@@ -1434,7 +1510,7 @@
 
           Object.keys(data).forEach(id => {
             const item = data[id] || {};
-            if((item.category||"") !== cat) return;
+            if(normalizeCategory(item.category || "Others") !== cat) return;
 
             if(newStatus === false){
               updates[`menuItems/${id}/visible`] = false;
@@ -1476,7 +1552,7 @@
     const updates = {};
     Object.keys(items || {}).forEach(id => {
       const item = items[id] || {};
-      const cat = item.category || "Others";
+      const cat = normalizeCategory(item.category || "Others");
       const catAvail = (currentCategoryStatus[cat] !== false);
 
       const stock = normalizeStock(item);
@@ -1525,7 +1601,7 @@
   saveBtn.addEventListener("click", async () => {
     const name = nameEl.value.trim();
     const price = parseFloat(priceEl.value) || 0;
-    const category = categoryEl.value;
+    const category = normalizeCategory(categoryEl.value);
     const image = imageEl.value.trim();
 
     // ✅ addOns remains object map, but keys are sanitized
@@ -1580,7 +1656,7 @@
       stockCount = clampInt(computed);
     }
 
-    const shouldBeVisible = !(trackStock && (stockCount ?? 0) <= 0);
+    const shouldBeVisible = (currentCategoryStatus[category] !== false) && !(trackStock && (stockCount ?? 0) <= 0);
 
     const payload = {
       // keep existing fields
@@ -1662,8 +1738,7 @@
     const raw = snap.val() || {};
     const mapped = {};
     categories.forEach(cat => {
-      const key = sanitizeKey(cat);
-      mapped[cat] = Object.prototype.hasOwnProperty.call(raw, key) ? raw[key] : true;
+      mapped[cat] = getCategoryStatusValue(raw, cat);
     });
     currentCategoryStatus = mapped;
     renderCategoryAvailabilityUI();
