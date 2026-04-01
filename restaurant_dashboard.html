@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <link rel="icon" href="logo.jpeg" type="image/jpeg" />
+  <link rel="preload" href="logo.jpeg" as="image" />
   <title>Restaurant Control Center</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -92,9 +94,11 @@
       color:#fff;
       background:linear-gradient(135deg, var(--brand), #fb7185 130%);
       box-shadow:0 18px 30px rgba(220,38,38,.22);
-      font-size:22px;
       flex:0 0 auto;
+      overflow:hidden;
+      padding:8px;
     }
+    .brand img{width:100%;height:100%;object-fit:contain;display:block}
     .page-copy{min-width:0}
     .eyebrow{
       font-size:11px;
@@ -996,7 +1000,7 @@
   <div class="app-shell">
     <header class="topbar">
       <div class="topbar-left">
-        <div class="brand"><i class="fa-solid fa-bowl-food"></i></div>
+        <div class="brand"><img src="logo.jpeg" alt="Restoran Ayam Gepuk Ngences logo" /></div>
         <div class="page-copy">
           <div class="eyebrow">Restaurant Workspace</div>
           <div class="page-title" id="pageTitle">Home</div>
