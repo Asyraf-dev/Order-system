@@ -8,17 +8,19 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#16a34a">
+  <link rel="icon" href="logo.jpeg" type="image/jpeg" />
+  <link rel="preload" href="logo.jpeg" as="image" />
 
   <style>
     :root {
-      --bg0: #0b1220;
-      --bg1: #0f1a33;
-      --card: rgba(255, 255, 255, .90);
-      --card2: rgba(255, 255, 255, .70);
+      --bg0: #f5f7fb;
+      --bg1: #eef4fb;
+      --card: rgba(255, 255, 255, .94);
+      --card2: rgba(248, 250, 252, .94);
       --text: #0f172a;
-      --muted: #475569;
-      --border: rgba(15, 23, 42, .10);
-      --shadow: 0 18px 60px rgba(2, 6, 23, .18);
+      --muted: #64748b;
+      --border: rgba(148, 163, 184, .22);
+      --shadow: 0 24px 60px rgba(15, 23, 42, .12);
       --brand: #16a34a;
       --brand2: #22c55e;
       --danger: #ef4444;
@@ -48,32 +50,55 @@
       font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       color: var(--text);
       min-height: 100vh;
-      background: radial-gradient(1200px 900px at 20% 15%, rgba(34, 197, 94, .30), transparent 55%),
-                  radial-gradient(1200px 900px at 85% 25%, rgba(59, 130, 246, .24), transparent 52%),
+      background: radial-gradient(1200px 900px at 12% 0%, rgba(34, 197, 94, .18), transparent 60%),
+                  radial-gradient(1200px 900px at 88% 14%, rgba(59, 130, 246, .16), transparent 58%),
                   linear-gradient(180deg, var(--bg0), var(--bg1));
     }
 
     .container {
-      width: min(1200px, 100%);
-      margin: 80px auto 120px;
-      padding: 0 20px;
+      width: min(1480px, 100%);
+      margin: clamp(18px, 3vw, 36px) auto 72px;
+      padding: 0 clamp(16px, 2.5vw, 28px);
       display: grid;
-      gap: 28px;
+      gap: 22px;
+    }
+    @media (min-width: 1180px) {
+      .container {
+        grid-template-columns: minmax(360px, 430px) minmax(0, 1fr);
+        align-items: start;
+      }
+      .container > .card:first-child {
+        grid-row: 1 / span 2;
+        position: sticky;
+        top: 24px;
+      }
+      .container > .card:first-child .card-body {
+        max-height: calc(100vh - 180px);
+        overflow: auto;
+      }
     }
 
     .card {
       background: var(--card);
       backdrop-filter: blur(12px);
       border: 1px solid var(--border);
-      border-radius: 20px;
+      border-radius: 24px;
       box-shadow: var(--shadow);
       overflow: hidden;
+      position: relative;
+    }
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 5px;
+      background: linear-gradient(90deg, rgba(22,163,74,.9), rgba(59,130,246,.76));
     }
 
     .card-header {
       padding: 20px 24px 16px;
       border-bottom: 1px solid var(--border);
-      background: linear-gradient(180deg, rgba(34, 197, 94, .12), transparent);
+      background: linear-gradient(180deg, rgba(22, 163, 74, .10), rgba(255,255,255,.02));
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -84,6 +109,39 @@
     .card-body { padding: 24px; }
 
     h2 { margin: 0; font-size: 19px; font-weight: 700; letter-spacing: -0.02em; }
+    .page-heading {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+    .page-logo {
+      width: 60px;
+      height: 60px;
+      padding: 8px;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, .9);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      flex: 0 0 auto;
+    }
+    .page-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+    .page-copy {
+      min-width: 0;
+      display: grid;
+      gap: 4px;
+    }
+    .page-copy p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
 
     .field { display: grid; gap: 8px; margin-top: 16px; }
     label { font-weight: 650; font-size: 13.5px; color: var(--muted); }
@@ -93,7 +151,7 @@
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 13px 16px;
-      background: var(--card2);
+      background: #fff;
       color: var(--text);
       font-size: 15px;
       outline: none;
@@ -185,6 +243,7 @@
       border-collapse: separate;
       border-spacing: 0 10px;
       margin-top: 8px;
+      min-width: 860px;
     }
 
     th {
@@ -204,6 +263,10 @@
     tr td:first-child { border-top-left-radius: 14px; border-bottom-left-radius: 14px; }
     tr td:last-child { border-top-right-radius: 14px; border-bottom-right-radius: 14px; }
     tr:hover td { background: rgba(34, 197, 94, .08); }
+    .card:nth-child(2) .card-body,
+    .card:nth-child(3) .card-body {
+      overflow: auto;
+    }
 
     .badge {
       padding: 6px 12px;
@@ -270,9 +333,12 @@
     .fab:hover { transform: scale(1.1); }
 
     @media (max-width: 768px) {
-      .container { margin: 70px auto 140px; padding: 0 16px; gap: 20px; }
+      .container { margin: 18px auto 120px; padding: 0 16px; gap: 18px; }
       .card-header { flex-direction: column; align-items: stretch; }
+      .page-heading { align-items: flex-start; }
+      .page-logo { width: 54px; height: 54px; }
       .search-box { max-width: none; }
+      table { min-width: 0; }
       table, thead, tbody, th, td, tr { display: block; }
       thead { display: none; }
       tr {
@@ -315,7 +381,15 @@
     <!-- STAFF FORM -->
     <div class="card">
       <div class="card-header">
-        <h2 id="formTitle">Edit Staff Member</h2>
+        <div class="page-heading">
+          <div class="page-logo">
+            <img src="logo.jpeg" alt="Restoran Ayam Gepuk Ngences logo" loading="eager" decoding="async">
+          </div>
+          <div class="page-copy">
+            <h2 id="formTitle">Edit Staff Member</h2>
+            <p>Manage staff profiles, schedules, roles, and pay settings from one clean workspace.</p>
+          </div>
+        </div>
       </div>
       <div class="card-body">
         <div class="field">
