@@ -1435,7 +1435,7 @@
       <div class="queueText" id="queue-number-text">Queue # —</div>
       <div class="small">This order is sent to the same orders queue used by the customer page and display screen.</div>
       <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px">
-        <button class="btn btn-primary" id="download-receipt-btn" type="button">Download Receipt</button>
+        <button class="btn btn-primary" id="download-receipt-btn" type="button">Print Receipt</button>
         <button class="btn btn-ghost" id="close-success-btn" type="button">Close</button>
       </div>
     </div>
@@ -1565,6 +1565,35 @@
       .replace(/>/g,"&gt;")
       .replace(/"/g,"&quot;")
       .replace(/'/g,"&#039;");
+    const RESTAURANT_INFO = Object.freeze({
+      name: "RESTORAN AYAM GEPUK NGENCES",
+      tagline: "Ayam Gepuk Ngences x Ngences Coffee",
+      ssm: "SSM No.: IP0536836-W",
+      address: "39, Laluan BG Transit 2, Kampung Bendera, 30200 Batu Gajah, Perak"
+    });
+    const restaurantLogoUrl = new URL("logo.jpeg", window.location.href).href;
+    const receiptLogoPromise = new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => resolve(null);
+      img.src = restaurantLogoUrl;
+    });
+    const receiptCategoryOrder = categories.filter((c) => c.key !== "all").map((c) => c.key);
+
+    function sanitizeCategoryKey(value){
+      return String(value || "")
+        .replace(/[.#$\/\[\]]/g, "")
+        .trim()
+        .replace(/\s+/g, "_")
+        .toLowerCase();
+    }
+
+    const categoryAliasMap = Object.freeze(categories.reduce((acc, category) => {
+      if(category.key === "all") return acc;
+      acc[sanitizeCategoryKey(category.key)] = category.key;
+      acc[sanitizeCategoryKey(category.label)] = category.key;
+      return acc;
+    }, { food: "food", others: "Others" }));
 
     function showToast(msg){
       if(!toastEl) return;
@@ -1610,7 +1639,98 @@
     }
 
     function normalizeCategory(cat){
-      return categories.find(c => c.key === cat)?.key || cat || "Others";
+      const raw = String(cat || "").trim();
+      if(!raw) return "Others";
+      return categoryAliasMap[sanitizeCategoryKey(raw)] || "Others";
+    }
+
+    function getCategoryStatusValue(rawMap, cat){
+      const target = sanitizeCategoryKey(normalizeCategory(cat));
+      for(const [key, value] of Object.entries(rawMap || {})){
+        if(sanitizeCategoryKey(normalizeCategory(key)) === target) return value;
+      }
+      return true;
+    }
+
+    function getReceiptTimestampText(orderDetails){
+      try{
+        return new Date(orderDetails?.timestamp || Date.now()).toLocaleString();
+      }catch{
+        return new Date().toLocaleString();
+      }
+    }
+
+    function getReceiptPaymentText(orderDetails){
+      const paymentStatus = String(orderDetails?.paymentStatus || '').trim().toLowerCase();
+      const paymentType = String(orderDetails?.paymentType || '').trim();
+      if(paymentStatus === 'paid' && paymentType) return `${paymentType} (Paid)`;
+      if(paymentStatus === 'paid') return 'Paid';
+      if(paymentType) return paymentType;
+      return orderDetails?.orderSource === 'owner-fast-order' ? 'Counter order' : 'Pay at counter';
+    }
+
+    function getReceiptSections(orderDetails){
+      const grouped = {};
+      (orderDetails?.cart || []).forEach((item) => {
+        const key = normalizeCategory(item?.category || "Others");
+        if(!grouped[key]) grouped[key] = [];
+
+        const qty = Math.max(1, Number(item?.quantity || 1) || 1);
+        grouped[key].push({
+          name: item?.item || item?.name || "Item",
+          qty,
+          addOns: Array.isArray(item?.addOns) ? item.addOns.filter(Boolean) : [],
+          amount: Number(item?.price || 0) * qty
+        });
+      });
+
+      return receiptCategoryOrder
+        .filter((key) => grouped[key]?.length)
+        .map((key) => ({
+          key,
+          label: categories.find((entry) => entry.key === key)?.label || key,
+          items: grouped[key]
+        }));
+    }
+
+    function buildReceiptText(orderDetails, receiptDate){
+      const sections = getReceiptSections(orderDetails);
+      const lines = [
+        RESTAURANT_INFO.name,
+        RESTAURANT_INFO.ssm,
+        RESTAURANT_INFO.address,
+        "",
+        `Printed: ${receiptDate}`,
+        `Order No: ${orderDetails?.queueNumber || "-"}`,
+        `Name: ${orderDetails?.name || "-"}`,
+        `Table: ${orderDetails?.table || "-"}`,
+        orderDetails?.orderType ? `Type: ${orderDetails.orderType}` : null,
+        `Request: ${orderDetails?.request || "None"}`
+      ].filter((line) => line !== null);
+
+      sections.forEach((section) => {
+        lines.push("", section.label.toUpperCase());
+        section.items.forEach((item) => {
+          lines.push(`- ${item.name} x${item.qty}`);
+          if(item.addOns.length) lines.push(`  Add-on: ${item.addOns.join(", ")}`);
+          lines.push(`  ${RM(item.amount)}`);
+        });
+      });
+
+      lines.push("", `Total: ${RM(orderDetails?.totalPrice || 0)}`, "", RESTAURANT_INFO.tagline);
+      return lines.join("\n");
+    }
+
+    function downloadReceiptFallback(orderDetails, receiptDate){
+      const blob = new Blob([buildReceiptText(orderDetails, receiptDate)], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `receipt_queue_${orderDetails?.queueNumber || "order"}.txt`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 0);
     }
 
     function normalizeUniqueCode(raw){
@@ -1721,7 +1841,7 @@
     }
 
     function getAvailability(id, item){
-      const cat = item?.category || "Others";
+      const cat = normalizeCategory(item?.category || "Others");
       const catAvail = (categoryStatus[cat] !== false);
       const visible = (item?.visible !== false);
       const trackStock = (item?.trackStock === true);
@@ -2540,61 +2660,283 @@
       }
     }
 
-    function generateReceiptPDF(orderDetails){
+    function printReceiptThermal(orderDetails){
+      const receiptDate = getReceiptTimestampText(orderDetails);
+      const sections = getReceiptSections(orderDetails);
+      const itemMarkup = sections.map((section) => `
+        <section class="receipt-section">
+          <div class="section-title">${escapeHtml(section.label.toUpperCase())}</div>
+          ${section.items.map((item) => {
+            const addOnText = Array.isArray(item.addOns) ? item.addOns.filter(Boolean).join(', ') : '';
+            return `
+              <div class="item">
+                <div class="item-row">
+                  <span>${escapeHtml(item.name)}</span>
+                  <span>x${escapeHtml(item.qty)}</span>
+                </div>
+                ${addOnText ? `<div class="addon">Add-on: ${escapeHtml(addOnText)}</div>` : ''}
+                <div class="amount">${escapeHtml(RM(item.amount))}</div>
+              </div>
+            `;
+          }).join('')}
+        </section>
+      `).join('');
+
+      const printWindow = window.open('', '_blank', 'width=380,height=720');
+      if(!printWindow) return false;
+
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8" />
+          <title>Receipt - ${escapeHtml(RESTAURANT_INFO.name)}</title>
+          <style>
+            @media print {
+              @page { size: 58mm auto; margin: 4mm; }
+              body { margin: 0; }
+            }
+            body{
+              font-family: "Segoe UI", Arial, sans-serif;
+              font-size: 10px;
+              padding: 0;
+              color: #111827;
+              background: #fff;
+            }
+            .receipt{
+              width: 58mm;
+              box-sizing: border-box;
+              padding: 6px;
+              margin: 0 auto;
+            }
+            .brand{
+              text-align:center;
+              margin-bottom: 6px;
+            }
+            .brand img{
+              width: 24mm;
+              height: auto;
+              display: block;
+              margin: 0 auto 4px;
+            }
+            .brand h1{
+              margin: 0;
+              font-size: 11px;
+              font-weight: 800;
+              letter-spacing: .04em;
+            }
+            .meta,
+            .item,
+            .footer{
+              text-align: left;
+            }
+            .sub{
+              margin-top: 2px;
+              color: #4b5563;
+              line-height: 1.4;
+            }
+            .line{
+              border-top: 1px dashed #9ca3af;
+              margin: 7px 0;
+            }
+            .meta-row,
+            .item-row,
+            .total{
+              display:flex;
+              justify-content:space-between;
+              gap: 10px;
+              align-items:flex-start;
+            }
+            .meta-row span:first-child,
+            .item-row span:first-child,
+            .total span:first-child{
+              font-weight: 700;
+            }
+            .meta{
+              display:grid;
+              gap: 4px;
+            }
+            .items{
+              display:grid;
+              gap: 7px;
+            }
+            .receipt-section{
+              display:grid;
+              gap: 7px;
+            }
+            .section-title{
+              font-size: 9px;
+              font-weight: 800;
+              letter-spacing: .08em;
+              color:#111827;
+            }
+            .addon{
+              color:#4b5563;
+              margin-top: 2px;
+              line-height: 1.35;
+            }
+            .amount{
+              margin-top: 2px;
+              text-align: right;
+              font-weight: 700;
+            }
+            .total{
+              font-size: 11px;
+              font-weight: 800;
+            }
+            .footer{
+              margin-top: 8px;
+              text-align: center;
+              color:#4b5563;
+              line-height: 1.45;
+            }
+          </style>
+        </head>
+        <body>
+          <main class="receipt">
+            <div class="brand">
+              <img src="${restaurantLogoUrl}" alt="${escapeHtml(RESTAURANT_INFO.name)} logo" />
+              <h1>${escapeHtml(RESTAURANT_INFO.name)}</h1>
+              <div class="sub">${escapeHtml(RESTAURANT_INFO.ssm)}</div>
+              <div class="sub">${escapeHtml(RESTAURANT_INFO.address)}</div>
+            </div>
+            <div class="line"></div>
+            <div class="meta">
+              <div class="meta-row"><span>Printed</span><span>${escapeHtml(receiptDate)}</span></div>
+              <div class="meta-row"><span>Order No</span><span>${escapeHtml(orderDetails?.queueNumber || 'N/A')}</span></div>
+              <div class="meta-row"><span>Name</span><span>${escapeHtml(orderDetails?.name || '-')}</span></div>
+              <div class="meta-row"><span>Table</span><span>${escapeHtml(orderDetails?.table || '-')}</span></div>
+              ${orderDetails?.orderType ? `<div class="meta-row"><span>Type</span><span>${escapeHtml(orderDetails.orderType)}</span></div>` : ''}
+              <div class="meta-row"><span>Payment</span><span>${escapeHtml(getReceiptPaymentText(orderDetails))}</span></div>
+              <div class="meta-row"><span>Request</span><span>${escapeHtml(orderDetails?.request || 'None')}</span></div>
+            </div>
+            <div class="line"></div>
+            <div class="items">
+              ${itemMarkup || '<div class="addon">No items recorded.</div>'}
+            </div>
+            <div class="line"></div>
+            <div class="total"><span>Total</span><span>${escapeHtml(RM(orderDetails?.totalPrice || 0))}</span></div>
+            <div class="footer">
+              Terima kasih.<br />
+              ${escapeHtml(RESTAURANT_INFO.tagline)}<br />
+              <small>Printed by the ordering system.</small>
+            </div>
+          </main>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.onload = () => {
+        printWindow.focus();
+        printWindow.print();
+      };
+      return true;
+    }
+
+    async function generateReceiptPDF(orderDetails){
+      if(!window.jspdf?.jsPDF){
+        throw new Error("jsPDF library not loaded");
+      }
+
       const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({ unit:"mm", format:[80, 400] });
-      let y = 10;
+      const doc = new jsPDF({ unit:"mm", format:[80, 420] });
+      const left = 6;
+      const right = 74;
+      const center = 40;
+      const contentWidth = 68;
+      let y = 8;
+
+      const writeWrapped = (text, opts = {}) => {
+        const lines = doc.splitTextToSize(String(text || "-"), opts.width || contentWidth);
+        lines.forEach((line) => {
+          doc.text(line, opts.x ?? left, y, opts.align ? { align: opts.align } : undefined);
+          y += opts.lineHeight || 4;
+        });
+      };
+      const drawDivider = () => {
+        doc.setDrawColor(215);
+        doc.line(left, y, right, y);
+        y += 5;
+      };
+      const receiptDate = getReceiptTimestampText(orderDetails);
+      const logo = await receiptLogoPromise;
+      const sections = getReceiptSections(orderDetails);
+
+      if(logo){
+        doc.addImage(logo, "JPEG", 28, y, 24, 18);
+        y += 20;
+      }
 
       doc.setFont("helvetica", "bold");
       doc.setFontSize(11);
-      doc.text("RESTORAN AYAM GEPUK NGENCES", 40, y, { align:"center" });
-      y += 6;
+      doc.text(RESTAURANT_INFO.name, center, y, { align:"center" });
+      y += 5;
 
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(9);
-      doc.text(`Queue: ${orderDetails.queueNumber}`, 5, y); y += 4;
-      doc.text(`Name: ${orderDetails.name}`, 5, y); y += 4;
-      doc.text(`Table: ${orderDetails.table}`, 5, y); y += 4;
-      doc.text(`Type: ${orderDetails.orderType}`, 5, y); y += 4;
-      doc.text(`Source: Owner Fast Order`, 5, y); y += 4;
+      doc.setFontSize(8);
+      doc.text(RESTAURANT_INFO.ssm, center, y, { align:"center" });
+      y += 4;
+      writeWrapped(RESTAURANT_INFO.address, { x: center, align: "center", width: 54, lineHeight: 3.6 });
+      doc.text(RESTAURANT_INFO.tagline, center, y, { align:"center" });
+      y += 5;
+      drawDivider();
 
-      if(orderDetails.request){
-        const requestLines = doc.splitTextToSize(`Request: ${orderDetails.request}`, 68);
-        doc.text(requestLines, 5, y);
-        y += requestLines.length * 4;
-      }
+      [
+        `Printed: ${receiptDate}`,
+        `Order No: ${orderDetails.queueNumber || "-"}`,
+        `Name: ${orderDetails.name || "-"}`,
+        `Table: ${orderDetails.table || "-"}`,
+        orderDetails.orderType ? `Type: ${orderDetails.orderType}` : "",
+        `Request: ${orderDetails.request || "None"}`
+      ].filter(Boolean).forEach((line) => writeWrapped(line, { width: contentWidth, lineHeight: 3.8 }));
 
-      y += 2;
-      doc.line(5, y, 75, y);
-      y += 6;
+      y += 1;
+      drawDivider();
 
       doc.setFontSize(8);
-      (orderDetails.cart || []).forEach(item => {
-        const label = `${item.uniqueCode ? `[${item.uniqueCode}] ` : ""}${item.item} x${item.quantity}`;
-        const lines = doc.splitTextToSize(label, 48);
-        doc.text(lines, 5, y);
-        doc.text(RM((Number(item.price || 0) * Number(item.quantity || 0))).replace("RM ", "RM"), 75, y, { align:"right" });
-        y += lines.length * 4;
+      sections.forEach((section) => {
+        if(!section.items.length) return;
 
-        if(item.addOns?.length){
-          const addOnLines = doc.splitTextToSize(`Add-ons: ${item.addOns.join(", ")}`, 66);
-          doc.text(addOnLines, 7, y);
-          y += addOnLines.length * 4;
-        }
+        doc.setFont("helvetica", "bold");
+        doc.text(section.label.toUpperCase(), left, y);
+        doc.text("Qty", 56, y, { align:"right" });
+        doc.text("Amt", right, y, { align:"right" });
+        y += 4;
+        doc.setDrawColor(225);
+        doc.line(left, y, right, y);
+        y += 4;
+
+        section.items.forEach((item) => {
+          const addOns = item.addOns.length ? ` (${item.addOns.join(", ")})` : "";
+          const itemLines = doc.splitTextToSize(`${item.name}${addOns}`, 44);
+          doc.setFont("helvetica", "normal");
+          itemLines.forEach((line, index) => {
+            doc.text(line, left, y);
+            if(index === 0){
+              doc.text(String(item.qty || 1), 56, y, { align:"right" });
+              doc.text(Number(item.amount || 0).toFixed(2), right, y, { align:"right" });
+            }
+            y += 3.8;
+          });
+        });
+
+        y += 2;
       });
 
-      y += 2;
-      doc.line(5, y, 75, y);
-      y += 6;
-
+      drawDivider();
       doc.setFont("helvetica", "bold");
-      doc.text(`Total: ${RM(orderDetails.totalPrice).replace("RM ", "RM")}`, 75, y, { align:"right" });
-      y += 8;
+      doc.setFontSize(10);
+      doc.text("TOTAL", left, y);
+      doc.text(RM(orderDetails.totalPrice || 0), right, y, { align:"right" });
+      y += 7;
 
       doc.setFont("helvetica", "normal");
-      doc.text("Thank you.", 40, y, { align:"center" });
+      doc.setFontSize(8);
+      doc.text("Thank you for dining with us.", center, y, { align:"center" });
+      y += 4;
+      doc.text("Please keep this receipt for reference.", center, y, { align:"center" });
 
-      doc.save(`fast-order-${orderDetails.queueNumber}.pdf`);
+      doc.save(`receipt_queue_${orderDetails.queueNumber}.pdf`);
     }
 
     searchInput.addEventListener("input", renderMenu);
@@ -2654,7 +2996,23 @@
         alert("Receipt not available.");
         return;
       }
-      generateReceiptPDF(lastOrderForReceipt);
+      const receiptDate = getReceiptTimestampText(lastOrderForReceipt);
+      try{
+        const opened = printReceiptThermal(lastOrderForReceipt);
+        if(!opened){
+          downloadReceiptFallback(lastOrderForReceipt, receiptDate);
+          showToast("Print popup blocked. Downloaded text receipt instead.");
+        }
+      }catch(err){
+        console.error("Receipt failed", err);
+        try{
+          downloadReceiptFallback(lastOrderForReceipt, receiptDate);
+          showToast("Print unavailable. Downloaded text receipt instead.");
+        }catch(fallbackErr){
+          console.error("Receipt fallback failed", fallbackErr);
+          alert("Failed to generate receipt.");
+        }
+      }
     });
     closeSuccessBtn.addEventListener("click", () => successOverlay.classList.remove("show"));
     successOverlay.addEventListener("click", (e) => {
@@ -2671,10 +3029,7 @@
       const mapped = {};
       categories.forEach(c => {
         if(c.key === "all") return;
-        const sanitized = c.key.replace(/[.#$\/\[\]]/g,"").trim().replace(/\s+/g,"_");
-        if(Object.prototype.hasOwnProperty.call(raw, sanitized)) mapped[c.key] = raw[sanitized];
-        else if(Object.prototype.hasOwnProperty.call(raw, c.key)) mapped[c.key] = raw[c.key];
-        else mapped[c.key] = true;
+        mapped[c.key] = getCategoryStatusValue(raw, c.key);
       });
       categoryStatus = mapped;
       renderMenu();
