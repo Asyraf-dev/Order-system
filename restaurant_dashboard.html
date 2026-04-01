@@ -1,38 +1,38 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <link rel="icon" href="logo.jpeg" type="image/jpeg" />
   <link rel="preload" href="logo.jpeg" as="image" />
-  <title>Restaurant Control Center</title>
+  <title>Restaurant Vendor Workspace</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <style>
     :root{
-      --bg:#f4f6fb;
-      --bg-2:#eef2f8;
+      --bg:#f8f4f5;
+      --bg-soft:#fdf0f2;
       --surface:#ffffff;
-      --surface-2:rgba(255,255,255,.88);
-      --surface-3:#f8fafc;
-      --text:#0f172a;
-      --text-soft:#475569;
-      --muted:#64748b;
-      --line:#e2e8f0;
-      --line-strong:#cbd5e1;
-      --shadow:0 24px 60px rgba(15,23,42,.10);
-      --shadow-soft:0 12px 28px rgba(15,23,42,.08);
+      --surface-soft:rgba(255,255,255,.82);
+      --text:#1f1720;
+      --text-soft:#6d5861;
+      --muted:#8b737d;
+      --line:#efd9df;
+      --line-strong:#dfc2ca;
+      --shadow:0 28px 64px rgba(68,18,31,.10);
+      --shadow-soft:0 14px 32px rgba(68,18,31,.08);
       --brand:#dc2626;
-      --brand-2:#b91c1c;
+      --brand-deep:#991b1b;
       --brand-soft:rgba(220,38,38,.10);
-      --accent:#2563eb;
-      --accent-soft:rgba(37,99,235,.10);
+      --brand-soft-2:rgba(220,38,38,.18);
       --ok:#16a34a;
       --warn:#f59e0b;
-      --radius-xl:28px;
-      --radius-lg:22px;
+      --danger:#ef4444;
+      --sidebar-w:280px;
+      --radius-xl:30px;
+      --radius-lg:24px;
       --radius-md:18px;
       --radius-sm:14px;
       --safe-top:env(safe-area-inset-top);
@@ -46,1022 +46,359 @@
       font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       color:var(--text);
       background:
-        radial-gradient(1000px 520px at 0% 0%, rgba(220,38,38,.08), transparent 55%),
-        radial-gradient(900px 520px at 100% 0%, rgba(37,99,235,.08), transparent 55%),
-        linear-gradient(180deg, #fbfcff 0%, var(--bg) 100%);
+        radial-gradient(900px 540px at 0% 0%, rgba(220,38,38,.12), transparent 56%),
+        radial-gradient(1000px 620px at 100% 0%, rgba(251,113,133,.08), transparent 56%),
+        linear-gradient(180deg, #fbfefb 0%, var(--bg) 100%);
       overscroll-behavior:contain;
     }
 
-    body.panel-open{overflow:hidden}
+    body.drawer-open{overflow:hidden}
 
-    .app-shell{
-      min-height:100vh;
-      padding:18px;
-      padding-top:max(18px, calc(18px + var(--safe-top)));
-      padding-bottom:max(18px, calc(18px + var(--safe-bottom)));
-      display:grid;
-      grid-template-rows:auto 1fr;
-      gap:16px;
-    }
-
-    .topbar{
-      position:sticky;
-      top:max(12px, calc(12px + var(--safe-top)));
-      z-index:10;
-      display:grid;
-      grid-template-columns:minmax(0,1fr) auto;
-      gap:16px;
-      align-items:center;
-      padding:18px 20px;
-      border-radius:var(--radius-xl);
-      border:1px solid rgba(255,255,255,.75);
-      background:linear-gradient(180deg, rgba(255,255,255,.92), rgba(248,250,252,.88));
-      backdrop-filter:blur(18px);
-      box-shadow:var(--shadow-soft);
-    }
-    .topbar-left{
-      min-width:0;
-      display:flex;
-      align-items:flex-start;
-      gap:14px;
-    }
-    .brand{
-      width:58px;
-      height:58px;
-      border-radius:20px;
-      display:grid;
-      place-items:center;
-      color:#fff;
-      background:linear-gradient(135deg, var(--brand), #fb7185 130%);
-      box-shadow:0 18px 30px rgba(220,38,38,.22);
-      flex:0 0 auto;
-      overflow:hidden;
-      padding:8px;
-    }
-    .brand img{width:100%;height:100%;object-fit:contain;display:block}
-    .page-copy{min-width:0}
-    .eyebrow{
-      font-size:11px;
-      line-height:1.2;
-      color:var(--muted);
-      text-transform:uppercase;
-      letter-spacing:.14em;
-      font-weight:800;
-      margin-bottom:6px;
-    }
-    .page-title{
-      font-size:28px;
-      line-height:1.03;
-      font-weight:900;
-      letter-spacing:-.05em;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-    .page-subtitle{
-      margin-top:6px;
-      font-size:13px;
-      line-height:1.55;
-      color:var(--text-soft);
-      max-width:760px;
-    }
-
-    .topbar-actions{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-      position:relative;
-    }
-
-    .search-wrap{
-      min-width:280px;
-      display:flex;
-      align-items:center;
-      gap:10px;
-      padding:0 14px;
-      height:48px;
-      border-radius:16px;
-      border:1px solid rgba(148,163,184,.22);
-      background:rgba(255,255,255,.84);
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.95);
-      position:relative;
-    }
-    .search-wrap i{color:#94a3b8}
-    .search-wrap input{
-      width:100%;
-      border:none;
-      outline:none;
-      background:transparent;
-      color:var(--text);
-      font:inherit;
-      font-size:14px;
-      font-weight:600;
-    }
-    .search-wrap input::placeholder{color:#94a3b8}
-
-    .pill,
-    .ghost-pill{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      min-height:44px;
-      padding:0 14px;
-      border-radius:999px;
-      background:rgba(255,255,255,.84);
-      border:1px solid rgba(148,163,184,.18);
-      box-shadow:var(--shadow-soft);
-      color:var(--text-soft);
-      font-size:13px;
-      font-weight:800;
-      white-space:nowrap;
-    }
-    .pill.primary{
-      color:var(--brand-2);
-      background:rgba(254,242,242,.94);
-      border-color:rgba(220,38,38,.14);
-    }
-    .ghost-pill{
-      border:none;
-      cursor:pointer;
-      color:var(--text);
-      transition:transform .12s ease, box-shadow .18s ease, color .18s ease;
-    }
-    .ghost-pill:hover{transform:translateY(-1px); color:var(--brand-2)}
-    .live-dot{
-      width:8px;
-      height:8px;
-      border-radius:999px;
-      background:var(--ok);
-      box-shadow:0 0 0 4px rgba(22,163,74,.10);
-    }
-
-    .content{
-      min-height:0;
-      border-radius:var(--radius-xl);
-      border:1px solid rgba(255,255,255,.75);
-      background:linear-gradient(180deg, rgba(255,255,255,.88), rgba(248,250,252,.82));
-      box-shadow:var(--shadow);
-      backdrop-filter:blur(18px);
-      overflow:hidden;
-    }
-    .content-scroll{
-      min-height:calc(100vh - 160px);
-      padding:18px;
-      overflow:auto;
-      scrollbar-width:thin;
-      scrollbar-color:rgba(148,163,184,.34) transparent;
-    }
-    .content-scroll::-webkit-scrollbar{width:10px;height:10px}
-    .content-scroll::-webkit-scrollbar-thumb{background:rgba(148,163,184,.34); border-radius:999px}
-
-    .home{display:grid; gap:18px}
-    .hero{
-      position:relative;
-      overflow:hidden;
-      border-radius:var(--radius-xl);
-      padding:22px;
-      background:linear-gradient(135deg, rgba(15,23,42,.98), rgba(30,41,59,.94));
-      color:#fff;
-      box-shadow:0 26px 56px rgba(15,23,42,.20);
-    }
-    .hero::before,
-    .hero::after{
-      content:"";
-      position:absolute;
-      border-radius:999px;
-      pointer-events:none;
-      opacity:.72;
-    }
-    .hero::before{
-      width:320px;
-      height:320px;
-      right:-90px;
-      top:-90px;
-      background:radial-gradient(circle, rgba(220,38,38,.42), transparent 66%);
-    }
-    .hero::after{
-      width:260px;
-      height:260px;
-      left:-60px;
-      bottom:-120px;
-      background:radial-gradient(circle, rgba(37,99,235,.30), transparent 64%);
-    }
-    .hero-grid{
-      position:relative;
-      z-index:1;
-      display:grid;
-      grid-template-columns:minmax(0,1.25fr) minmax(280px,.9fr);
-      gap:18px;
-      align-items:start;
-    }
-    .hero-copy h2{
-      margin:0;
-      font-size:34px;
-      line-height:1.02;
-      font-weight:900;
-      letter-spacing:-.06em;
-      max-width:780px;
-    }
-    .hero-copy p{
-      margin:14px 0 0;
-      font-size:15px;
-      line-height:1.75;
-      color:rgba(226,232,240,.92);
-      max-width:720px;
-    }
-    .hero-actions{
-      margin-top:20px;
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-
-    .btn{
-      border:none;
-      cursor:pointer;
-      min-height:46px;
-      padding:0 16px;
-      border-radius:16px;
-      font:inherit;
-      font-size:14px;
-      font-weight:800;
-      display:inline-flex;
-      align-items:center;
-      gap:10px;
-      transition:transform .12s ease, filter .18s ease, background .18s ease, color .18s ease, box-shadow .18s ease;
-      text-decoration:none;
-    }
-    .btn:hover{transform:translateY(-1px)}
-    .btn.primary{
-      color:#fff;
-      background:linear-gradient(135deg, var(--brand), #ef4444 130%);
-      box-shadow:0 16px 30px rgba(220,38,38,.24);
-    }
-    .btn.ghost{
-      color:#e2e8f0;
-      background:rgba(255,255,255,.12);
-      box-shadow:inset 0 0 0 1px rgba(255,255,255,.10);
-    }
-    .btn.light{
-      color:var(--text);
-      background:#fff;
-      box-shadow:var(--shadow-soft);
-      border:1px solid rgba(148,163,184,.16);
-    }
-    .btn.soft{
-      color:var(--brand-2);
-      background:rgba(254,242,242,.92);
-      border:1px solid rgba(220,38,38,.10);
-      box-shadow:var(--shadow-soft);
-    }
-    .btn.danger{
-      color:var(--brand-2);
-      background:rgba(254,242,242,.96);
-      border:1px solid rgba(220,38,38,.12);
-      box-shadow:var(--shadow-soft);
-    }
-
-    .hero-side{display:grid; gap:10px}
-    .hero-stat{
-      padding:15px 16px;
-      border-radius:20px;
-      background:rgba(255,255,255,.10);
-      backdrop-filter:blur(8px);
-      border:1px solid rgba(255,255,255,.10);
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
-    }
-    .hero-stat .k{
-      font-size:11px;
-      color:rgba(226,232,240,.74);
-      text-transform:uppercase;
-      letter-spacing:.12em;
-      font-weight:800;
-    }
-    .hero-stat .v{
-      margin-top:8px;
-      font-size:22px;
-      font-weight:900;
-      letter-spacing:-.04em;
-      line-height:1.05;
-    }
-    .hero-stat .s{
-      margin-top:5px;
-      font-size:12px;
-      line-height:1.55;
-      color:rgba(226,232,240,.82);
-      font-weight:600;
-    }
-
-    .kpi-grid{
-      display:grid;
-      grid-template-columns:repeat(4,minmax(0,1fr));
-      gap:12px;
-    }
-    .kpi-card{
-      padding:16px;
-      border-radius:22px;
-      border:1px solid rgba(148,163,184,.16);
-      background:rgba(255,255,255,.82);
-      box-shadow:var(--shadow-soft);
-    }
-    .kpi-card .k{
-      font-size:11px;
-      text-transform:uppercase;
-      letter-spacing:.12em;
-      color:var(--muted);
-      font-weight:800;
-    }
-    .kpi-card .v{
-      margin-top:8px;
-      font-size:24px;
-      font-weight:900;
-      letter-spacing:-.05em;
-    }
-    .kpi-card .s{
-      margin-top:4px;
-      font-size:12px;
-      color:var(--text-soft);
-      font-weight:600;
-      line-height:1.5;
-    }
-
-    .dashboard-grid{
-      display:grid;
-      grid-template-columns:minmax(0,1.3fr) minmax(320px,.9fr);
-      gap:18px;
-      align-items:start;
-    }
-    .stack{display:grid; gap:18px}
-
-    .panel{
-      border-radius:24px;
-      border:1px solid rgba(148,163,184,.16);
-      background:rgba(255,255,255,.84);
-      box-shadow:var(--shadow-soft);
-      overflow:hidden;
-    }
-    .panel-head{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:12px;
-      padding:18px 18px 12px;
-      border-bottom:1px solid rgba(226,232,240,.88);
-    }
-    .panel-head h3{
-      margin:0;
-      font-size:17px;
-      line-height:1.2;
-      font-weight:900;
-      letter-spacing:-.03em;
-    }
-    .panel-head p{
-      margin:6px 0 0;
-      font-size:13px;
-      line-height:1.55;
-      color:var(--text-soft);
-    }
-    .panel-body{padding:16px 18px 18px}
-
-    .module-grid,
-    .collection-grid{
-      display:grid;
-      grid-template-columns:repeat(2,minmax(0,1fr));
-      gap:12px;
-    }
-
-    .module-card{
-      width:100%;
-      border:none;
-      text-align:left;
-      display:grid;
-      grid-template-columns:auto minmax(0,1fr);
-      gap:12px;
-      align-items:flex-start;
-      padding:15px;
-      border-radius:20px;
-      background:linear-gradient(180deg, #fff, #f8fafc);
-      border:1px solid rgba(148,163,184,.16);
-      cursor:pointer;
-      box-shadow:var(--shadow-soft);
-      transition:transform .12s ease, box-shadow .18s ease, border-color .18s ease;
-    }
-    .module-card:hover{
-      transform:translateY(-2px);
-      border-color:rgba(220,38,38,.16);
-      box-shadow:0 20px 30px rgba(15,23,42,.08);
-    }
-    .module-icon{
+    .mobile-toggle{
+      position:fixed;
+      top:max(16px, calc(16px + var(--safe-top)));
+      left:16px;
       width:48px;
       height:48px;
-      border-radius:16px;
-      display:grid;
-      place-items:center;
-      background:linear-gradient(135deg, rgba(220,38,38,.10), rgba(37,99,235,.12));
-      color:var(--text);
-      font-size:18px;
-      flex:0 0 auto;
-    }
-    .module-card strong{
-      display:block;
-      font-size:15px;
-      line-height:1.3;
-      font-weight:900;
-      letter-spacing:-.02em;
-    }
-    .module-card span{
-      display:block;
-      margin-top:5px;
-      font-size:13px;
-      line-height:1.55;
-      color:var(--text-soft);
-      font-weight:600;
-    }
-
-    .collection-card{
-      padding:16px;
-      border-radius:22px;
-      border:1px solid rgba(148,163,184,.16);
-      background:linear-gradient(180deg, rgba(255,255,255,.94), rgba(248,250,252,.84));
-      box-shadow:var(--shadow-soft);
-    }
-    .collection-top{
-      display:flex;
-      align-items:flex-start;
-      gap:10px;
-    }
-    .collection-badge{
-      width:44px;
-      height:44px;
-      border-radius:15px;
-      display:grid;
-      place-items:center;
-      background:rgba(37,99,235,.10);
-      color:var(--accent);
-      font-size:17px;
-      flex:0 0 auto;
-    }
-    .collection-card h4{
-      margin:0;
-      font-size:15px;
-      line-height:1.25;
-      font-weight:900;
-      letter-spacing:-.02em;
-    }
-    .collection-card p{
-      margin:6px 0 0;
-      font-size:13px;
-      line-height:1.55;
-      color:var(--text-soft);
-      font-weight:600;
-    }
-
-    .info-list{display:grid; gap:10px}
-    .info-row{
-      display:grid;
-      grid-template-columns:auto minmax(0,1fr);
-      gap:12px;
-      align-items:start;
-      padding:14px;
+      border:none;
       border-radius:18px;
-      border:1px solid rgba(148,163,184,.16);
-      background:linear-gradient(180deg, #fff, #f8fafc);
-    }
-    .info-icon{
-      width:42px;
-      height:42px;
-      border-radius:14px;
-      display:grid;
-      place-items:center;
-      background:rgba(37,99,235,.10);
-      color:var(--accent);
-      font-size:16px;
-      box-shadow:var(--shadow-soft);
-    }
-    .info-row strong{
-      display:block;
-      font-size:14px;
-      line-height:1.3;
-      font-weight:900;
-      letter-spacing:-.02em;
-    }
-    .info-row span{
-      display:block;
-      margin-top:4px;
-      font-size:13px;
-      line-height:1.55;
-      color:var(--text-soft);
-      font-weight:600;
-    }
-
-    .quick-links,
-    .chip-row{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-    }
-
-    .quick-link,
-    .mini-chip{
-      border:none;
-      cursor:pointer;
-      min-height:42px;
-      padding:0 14px;
-      border-radius:999px;
-      background:#fff;
-      border:1px solid rgba(148,163,184,.18);
-      color:var(--text-soft);
-      box-shadow:var(--shadow-soft);
-      font:inherit;
-      font-size:13px;
-      font-weight:800;
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      transition:transform .12s ease, color .18s ease, border-color .18s ease;
-      text-decoration:none;
-    }
-    .quick-link:hover,
-    .mini-chip:hover{
-      transform:translateY(-1px);
-      color:var(--brand-2);
-      border-color:rgba(220,38,38,.14);
-    }
-    .mini-chip{
-      cursor:default;
-      font-size:12px;
-    }
-
-    .module-shell{display:grid; gap:14px}
-    .module-toolbar{
-      display:grid;
-      grid-template-columns:minmax(0,1fr) auto;
-      gap:12px;
-      align-items:center;
-      padding:14px 16px;
-      border-radius:22px;
-      border:1px solid rgba(148,163,184,.16);
-      background:rgba(255,255,255,.82);
-      box-shadow:var(--shadow-soft);
-    }
-    .module-head{
-      min-width:0;
-      display:flex;
-      align-items:flex-start;
-      gap:12px;
-    }
-    .module-head .module-icon{
-      width:52px;
-      height:52px;
-      border-radius:18px;
-      font-size:19px;
-    }
-    .module-copy{min-width:0}
-    .module-copy h3{
-      margin:0;
-      font-size:18px;
-      line-height:1.2;
-      font-weight:900;
-      letter-spacing:-.03em;
-    }
-    .module-copy p{
-      margin:6px 0 0;
-      font-size:13px;
-      line-height:1.55;
-      color:var(--text-soft);
-      font-weight:600;
-      max-width:760px;
-    }
-    .toolbar-actions{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-    }
-    .frame-shell{
-      min-height:calc(100vh - 270px);
-      border-radius:26px;
-      overflow:hidden;
-      background:#fff;
-      border:1px solid rgba(148,163,184,.16);
-      box-shadow:0 18px 34px rgba(15,23,42,.08);
-    }
-    .frame-shell iframe{
-      width:100%;
-      height:calc(100vh - 270px);
-      min-height:620px;
-      border:none;
-      display:block;
-      background:#fff;
-    }
-
-    .search-results{
-      display:none;
-      position:absolute;
-      top:calc(100% + 8px);
-      left:0;
-      width:min(420px, 92vw);
-      max-height:min(60vh, 460px);
-      overflow:auto;
-      padding:10px;
-      border-radius:20px;
-      border:1px solid rgba(148,163,184,.18);
-      background:rgba(255,255,255,.96);
-      box-shadow:var(--shadow);
-      backdrop-filter:blur(16px);
-      z-index:30;
-    }
-    .search-results.show{display:block}
-    .result-btn,
-    .menu-item{
-      width:100%;
-      border:none;
-      background:transparent;
-      border-radius:16px;
-      display:grid;
-      grid-template-columns:auto minmax(0,1fr) auto;
-      gap:10px;
-      align-items:center;
-      padding:11px 12px;
-      cursor:pointer;
-      text-align:left;
-    }
-    .result-btn:hover,
-    .menu-item:hover{background:#f8fafc}
-    .result-title,
-    .menu-title{
-      display:block;
-      font-size:14px;
-      font-weight:800;
-      line-height:1.25;
+      background:rgba(255,255,255,.94);
       color:var(--text);
-    }
-    .result-meta,
-    .menu-meta{
-      display:block;
-      margin-top:3px;
-      font-size:12px;
-      color:var(--muted);
-      line-height:1.45;
-      font-weight:600;
-    }
-    .menu-icon{
-      width:42px;
-      height:42px;
-      border-radius:14px;
-      display:grid;
-      place-items:center;
-      background:#fff;
-      border:1px solid rgba(148,163,184,.18);
-      color:var(--text);
-      font-size:15px;
-      flex:0 0 auto;
       box-shadow:var(--shadow-soft);
-    }
-    .menu-item.active{
-      background:linear-gradient(180deg, rgba(220,38,38,.10), rgba(255,255,255,.78));
-      box-shadow:inset 0 0 0 1px rgba(220,38,38,.10);
-    }
-    .menu-item.active .menu-icon{
-      background:linear-gradient(135deg, var(--brand), #ef4444 130%);
-      color:#fff;
-    }
-
-    .empty-state{
-      padding:14px;
-      border-radius:16px;
-      background:#f8fafc;
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.55;
-      font-weight:600;
-    }
-
-    .overlay{
       display:none;
+      place-items:center;
+      z-index:1200;
+      cursor:pointer;
+    }
+
+    .sidebar-overlay{
       position:fixed;
       inset:0;
-      background:rgba(15,23,42,.42);
-      backdrop-filter:blur(3px);
-      z-index:39;
+      background:rgba(15,23,42,.26);
+      opacity:0;
+      visibility:hidden;
+      transition:opacity .2s ease, visibility .2s ease;
+      z-index:1090;
     }
-    .overlay.show{display:block}
 
-    .more-panel{
+    .sidebar{
       position:fixed;
-      top:18px;
-      right:18px;
-      bottom:18px;
-      width:min(420px, calc(100vw - 36px));
-      display:grid;
-      grid-template-rows:auto 1fr auto;
-      gap:14px;
-      padding:18px;
-      border-radius:28px;
-      border:1px solid rgba(255,255,255,.75);
-      background:linear-gradient(180deg, rgba(255,255,255,.96), rgba(248,250,252,.92));
-      backdrop-filter:blur(18px);
-      box-shadow:var(--shadow);
-      transform:translateX(calc(100% + 30px));
-      transition:transform .22s ease;
-      z-index:40;
-      overflow:hidden;
-    }
-    .more-panel.open{transform:translateX(0)}
-    .panel-top,
-    .panel-bottom{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-    }
-    .panel-title-wrap{min-width:0}
-    .panel-title-wrap h2{
-      margin:0;
-      font-size:20px;
-      line-height:1.1;
-      font-weight:900;
-      letter-spacing:-.04em;
-    }
-    .panel-title-wrap p{
-      margin:6px 0 0;
-      font-size:13px;
-      line-height:1.55;
-      color:var(--text-soft);
-      font-weight:600;
-    }
-    .panel-close{
-      width:42px;
-      height:42px;
-      border:none;
-      border-radius:14px;
-      display:grid;
-      place-items:center;
-      background:#fff;
-      border:1px solid rgba(148,163,184,.18);
-      box-shadow:var(--shadow-soft);
-      cursor:pointer;
-      color:var(--text);
-      font-size:15px;
-    }
-    .panel-close:hover{color:var(--brand-2)}
-
-    .account-card{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      padding:14px;
-      border-radius:22px;
-      background:rgba(255,255,255,.84);
-      border:1px solid rgba(148,163,184,.16);
-      box-shadow:var(--shadow-soft);
-    }
-    .avatar{
-      width:50px;
-      height:50px;
-      border-radius:18px;
-      display:grid;
-      place-items:center;
-      background:linear-gradient(135deg, var(--accent), #60a5fa 140%);
+      inset:0 auto 0 0;
+      width:var(--sidebar-w);
+      padding:18px 16px 18px;
+      padding-top:max(18px, calc(18px + var(--safe-top)));
+      padding-bottom:max(18px, calc(18px + var(--safe-bottom)));
+      background:linear-gradient(180deg, rgba(127,29,29,.98), rgba(220,38,38,.98));
       color:#fff;
-      font-weight:900;
-      font-size:18px;
-      box-shadow:0 14px 24px rgba(37,99,235,.20);
-      flex:0 0 auto;
-    }
-    .account-copy{min-width:0}
-    .account-copy strong{
-      display:block;
-      font-size:14px;
-      line-height:1.25;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-    .account-copy span{
-      display:block;
-      margin-top:4px;
-      font-size:12px;
-      color:var(--text-soft);
-      font-weight:600;
-    }
-
-    .menu-wrap{
-      min-height:0;
-      overflow:auto;
-      display:grid;
-      gap:14px;
-      padding-right:4px;
-    }
-    .menu-wrap::-webkit-scrollbar{width:8px}
-    .menu-wrap::-webkit-scrollbar-thumb{background:rgba(148,163,184,.32); border-radius:999px}
-    .menu-group{
-      display:grid;
-      gap:10px;
-    }
-    .section-label{
-      margin:2px 4px 0;
-      font-size:11px;
-      line-height:1.2;
-      font-weight:800;
-      text-transform:uppercase;
-      letter-spacing:.14em;
-      color:var(--muted);
-    }
-    .menu-list{display:grid; gap:8px}
-    .panel-bottom{
-      flex-direction:column;
-      align-items:stretch;
-    }
-    .panel-footer-row{
       display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      flex-wrap:wrap;
+      flex-direction:column;
+      gap:14px;
+      box-shadow:24px 0 60px rgba(127,29,29,.24);
+      z-index:1100;
+      overflow:auto;
     }
-    .footer-note{
-      font-size:12px;
-      color:var(--text-soft);
-      font-weight:700;
+    .sidebar::-webkit-scrollbar{width:8px}
+    .sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:999px}
+
+    .brand-card{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      padding:16px;
+      border-radius:24px;
+      background:linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.08));
+      border:1px solid rgba(255,255,255,.16);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.18);
+    }
+    .brand-logo{
+      width:52px;height:52px;border-radius:18px;overflow:hidden;flex:0 0 auto;
+      display:grid;place-items:center;background:rgba(255,255,255,.16);
+      box-shadow:0 16px 26px rgba(0,0,0,.12);
+      padding:7px;
+    }
+    .brand-logo img{width:100%;height:100%;object-fit:contain;display:block}
+    .brand-copy{min-width:0}
+    .brand-copy .eyebrow{
+      font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;
+      opacity:.76;margin-bottom:6px;
+    }
+    .brand-copy h1{
+      margin:0;font-size:18px;line-height:1.12;font-weight:900;letter-spacing:-.03em;
+    }
+    .brand-copy p{
+      margin:6px 0 0;font-size:12px;line-height:1.55;font-weight:600;opacity:.88;
     }
 
-    .sr-only{
-      position:absolute;
-      width:1px;
-      height:1px;
-      padding:0;
-      margin:-1px;
-      overflow:hidden;
-      clip:rect(0,0,0,0);
-      white-space:nowrap;
-      border:0;
+    .status-card{
+      display:grid;gap:10px;
+      padding:14px 16px;border-radius:22px;
+      background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.14);
+    }
+    .status-row{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      font-size:12px;font-weight:800;
+    }
+    .status-chip{
+      display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;
+      background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.16);
+      font-size:12px;font-weight:800;
+    }
+    .status-dot{width:8px;height:8px;border-radius:999px;background:#9ef0bc;box-shadow:0 0 0 4px rgba(158,240,188,.14)}
+
+    .sidebar-search{
+      display:flex;align-items:center;gap:10px;padding:0 14px;height:48px;
+      border-radius:16px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.14);
+    }
+    .sidebar-search input{
+      width:100%;border:none;outline:none;background:transparent;color:#fff;font:inherit;font-size:13px;font-weight:700;
+    }
+    .sidebar-search input::placeholder{color:rgba(255,255,255,.72)}
+
+    .sidebar-section{display:grid;gap:10px}
+    .sidebar-title{
+      padding:0 6px;font-size:10px;letter-spacing:.16em;text-transform:uppercase;font-weight:900;color:rgba(255,255,255,.66)
+    }
+    .nav-list{display:grid;gap:8px}
+    .nav-btn{
+      width:100%;border:none;text-align:left;color:#fff;cursor:pointer;
+      display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;
+      padding:12px 14px;border-radius:18px;background:transparent;font:inherit;
+      transition:background .16s ease, transform .12s ease, box-shadow .16s ease;
+    }
+    .nav-btn:hover{background:rgba(255,255,255,.12);transform:translateY(-1px)}
+    .nav-btn.active{
+      background:linear-gradient(180deg, rgba(255,255,255,.20), rgba(255,255,255,.12));
+      box-shadow:0 16px 28px rgba(0,0,0,.10), inset 0 1px 0 rgba(255,255,255,.18);
+    }
+    .nav-btn .icon{
+      width:40px;height:40px;border-radius:14px;display:grid;place-items:center;
+      background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.14);font-size:15px;
+    }
+    .nav-btn.active .icon{background:#fff;color:var(--brand)}
+    .nav-btn .meta{min-width:0}
+    .nav-btn .label{display:block;font-size:13px;font-weight:800;line-height:1.25}
+    .nav-btn .desc{display:block;margin-top:2px;font-size:11px;font-weight:600;line-height:1.45;color:rgba(255,255,255,.72)}
+    .nav-btn .chev{font-size:11px;color:rgba(255,255,255,.62)}
+
+    .promo-card{
+      margin-top:auto;
+      padding:16px;border-radius:24px;
+      background:linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.10));
+      border:1px solid rgba(255,255,255,.16);
+      display:grid;gap:12px;
+    }
+    .promo-card .badge{
+      display:inline-flex;align-items:center;gap:8px;width:max-content;padding:7px 10px;border-radius:999px;
+      background:rgba(255,255,255,.18);font-size:11px;font-weight:900;
+    }
+    .promo-card h3{margin:0;font-size:16px;line-height:1.2;font-weight:900;letter-spacing:-.02em}
+    .promo-card p{margin:0;font-size:12px;line-height:1.6;font-weight:600;opacity:.88}
+    .promo-actions{display:flex;flex-wrap:wrap;gap:8px}
+    .sidebar-soft-btn{
+      border:none;cursor:pointer;min-height:40px;padding:0 12px;border-radius:14px;
+      background:#fff;color:var(--brand-deep);font:inherit;font-size:12px;font-weight:900;
+      display:inline-flex;align-items:center;gap:8px;
+      box-shadow:0 10px 20px rgba(0,0,0,.10);
+    }
+    .sidebar-ghost-btn{
+      border:none;cursor:pointer;min-height:40px;padding:0 12px;border-radius:14px;
+      background:rgba(255,255,255,.12);color:#fff;font:inherit;font-size:12px;font-weight:800;
+      display:inline-flex;align-items:center;gap:8px;
     }
 
-    @media (max-width: 1180px){
-      .hero-grid,
-      .dashboard-grid,
-      .kpi-grid{
-        grid-template-columns:repeat(2,minmax(0,1fr));
-      }
-      .hero-grid,
-      .dashboard-grid{grid-template-columns:1fr}
-      .topbar{
-        grid-template-columns:1fr;
-      }
-      .topbar-actions{
-        justify-content:flex-start;
-      }
-      .page-title{
-        white-space:normal;
-        overflow:visible;
-        text-overflow:unset;
-      }
+    .main{
+      min-height:100dvh;
+      margin-left:var(--sidebar-w);
+      padding:22px;
+      padding-bottom:max(14px, calc(14px + var(--safe-bottom)));
+    }
+    .main-shell{max-width:1440px;margin:0 auto;display:grid;gap:18px}
+
+    .content-area{display:grid;gap:18px}
+
+    .hero{
+      position:relative;overflow:hidden;padding:24px;border-radius:32px;
+      background:linear-gradient(135deg, #7f1d1d 0%, #b91c1c 46%, #ef4444 100%);
+      color:#fff;box-shadow:0 28px 60px rgba(0,84,35,.28);
+    }
+    .hero::before,.hero::after{content:"";position:absolute;border-radius:999px;pointer-events:none;opacity:.84}
+    .hero::before{width:360px;height:360px;right:-80px;top:-120px;background:radial-gradient(circle, rgba(255,255,255,.22), transparent 64%)}
+    .hero::after{width:280px;height:280px;left:-80px;bottom:-120px;background:radial-gradient(circle, rgba(255,255,255,.16), transparent 64%)}
+    .hero-grid{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);gap:18px;align-items:start}
+    .hero-copy h3{margin:0;font-size:34px;line-height:1.02;font-weight:900;letter-spacing:-.06em;max-width:720px}
+    .hero-copy p{margin:12px 0 0;max-width:700px;font-size:14px;line-height:1.8;color:rgba(255,255,255,.88);font-weight:600}
+    .hero-actions{margin-top:18px;display:flex;flex-wrap:wrap;gap:10px}
+    .btn{
+      border:none;cursor:pointer;min-height:46px;padding:0 16px;border-radius:16px;
+      font:inherit;font-size:14px;font-weight:900;display:inline-flex;align-items:center;gap:10px;
+      transition:transform .12s ease, filter .18s ease, box-shadow .18s ease;text-decoration:none;
+    }
+    .btn:hover{transform:translateY(-1px)}
+    .btn.primary{background:#fff;color:var(--brand-deep);box-shadow:0 18px 30px rgba(0,0,0,.16)}
+    .btn.secondary{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.14)}
+    .btn.soft{background:var(--surface);color:var(--text);border:1px solid var(--line);box-shadow:var(--shadow-soft)}
+    .btn.ghost{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.14)}
+
+    .hero-side{display:grid;gap:10px}
+    .hero-stat{
+      padding:16px;border-radius:22px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.12);
+      backdrop-filter:blur(10px);
+    }
+    .hero-stat .k{font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:rgba(255,255,255,.70)}
+    .hero-stat .v{margin-top:8px;font-size:23px;font-weight:900;letter-spacing:-.04em}
+    .hero-stat .s{margin-top:4px;font-size:12px;line-height:1.55;color:rgba(255,255,255,.82);font-weight:600}
+
+    .grid-4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.92), rgba(248,251,248,.84));
+      border:1px solid rgba(255,255,255,.78);box-shadow:var(--shadow-soft);backdrop-filter:blur(18px);
+      border-radius:26px;
+    }
+    .kpi-card{padding:16px;position:relative;overflow:hidden}
+    .kpi-card::before{content:"";position:absolute;left:0;top:0;width:100%;height:6px;background:linear-gradient(90deg, var(--brand), #fb7185)}
+    .kpi-card .k{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:900;margin-top:8px}
+    .kpi-card .v{margin-top:8px;font-size:25px;font-weight:900;letter-spacing:-.05em}
+    .kpi-card .s{margin-top:5px;font-size:12px;line-height:1.6;color:var(--text-soft);font-weight:600}
+
+    .dashboard-grid{display:grid;grid-template-columns:minmax(0,1.24fr) minmax(320px,.82fr);gap:18px;align-items:start}
+    .stack{display:grid;gap:18px}
+    .panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:18px 18px 12px;border-bottom:1px solid var(--line)}
+    .panel-head h3{margin:0;font-size:18px;line-height:1.2;font-weight:900;letter-spacing:-.03em}
+    .panel-head p{margin:6px 0 0;font-size:13px;line-height:1.6;color:var(--text-soft);font-weight:600}
+    .panel-body{padding:16px 18px 18px}
+
+    .module-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .module-card{
+      width:100%;border:none;cursor:pointer;text-align:left;padding:16px;border-radius:22px;
+      background:linear-gradient(180deg, #ffffff, #f3faf5);border:1px solid var(--line);box-shadow:var(--shadow-soft);
+      display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:flex-start;transition:transform .12s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .module-card:hover{transform:translateY(-2px);border-color:rgba(220,38,38,.22);box-shadow:0 22px 34px rgba(68,18,31,.10)}
+    .module-icon{
+      width:48px;height:48px;border-radius:16px;display:grid;place-items:center;flex:0 0 auto;
+      background:linear-gradient(135deg, rgba(220,38,38,.16), rgba(220,38,38,.06));color:var(--brand);font-size:18px;
+    }
+    .module-card strong{display:block;font-size:15px;font-weight:900;line-height:1.3;letter-spacing:-.02em}
+    .module-card span{display:block;margin-top:5px;font-size:13px;line-height:1.6;color:var(--text-soft);font-weight:600}
+
+    .collection-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .collection-card{padding:16px;border-radius:22px;border:1px solid var(--line);background:linear-gradient(180deg, #fff, #f8fbf9);box-shadow:var(--shadow-soft)}
+    .collection-top{display:flex;align-items:flex-start;gap:10px}
+    .collection-badge{width:44px;height:44px;border-radius:15px;display:grid;place-items:center;background:var(--brand-soft);color:var(--brand-deep);font-size:17px;flex:0 0 auto}
+    .collection-card h4{margin:0;font-size:15px;font-weight:900;line-height:1.3}
+    .collection-card p{margin:6px 0 0;font-size:13px;line-height:1.6;color:var(--text-soft);font-weight:600}
+
+    .chip-row,.quick-links{display:flex;flex-wrap:wrap;gap:10px}
+    .quick-link{
+      border:none;cursor:pointer;min-height:40px;padding:0 14px;border-radius:999px;
+      background:#fff;border:1px solid var(--line);color:var(--text-soft);box-shadow:var(--shadow-soft);
+      font:inherit;font-size:12px;font-weight:900;display:inline-flex;align-items:center;gap:8px;
+      transition:transform .12s ease, color .18s ease, border-color .18s ease;
+    }
+    .quick-link:hover{transform:translateY(-1px);color:var(--brand);border-color:rgba(220,38,38,.18)}
+    .mini-chip{display:inline-flex;align-items:center;gap:8px;min-height:38px;padding:0 12px;border-radius:999px;background:var(--bg-soft);color:var(--text-soft);font-size:12px;font-weight:900}
+
+    .info-list{display:grid;gap:10px}
+    .info-row{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start;padding:14px;border-radius:18px;background:linear-gradient(180deg, #fff, #f8fbf9);border:1px solid var(--line)}
+    .info-icon{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;background:var(--brand-soft);color:var(--brand-deep);font-size:16px}
+    .info-row strong{display:block;font-size:14px;font-weight:900;line-height:1.3}
+    .info-row span{display:block;margin-top:4px;font-size:13px;line-height:1.6;color:var(--text-soft);font-weight:600}
+
+    .module-shell{display:grid;gap:12px}
+    .frame-shell{
+      min-height:calc(100dvh - 120px);border-radius:28px;overflow:hidden;background:#fff;
+      border:1px solid rgba(255,255,255,.76);box-shadow:var(--shadow);
+    }
+    .frame-shell iframe{width:100%;height:calc(100dvh - 120px);min-height:0;border:none;display:block;background:#fff}
+
+    .search-empty{padding:16px;border-radius:18px;background:var(--bg-soft);color:var(--muted);font-size:13px;line-height:1.6;font-weight:700}
+
+    @media (max-width:1180px){
+      .hero-grid,.dashboard-grid{grid-template-columns:1fr}
+      .grid-4{grid-template-columns:repeat(2,minmax(0,1fr))}
     }
 
-    @media (max-width: 820px){
-      .app-shell{
-        padding:12px;
-        gap:12px;
-      }
-      .topbar{
-        top:max(8px, calc(8px + var(--safe-top)));
-        padding:16px;
-        border-radius:24px;
-      }
-      .topbar-left{align-items:flex-start}
-      .search-wrap{min-width:0; width:100%}
-      .content-scroll{
-        padding:14px;
-        min-height:calc(100vh - 150px);
-      }
-      .module-grid,
-      .collection-grid,
-      .kpi-grid{
-        grid-template-columns:1fr;
-      }
-      .more-panel{
-        top:auto;
-        right:12px;
-        left:12px;
-        bottom:12px;
-        width:auto;
-        max-height:min(82vh, 760px);
-        transform:translateY(calc(100% + 30px));
-      }
-      .more-panel.open{transform:translateY(0)}
-      .frame-shell,
-      .frame-shell iframe{
-        min-height:calc(100vh - 320px);
-        height:calc(100vh - 320px);
-      }
-      .module-toolbar{
-        grid-template-columns:1fr;
-      }
-      .toolbar-actions{justify-content:flex-start}
+    @media (max-width:980px){
+      .mobile-toggle{display:grid}
+      .sidebar{transform:translateX(-102%);transition:transform .22s ease;width:min(84vw,320px)}
+      body.drawer-open .sidebar{transform:translateX(0)}
+      body.drawer-open .sidebar-overlay{opacity:1;visibility:visible}
+      .main{margin-left:0;min-height:100dvh;padding:82px 14px 12px}
     }
 
-    @media (max-width: 560px){
-      .app-shell{padding:10px}
-      .topbar{padding:14px}
-      .brand{
-        width:50px;
-        height:50px;
-        border-radius:16px;
-        font-size:18px;
-      }
-      .page-title{font-size:24px}
-      .page-subtitle,
-      .module-copy p,
-      .hero-copy p{font-size:13px}
-      .hero{padding:18px}
-      .hero-copy h2{font-size:24px}
-      .frame-shell,
-      .frame-shell iframe{
-        min-height:calc(100vh - 340px);
-        height:calc(100vh - 340px);
-        border-radius:22px;
-      }
-      .more-panel{
-        left:10px;
-        right:10px;
-        bottom:10px;
-        padding:14px;
-        border-radius:24px;
-      }
-      .panel-footer-row{align-items:stretch}
+    @media (max-width:760px){
+      .grid-4,.collection-grid,.module-grid{grid-template-columns:1fr}
+      .hero{padding:20px;border-radius:28px}
+      .hero-copy h3{font-size:28px}
+      .frame-shell,.frame-shell iframe{min-height:calc(100dvh - 118px);height:calc(100dvh - 118px)}
+    }
+
+    @media (max-width:560px){
+      .main{min-height:100dvh;padding:74px 10px 8px}
+      .hero-copy p,.module-copy p{font-size:13px}
+      .hero-copy h3{font-size:24px}
+      .btn{min-height:42px;padding:0 14px;font-size:13px}
+      .content-area{gap:10px}
+      .module-shell{gap:8px}
+      .frame-shell,.frame-shell iframe{min-height:calc(100dvh - 92px);height:calc(100dvh - 92px);border-radius:22px}
     }
   </style>
 </head>
 <body>
-  <div class="app-shell">
-    <header class="topbar">
-      <div class="topbar-left">
-        <div class="brand"><img src="logo.jpeg" alt="Restoran Ayam Gepuk Ngences logo" /></div>
-        <div class="page-copy">
-          <div class="eyebrow">Restaurant Workspace</div>
-          <div class="page-title" id="pageTitle">Home</div>
-          <div class="page-subtitle" id="pageSubtitle">A cleaner shell for restaurant operations with all pages moved into a simple More panel and better responsive spacing.</div>
-        </div>
-      </div>
+  <button class="mobile-toggle" id="mobileToggle" type="button" aria-label="Open workspace navigation">
+    <i class="fa-solid fa-bars"></i>
+  </button>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-      <div class="topbar-actions">
-        <div class="search-wrap">
-          <i class="fa-solid fa-magnifying-glass"></i>
-          <label class="sr-only" for="moduleSearch">Search modules</label>
-          <input id="moduleSearch" type="search" placeholder="Jump to a module…" autocomplete="off" />
-          <div class="search-results" id="searchResults"></div>
-        </div>
-        <div class="pill primary"><i class="fa-solid fa-shield-halved"></i> <span id="roleChip">—</span></div>
-        <div class="pill"><span class="live-dot"></span> <span id="workspaceMode">—</span></div>
-        <div class="pill"><i class="fa-regular fa-clock"></i> <span id="liveTime">—</span></div>
-        <button class="ghost-pill" id="moreBtn" type="button"><i class="fa-solid fa-ellipsis"></i> More</button>
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-card">
+      <div class="brand-logo"><img src="logo.jpeg" alt="Restaurant logo" /></div>
+      <div class="brand-copy">
+        <div class="eyebrow">Vendor workspace</div>
+        <h1>Restaurant Hub</h1>
+        <p>One cleaner shell for orders, menu, staff, queue, display, and daily operations.</p>
       </div>
-    </header>
-
-    <section class="content">
-      <div class="content-scroll">
-        <div id="contentArea"></div>
-      </div>
-    </section>
-  </div>
-
-  <div class="overlay" id="overlay"></div>
-
-  <aside class="more-panel" id="morePanel" aria-label="More navigation and account tools">
-    <div class="panel-top">
-      <div class="panel-title-wrap">
-        <h2>More</h2>
-        <p>All listed HTML pages are grouped here with one clear logout action for phone, iPad, and desktop.</p>
-      </div>
-      <button class="panel-close" id="closeMore" type="button" aria-label="Close more panel">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
     </div>
 
-    <div class="menu-wrap">
-      <div class="account-card">
-        <div class="avatar" id="userAvatar">RC</div>
-        <div class="account-copy">
-          <strong id="userName">Restaurant User</strong>
-          <span id="userStatus">Signed in</span>
-        </div>
+    <div class="status-card">
+      <div class="status-row">
+        <span>Store mode</span>
+        <span class="status-chip"><span class="status-dot"></span><span id="storeStatus">Active</span></span>
       </div>
-      <div id="moreNav"></div>
+      <div class="status-row">
+        <span>Signed in</span>
+        <strong id="sidebarUser">Restaurant User</strong>
+      </div>
+      <div class="status-row">
+        <span>Role</span>
+        <strong id="sidebarRole">Viewer</strong>
+      </div>
     </div>
 
-    <div class="panel-bottom">
-      <div class="panel-footer-row">
-        <span class="mini-chip"><span class="live-dot"></span> Active session</span>
-        <span class="mini-chip"><i class="fa-regular fa-clock"></i> <span id="sidebarTime">—</span></span>
+    <label class="sidebar-search" aria-label="Search modules">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input id="moduleSearch" type="search" placeholder="Search workspace" autocomplete="off" />
+    </label>
+
+    <div id="sidebarNav"></div>
+
+    <div class="promo-card">
+      <span class="badge"><i class="fa-solid fa-bolt"></i> Faster daily flow</span>
+      <h3>Run service, sales, and back office from one workspace.</h3>
+      <p>Use the same vendor-style shell for quick order handling, stock follow-up, staff actions, and reporting.</p>
+      <div class="promo-actions">
+        <button class="sidebar-soft-btn" type="button" id="promoHomeBtn"><i class="fa-solid fa-house"></i> Home</button>
+        <button class="sidebar-ghost-btn" type="button" id="promoLogoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
       </div>
-      <button class="btn danger" id="logoutBtn" type="button"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
-      <div class="footer-note">Clear session and return to sign in.</div>
     </div>
   </aside>
+
+  <main class="main">
+    <div class="main-shell">
+      <section id="contentArea" class="content-area"></section>
+    </div>
+  </main>
 
   <script>
     const currentUser = localStorage.getItem("currentUser") || "Restaurant User";
@@ -1083,164 +420,49 @@
     }
 
     const pageMeta = {
-      home: {
-        label: "Home",
-        short: "Home",
-        icon: "fa-house",
-        group: "Workspace",
-        description: "A clean overview of the restaurant workspace with role-based quick access.",
-        file: null
-      },
-      orders: {
-        label: "Customer Orders",
-        short: "Orders",
-        icon: "fa-cart-shopping",
-        group: "Service",
-        description: "Manage customer orders, checkout, and daily service flow.",
-        file: "index.html"
-      },
-      orderpos: {
-        label: "Fast POS Order",
-        short: "Fast POS",
-        icon: "fa-bolt",
-        group: "Service",
-        description: "Use the fast POS page for quick cashier and takeaway ordering.",
-        file: "order_pos.html"
-      },
-      menu: {
-        label: "Menu Admin",
-        short: "Menu",
-        icon: "fa-burger",
-        group: "Operations",
-        description: "Update menu items, pricing, stock behavior, fast-order tiles, and add-ons.",
-        file: "menu.html"
-      },
-      materials: {
-        label: "Materials",
-        short: "Materials",
-        icon: "fa-boxes-stacked",
-        group: "Operations",
-        description: "Track material quantities, stock movement, and low-stock items.",
-        file: "materials.html"
-      },
-      tables: {
-        label: "Tables & Mapping",
-        short: "Tables",
-        icon: "fa-table",
-        group: "Operations",
-        description: "Configure active tables and dine-in mapping for the ordering flow.",
-        file: "tables.html"
-      },
-      display: {
-        label: "Order Display",
-        short: "Display",
-        icon: "fa-clipboard-list",
-        group: "Service",
-        description: "Monitor incoming orders, kitchen progress, and payment status.",
-        file: "display.html"
-      },
-      analysis: {
-        label: "Analytics",
-        short: "Analytics",
-        icon: "fa-chart-pie",
-        group: "Insights",
-        description: "Review analytics, revenue trends, and operational insights.",
-        file: "analysis.html"
-      },
-      queue: {
-        label: "Customer Queue",
-        short: "Queue",
-        icon: "fa-users",
-        group: "Service",
-        description: "Show queue and status updates on a customer-facing screen.",
-        file: "customer.html"
-      },
-      clockin: {
-        label: "Staff Clock In",
-        short: "Clock In",
-        icon: "fa-clock",
-        group: "Team",
-        description: "Allow staff to clock in, clock out, and manage breaks.",
-        file: "staff_clockin.html"
-      },
-      staffdash: {
-        label: "Staff Dashboard",
-        short: "Staff Dash",
-        icon: "fa-file-invoice-dollar",
-        group: "Team",
-        description: "Review staff attendance summaries, payroll estimates, and downloadable reports.",
-        file: "staff_dashboard.html"
-      },
-      staff: {
-        label: "Staff Management",
-        short: "Staff",
-        icon: "fa-users-gear",
-        group: "Team",
-        description: "Manage staff accounts, roles, shifts, and attendance settings.",
-        file: "staff_management.html"
-      },
-      access: {
-        label: "Access & Login",
-        short: "Access",
-        icon: "fa-id-card-clip",
-        group: "Workspace",
-        description: "Keep the sign-in screen available inside the shell so the app covers every attached page.",
-        file: "auth.html"
-      }
+      home: { label: "Home", short: "Home", icon: "fa-house", group: "Workspace", description: "See the full restaurant workspace with quick actions, service shortcuts, and vendor-style summaries.", file: null },
+      orders: { label: "Customer Orders", short: "Orders", icon: "fa-cart-shopping", group: "Service", description: "Manage incoming orders, queue flow, and checkout tasks.", file: "index.html" },
+      orderpos: { label: "Fast POS Order", short: "Fast POS", icon: "fa-bolt", group: "Service", description: "Use the quick POS page for fast cashier and takeaway ordering.", file: "order_pos.html" },
+      menu: { label: "Menu Admin", short: "Menu", icon: "fa-burger", group: "Operations", description: "Update menu items, prices, stock behavior, fast-order tiles, and add-ons.", file: "menu.html" },
+      materials: { label: "Materials", short: "Materials", icon: "fa-boxes-stacked", group: "Operations", description: "Track material quantities, stock movement, and low-stock items.", file: "materials.html" },
+      tables: { label: "Tables & Mapping", short: "Tables", icon: "fa-table", group: "Operations", description: "Configure active tables and dine-in mapping for the ordering flow.", file: "tables.html" },
+      display: { label: "Order Display", short: "Display", icon: "fa-clipboard-list", group: "Service", description: "Monitor incoming orders, kitchen progress, and payment status.", file: "display.html" },
+      analysis: { label: "Analytics", short: "Analytics", icon: "fa-chart-pie", group: "Insights", description: "Review analytics, revenue trends, and operational insights.", file: "analysis.html" },
+      queue: { label: "Customer Queue", short: "Queue", icon: "fa-users", group: "Service", description: "Show queue and status updates on a customer-facing screen.", file: "customer.html" },
+      clockin: { label: "Staff Clock In", short: "Clock In", icon: "fa-clock", group: "Team", description: "Allow staff to clock in, clock out, and manage breaks.", file: "staff_clockin.html" },
+      staffdash: { label: "Staff Dashboard", short: "Staff Dash", icon: "fa-file-invoice-dollar", group: "Team", description: "Review staff attendance summaries, payroll estimates, and downloadable reports.", file: "staff_dashboard.html" },
+      staff: { label: "Staff Management", short: "Staff", icon: "fa-users-gear", group: "Team", description: "Manage staff accounts, roles, shifts, and attendance settings.", file: "staff_management.html" },
+      access: { label: "Access & Login", short: "Access", icon: "fa-id-card-clip", group: "Workspace", description: "Keep the sign-in screen available inside the same app shell.", file: "auth.html" }
     };
 
     const pageGroupOrder = ["Workspace", "Service", "Operations", "Team", "Insights"];
     const visiblePages = (rolePermissions[userRole] || ["home"]).filter(page => pageMeta[page]);
     if (!visiblePages.includes("home")) visiblePages.unshift("home");
 
-    const pageTitle = document.getElementById("pageTitle");
-    const pageSubtitle = document.getElementById("pageSubtitle");
+    const sidebarNav = document.getElementById("sidebarNav");
     const contentArea = document.getElementById("contentArea");
-    const moreNav = document.getElementById("moreNav");
-    const morePanel = document.getElementById("morePanel");
-    const overlay = document.getElementById("overlay");
-    const moreBtn = document.getElementById("moreBtn");
-    const closeMore = document.getElementById("closeMore");
+    const storeStatus = document.getElementById("storeStatus");
+    const sidebarUser = document.getElementById("sidebarUser");
+    const sidebarRole = document.getElementById("sidebarRole");
     const moduleSearch = document.getElementById("moduleSearch");
-    const searchResults = document.getElementById("searchResults");
-    const liveTimeEl = document.getElementById("liveTime");
-    const sidebarTimeEl = document.getElementById("sidebarTime");
-    const roleChipEl = document.getElementById("roleChip");
-    const userAvatarEl = document.getElementById("userAvatar");
-    const workspaceModeEl = document.getElementById("workspaceMode");
+    const mobileToggle = document.getElementById("mobileToggle");
+    const sidebarOverlay = document.getElementById("sidebarOverlay");
 
-    document.getElementById("userName").textContent = userDisplayName;
-    document.getElementById("userStatus").textContent = capitalizedRole + " access";
-    roleChipEl.textContent = capitalizedRole;
-    userAvatarEl.textContent = (userDisplayName || currentUser)
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map(p => p[0]?.toUpperCase() || "")
-      .join("") || "RC";
+    sidebarUser.textContent = userDisplayName;
+    sidebarRole.textContent = capitalizedRole;
 
     function getDeviceLabel(){
-      if (window.innerWidth <= 820) return "Smartphone";
-      if (window.innerWidth <= 1180) return "iPad / Tablet";
+      if (window.innerWidth <= 560) return "Phone";
+      if (window.innerWidth <= 980) return "Tablet";
       return "Desktop";
     }
 
     function formatNow(){
-      const now = new Date();
-      return now.toLocaleString([], {
-        weekday: "short",
-        day: "2-digit",
-        month: "short",
-        hour: "numeric",
-        minute: "2-digit"
-      });
+      return new Date().toLocaleString([], { weekday:"short", day:"2-digit", month:"short", hour:"numeric", minute:"2-digit" });
     }
 
     function tickClock(){
-      const nowText = formatNow();
-      liveTimeEl.textContent = nowText;
-      sidebarTimeEl.textContent = nowText;
-      workspaceModeEl.textContent = getDeviceLabel();
+      storeStatus.textContent = getDeviceLabel() === "Desktop" ? "Active on desktop" : "Active on mobile";
     }
     tickClock();
     setInterval(tickClock, 30000);
@@ -1251,51 +473,48 @@
         location.href = "auth.html";
       }
     }
-    document.getElementById("logoutBtn").addEventListener("click", logout);
 
-    function openMore(){
-      morePanel.classList.add("open");
-      overlay.classList.add("show");
-      document.body.classList.add("panel-open");
-    }
-    function closeMorePanel(){
-      morePanel.classList.remove("open");
-      overlay.classList.remove("show");
-      document.body.classList.remove("panel-open");
-    }
+    function closeDrawer(){ document.body.classList.remove("drawer-open"); }
+    function openDrawer(){ document.body.classList.add("drawer-open"); }
 
-    moreBtn.addEventListener("click", openMore);
-    closeMore.addEventListener("click", closeMorePanel);
-    overlay.addEventListener("click", () => {
-      closeMorePanel();
-      closeSearchResults();
+    mobileToggle.addEventListener("click", () => {
+      document.body.classList.toggle("drawer-open");
     });
+    sidebarOverlay.addEventListener("click", closeDrawer);
+    document.getElementById("promoLogoutBtn").addEventListener("click", logout);
+    document.getElementById("promoHomeBtn").addEventListener("click", () => setActivePage("home"));
 
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
-        closeMorePanel();
-        closeSearchResults();
-      }
+      if (e.key === "Escape") closeDrawer();
+    });
+    window.addEventListener("resize", () => {
+      if (window.innerWidth > 980) closeDrawer();
     });
 
-    function renderMorePanel(activePage){
+    function renderSidebar(activePage){
+      const searchTerm = (moduleSearch.value || "").trim().toLowerCase();
       const groups = pageGroupOrder.map(group => {
-        const items = visiblePages.filter(page => pageMeta[page].group === group);
+        const items = visiblePages.filter(page => {
+          const meta = pageMeta[page];
+          if (!meta || meta.group !== group) return false;
+          if (!searchTerm) return true;
+          return [meta.label, meta.short, meta.description, meta.group].join(" ").toLowerCase().includes(searchTerm);
+        });
         if (!items.length) return "";
         return `
-          <section class="menu-group">
-            <div class="section-label">${group}</div>
-            <div class="menu-list">
+          <section class="sidebar-section">
+            <div class="sidebar-title">${group}</div>
+            <div class="nav-list">
               ${items.map(page => {
                 const meta = pageMeta[page];
                 return `
-                  <button class="menu-item ${page === activePage ? "active" : ""}" type="button" data-page="${page}">
-                    <span class="menu-icon"><i class="fa-solid ${meta.icon}"></i></span>
-                    <span>
-                      <span class="menu-title">${meta.label}</span>
-                      <span class="menu-meta">${meta.description}</span>
+                  <button class="nav-btn ${page === activePage ? "active" : ""}" type="button" data-page="${page}">
+                    <span class="icon"><i class="fa-solid ${meta.icon}"></i></span>
+                    <span class="meta">
+                      <span class="label">${meta.label}</span>
+                      <span class="desc">${meta.description}</span>
                     </span>
-                    <span class="menu-meta"><i class="fa-solid fa-chevron-right"></i></span>
+                    <span class="chev"><i class="fa-solid fa-chevron-right"></i></span>
                   </button>
                 `;
               }).join("")}
@@ -1304,8 +523,8 @@
         `;
       }).join("");
 
-      moreNav.innerHTML = groups;
-      moreNav.querySelectorAll("[data-page]").forEach(btn => {
+      sidebarNav.innerHTML = groups || '<div class="search-empty">No workspace module matches your search.</div>';
+      sidebarNav.querySelectorAll("[data-page]").forEach(btn => {
         btn.addEventListener("click", () => setActivePage(btn.getAttribute("data-page")));
       });
     }
@@ -1335,195 +554,163 @@
       const insightPages = quickPages.filter(page => pageMeta[page].group === "Insights");
       const workspacePages = quickPages.filter(page => pageMeta[page].group === "Workspace");
 
-      const groups = [
-        { title: "Front of house", icon: "fa-cart-shopping", tone: "service", desc: "Keep ordering, POS, display, and customer queue connected in one flow.", items: servicePages.slice(0,4) },
-        { title: "Operations", icon: "fa-boxes-stacked", tone: "ops", desc: "Manage menu, materials, and table setup from a cleaner operations layer.", items: opsPages.slice(0,4) },
-        { title: "Team", icon: "fa-users", tone: "team", desc: "Handle clock in, staff records, dashboards, and attendance tasks quickly.", items: teamPages.slice(0,4) },
-        { title: "Insights & access", icon: "fa-chart-line", tone: "insights", desc: "Review analytics and keep the access screen available inside the same app shell.", items: [...insightPages, ...workspacePages.filter(p => p === "access")].slice(0,4) }
+      const collections = [
+        { title: "Service today", icon: "fa-bag-shopping", desc: "Move quickly between order intake, live display, fast POS, and customer queue.", items: servicePages.slice(0,4) },
+        { title: "Store operations", icon: "fa-store", desc: "Keep menu, tables, and stock pages grouped in a clean back-office layer.", items: opsPages.slice(0,4) },
+        { title: "Team tools", icon: "fa-users-viewfinder", desc: "Open clock-in, staff records, and payroll-related pages with fewer taps.", items: teamPages.slice(0,4) },
+        { title: "Insights & access", icon: "fa-chart-line", desc: "Switch into analytics or access pages while staying inside the same shell.", items: [...insightPages, ...workspacePages.filter(p => p === "access")].slice(0,4) }
       ];
 
-      const groupMarkup = groups.map(group => {
-        const badgeColor = group.tone === "ops" ? "rgba(22,163,74,.10)" : group.tone === "team" ? "rgba(245,158,11,.12)" : group.tone === "insights" ? "rgba(37,99,235,.10)" : "rgba(220,38,38,.10)";
-        const badgeText = group.tone === "ops" ? "#16a34a" : group.tone === "team" ? "#d97706" : group.tone === "insights" ? "#2563eb" : "#dc2626";
-        const chips = group.items.length
-          ? group.items.map(page => `<button class="quick-link" type="button" data-open="${page}"><i class="fa-solid ${pageMeta[page].icon}"></i> ${pageMeta[page].short}</button>`).join("")
-          : `<span class="mini-chip">No module available</span>`;
-        return `
-          <div class="collection-card">
-            <div class="collection-top">
-              <div class="collection-badge" style="background:${badgeColor}; color:${badgeText}"><i class="fa-solid ${group.icon}"></i></div>
-              <div>
-                <h4>${group.title}</h4>
-                <p>${group.desc}</p>
-              </div>
-            </div>
-            <div class="chip-row">${chips}</div>
-          </div>
-        `;
-      }).join("");
-
-      const quickLinkMarkup = quickPages.map(page => {
-        const meta = pageMeta[page];
-        return `<button class="quick-link" type="button" data-open="${page}"><i class="fa-solid ${meta.icon}"></i> ${meta.short}</button>`;
-      }).join("");
-
       return `
-        <div class="home">
-          <section class="hero">
-            <div class="hero-grid">
-              <div class="hero-copy">
-                <h2>Cleaner restaurant dashboard with no sidebar and a simple More panel.</h2>
-                <p>
-                  The old navigation bar has been removed from the main layout. Every listed HTML page now lives in a dedicated More panel,
-                  while the home screen stays focused, touch-friendly, and easier to use on smartphone and iPad.
-                </p>
-                <div class="hero-actions">
-                  ${quickPages[0] ? `<button class="btn primary" type="button" data-open="${quickPages[0]}"><i class="fa-solid ${pageMeta[quickPages[0]].icon}"></i> Open ${pageMeta[quickPages[0]].short}</button>` : ""}
-                  <button class="btn ghost" type="button" id="heroMoreBtn"><i class="fa-solid fa-ellipsis"></i> Open More</button>
-                </div>
-              </div>
-
-              <div class="hero-side">
-                <div class="hero-stat">
-                  <div class="k">Signed in as</div>
-                  <div class="v">${userDisplayName}</div>
-                  <div class="s">Role-based access still controls which pages appear inside the More panel and quick cards.</div>
-                </div>
-                <div class="hero-stat">
-                  <div class="k">Device fit</div>
-                  <div class="v">${getDeviceLabel()}</div>
-                  <div class="s">Spacing, panel behavior, and iframe height adapt for compact screens and tablets.</div>
-                </div>
-                <div class="hero-stat">
-                  <div class="k">Attached pages</div>
-                  <div class="v">${quickPages.length}</div>
-                  <div class="s">Includes orders, POS, stock, queue, staff tools, analytics, and the access screen.</div>
-                </div>
+        <section class="hero">
+          <div class="hero-grid">
+            <div class="hero-copy">
+              <h3>Built for faster restaurant operations with a cleaner vendor-style workspace.</h3>
+              <p>
+                Use one focused shell to handle service, menu updates, staffing, reporting, and customer flow.
+                The layout is now closer to a modern merchant app: stronger sidebar navigation, compact actions,
+                and more visible working space for phones, tablets, and desktop.
+              </p>
+              <div class="hero-actions">
+                ${quickPages[0] ? `<button class="btn primary" type="button" data-open="${quickPages[0]}"><i class="fa-solid ${pageMeta[quickPages[0]].icon}"></i> Open ${pageMeta[quickPages[0]].short}</button>` : ""}
+                <button class="btn secondary" type="button" id="openOrdersBtn"><i class="fa-solid fa-cart-shopping"></i> Go to orders</button>
               </div>
             </div>
-          </section>
-
-          <section class="kpi-grid">
-            <div class="kpi-card">
-              <div class="k">Available modules</div>
-              <div class="v">${quickPages.length}</div>
-              <div class="s">Every page opens inside the same clean dashboard shell.</div>
-            </div>
-            <div class="kpi-card">
-              <div class="k">Navigation style</div>
-              <div class="v">More panel</div>
-              <div class="s">All listed HTML pages and logout are grouped in one place.</div>
-            </div>
-            <div class="kpi-card">
-              <div class="k">Primary fit</div>
-              <div class="v">${getDeviceLabel()}</div>
-              <div class="s">Improved spacing, panels, and touch targets for smaller screens.</div>
-            </div>
-            <div class="kpi-card">
-              <div class="k">Shell style</div>
-              <div class="v">Unified</div>
-              <div class="s">Cleaner header, larger cards, and simpler navigation flow.</div>
-            </div>
-          </section>
-
-          <section class="dashboard-grid">
-            <div class="stack">
-              <div class="panel">
-                <div class="panel-head">
-                  <div>
-                    <h3>Quick access</h3>
-                    <p>Launch the modules you use most with bigger cards and less visual noise.</p>
-                  </div>
-                </div>
-                <div class="panel-body">
-                  <div class="module-grid">
-                    ${featured || '<div class="empty-state">No modules are available for this account right now.</div>'}
-                  </div>
-                </div>
+            <div class="hero-side">
+              <div class="hero-stat">
+                <div class="k">Signed in as</div>
+                <div class="v">${userDisplayName}</div>
+                <div class="s">Role-based access keeps only the right modules visible for this account.</div>
               </div>
-
-              <div class="panel">
-                <div class="panel-head">
-                  <div>
-                    <h3>Workspace collections</h3>
-                    <p>A simpler view of how the attached pages fit together across service, operations, team, and insights.</p>
-                  </div>
-                </div>
-                <div class="panel-body">
-                  <div class="collection-grid">${groupMarkup}</div>
-                </div>
+              <div class="hero-stat">
+                <div class="k">Available modules</div>
+                <div class="v">${quickPages.length}</div>
+                <div class="s">Orders, POS, stock, tables, staff tools, analytics, and login access stay under one vendor workspace.</div>
+              </div>
+              <div class="hero-stat">
+                <div class="k">Best fit</div>
+                <div class="v">${getDeviceLabel()}</div>
+                <div class="s">Sidebar switches to hamburger on tablet and phone to protect working space.</div>
               </div>
             </div>
+          </div>
+        </section>
 
-            <div class="stack">
-              <div class="panel">
-                <div class="panel-head">
-                  <div>
-                    <h3>Suggested workflow</h3>
-                    <p>Use a clean service-to-reporting flow during daily operations.</p>
-                  </div>
+        <section class="grid-4">
+          <article class="card kpi-card">
+            <div class="k">Store mode</div>
+            <div class="v">Ready</div>
+            <div class="s">Keep daily service pages one tap away from the sidebar.</div>
+          </article>
+          <article class="card kpi-card">
+            <div class="k">Role access</div>
+            <div class="v">${capitalizedRole}</div>
+            <div class="s">Only the allowed pages for this role are shown throughout the workspace.</div>
+          </article>
+          <article class="card kpi-card">
+            <div class="k">Navigation</div>
+            <div class="v">Sidebar</div>
+            <div class="s">Desktop keeps a fixed rail; tablet and phone use a clean hamburger drawer.</div>
+          </article>
+          <article class="card kpi-card">
+            <div class="k">Current device</div>
+            <div class="v">${getDeviceLabel()}</div>
+            <div class="s">Spacing, iframe height, and action layout adapt automatically.</div>
+          </article>
+        </section>
+
+        <section class="dashboard-grid">
+          <div class="stack">
+            <article class="card">
+              <div class="panel-head">
+                <div>
+                  <h3>Quick launch</h3>
+                  <p>Open the most-used modules with larger cards and less clutter.</p>
                 </div>
-                <div class="panel-body">
-                  <div class="info-list">
-                    <div class="info-row">
-                      <div class="info-icon"><i class="fa-solid fa-cart-shopping"></i></div>
-                      <div><strong>1. Capture orders fast</strong><span>Use Customer Orders or Fast POS to start service, then keep the Order Display visible for kitchen coordination.</span></div>
+              </div>
+              <div class="panel-body">
+                <div class="module-grid">${featured || '<div class="search-empty">No module is available for this account right now.</div>'}</div>
+              </div>
+            </article>
+
+            <article class="card">
+              <div class="panel-head">
+                <div>
+                  <h3>Workspace collections</h3>
+                  <p>Organize service, operations, team, and insights with a simpler vendor-style view.</p>
+                </div>
+              </div>
+              <div class="panel-body">
+                <div class="collection-grid">
+                  ${collections.map(group => `
+                    <div class="collection-card">
+                      <div class="collection-top">
+                        <div class="collection-badge"><i class="fa-solid ${group.icon}"></i></div>
+                        <div>
+                          <h4>${group.title}</h4>
+                          <p>${group.desc}</p>
+                        </div>
+                      </div>
+                      <div class="chip-row">
+                        ${group.items.length ? group.items.map(page => `<button class="quick-link" type="button" data-open="${page}"><i class="fa-solid ${pageMeta[page].icon}"></i> ${pageMeta[page].short}</button>`).join("") : '<span class="mini-chip">No module available</span>'}
+                      </div>
                     </div>
-                    <div class="info-row">
-                      <div class="info-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
-                      <div><strong>2. Keep stock and seating aligned</strong><span>Menu, Materials, and Tables now sit behind one simple More menu and cleaner quick links.</span></div>
-                    </div>
-                    <div class="info-row">
-                      <div class="info-icon"><i class="fa-solid fa-users-gear"></i></div>
-                      <div><strong>3. Review people and results</strong><span>Use Staff, Clock In, Staff Dashboard, and Analytics to close the loop at the end of the day.</span></div>
-                    </div>
-                  </div>
+                  `).join("")}
                 </div>
               </div>
+            </article>
+          </div>
 
-              <div class="panel">
-                <div class="panel-head">
-                  <div>
-                    <h3>Shortcuts</h3>
-                    <p>Quick jumps stay visible without bringing back the old nav bar.</p>
-                  </div>
+          <div class="stack">
+            <article class="card">
+              <div class="panel-head">
+                <div>
+                  <h3>Suggested daily flow</h3>
+                  <p>A compact service-to-reporting loop for restaurant teams.</p>
                 </div>
-                <div class="panel-body">
-                  <div class="quick-links">
-                    ${quickLinkMarkup || '<span class="mini-chip">No shortcuts</span>'}
+              </div>
+              <div class="panel-body">
+                <div class="info-list">
+                  <div class="info-row">
+                    <div class="info-icon"><i class="fa-solid fa-bell-concierge"></i></div>
+                    <div><strong>1. Capture orders quickly</strong><span>Start with Orders or Fast POS, then keep Order Display visible for kitchen coordination.</span></div>
+                  </div>
+                  <div class="info-row">
+                    <div class="info-icon"><i class="fa-solid fa-utensils"></i></div>
+                    <div><strong>2. Keep the store updated</strong><span>Menu, Materials, and Tables stay grouped for mid-shift edits without leaving the workspace.</span></div>
+                  </div>
+                  <div class="info-row">
+                    <div class="info-icon"><i class="fa-solid fa-chart-column"></i></div>
+                    <div><strong>3. Review team and performance</strong><span>Use Clock In, Staff, Staff Dashboard, and Analytics to close the daily loop.</span></div>
                   </div>
                 </div>
               </div>
-            </div>
-          </section>
-        </div>
+            </article>
+
+            <article class="card">
+              <div class="panel-head">
+                <div>
+                  <h3>Quick shortcuts</h3>
+                  <p>Keep your frequent pages nearby without reopening the sidebar search.</p>
+                </div>
+              </div>
+              <div class="panel-body">
+                <div class="quick-links">
+                  ${quickPages.length ? quickPages.map(page => `<button class="quick-link" type="button" data-open="${page}"><i class="fa-solid ${pageMeta[page].icon}"></i> ${pageMeta[page].short}</button>`).join("") : '<span class="mini-chip">No shortcuts</span>'}
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
       `;
     }
 
     function getModuleMarkup(page){
       const meta = pageMeta[page];
-      if (!meta) return "";
-      const file = meta.file;
-
       return `
         <div class="module-shell">
-          <div class="module-toolbar">
-            <div class="module-head">
-              <div class="module-icon"><i class="fa-solid ${meta.icon}"></i></div>
-              <div class="module-copy">
-                <h3>${meta.label}</h3>
-                <p>${meta.description}</p>
-              </div>
-            </div>
-            <div class="toolbar-actions">
-              <button class="btn light" type="button" data-home><i class="fa-solid fa-house"></i> Home</button>
-              <button class="btn light" type="button" data-reload="${page}"><i class="fa-solid fa-rotate-right"></i> Reload</button>
-              <button class="btn soft" type="button" data-more><i class="fa-solid fa-ellipsis"></i> More</button>
-              <a class="btn soft" href="${file}" target="_blank" rel="noopener"><i class="fa-solid fa-up-right-from-square"></i> Open page</a>
-            </div>
-          </div>
           <div class="frame-shell">
-            <iframe src="${file}" title="${meta.label}" loading="eager"></iframe>
+            <iframe src="${meta.file}" title="${meta.label}" loading="eager"></iframe>
           </div>
         </div>
       `;
@@ -1533,24 +720,14 @@
       contentArea.querySelectorAll("[data-open]").forEach(btn => {
         btn.addEventListener("click", () => setActivePage(btn.getAttribute("data-open")));
       });
-      contentArea.querySelectorAll("[data-reload]").forEach(btn => {
-        btn.addEventListener("click", () => setActivePage(btn.getAttribute("data-reload"), true));
-      });
-      contentArea.querySelectorAll("[data-home]").forEach(btn => {
-        btn.addEventListener("click", () => setActivePage("home"));
-      });
-      contentArea.querySelectorAll("[data-more]").forEach(btn => {
-        btn.addEventListener("click", openMore);
-      });
-      const heroMoreBtn = document.getElementById("heroMoreBtn");
-      if (heroMoreBtn) heroMoreBtn.addEventListener("click", openMore);
+      const openOrdersBtn = document.getElementById("openOrdersBtn");
+      if (openOrdersBtn) openOrdersBtn.addEventListener("click", () => setActivePage(visiblePages.includes("orders") ? "orders" : (getQuickPages()[0] || "home")));
     }
 
     function renderPage(page, forceReload = false){
       const safePage = pageMeta[page] ? page : "home";
       const meta = pageMeta[safePage];
-      pageTitle.textContent = meta.label;
-      pageSubtitle.textContent = meta.description;
+      document.title = `${meta.label} - Restaurant Vendor Workspace`;
 
       if (safePage === "home") {
         contentArea.innerHTML = getHomeMarkup();
@@ -1562,8 +739,15 @@
         }
       }
 
-      renderMorePanel(safePage);
+      renderSidebar(safePage);
       wireContentButtons();
+    }
+
+    function syncDashboardUrl(activePage){
+      const url = new URL(window.location.href);
+      if (activePage && activePage !== "home") url.searchParams.set("page", activePage);
+      else url.searchParams.delete("page");
+      window.history.replaceState({}, "", url);
     }
 
     function setActivePage(page, forceReload = false){
@@ -1571,64 +755,8 @@
       localStorage.setItem("dashboardLastPage", targetPage);
       syncDashboardUrl(targetPage);
       renderPage(targetPage, forceReload);
-      closeSearchResults();
-      closeMorePanel();
+      closeDrawer();
     }
-
-    function closeSearchResults(){
-      searchResults.classList.remove("show");
-    }
-
-    function renderSearchResults(term){
-      const q = term.trim().toLowerCase();
-      if (!q) {
-        searchResults.innerHTML = "";
-        closeSearchResults();
-        return;
-      }
-
-      const matches = visiblePages
-        .map(page => ({ page, ...pageMeta[page] }))
-        .filter(meta => [meta.label, meta.short, meta.description, meta.group].join(" ").toLowerCase().includes(q))
-        .slice(0, 8);
-
-      if (!matches.length) {
-        searchResults.innerHTML = `<div class="empty-state">No module matches <strong>${term.replace(/[<>]/g, "")}</strong>.</div>`;
-        searchResults.classList.add("show");
-        return;
-      }
-
-      searchResults.innerHTML = matches.map(meta => `
-        <button class="result-btn" type="button" data-open="${meta.page}">
-          <span class="menu-icon"><i class="fa-solid ${meta.icon}"></i></span>
-          <span>
-            <span class="result-title">${meta.label}</span>
-            <span class="result-meta">${meta.group} · ${meta.description}</span>
-          </span>
-          <span class="result-meta"><i class="fa-solid fa-arrow-right"></i></span>
-        </button>
-      `).join("");
-
-      searchResults.querySelectorAll("[data-open]").forEach(btn => {
-        btn.addEventListener("click", () => {
-          moduleSearch.value = "";
-          setActivePage(btn.getAttribute("data-open"));
-        });
-      });
-      searchResults.classList.add("show");
-    }
-
-    moduleSearch.addEventListener("input", () => renderSearchResults(moduleSearch.value));
-    moduleSearch.addEventListener("focus", () => {
-      if (moduleSearch.value.trim()) renderSearchResults(moduleSearch.value);
-    });
-    document.addEventListener("click", (e) => {
-      if (!searchResults.contains(e.target) && !moduleSearch.contains(e.target)) closeSearchResults();
-    });
-
-    window.addEventListener("resize", () => {
-      workspaceModeEl.textContent = getDeviceLabel();
-    });
 
     function getPreferredInitialPage(){
       const requestedPage = new URLSearchParams(window.location.search).get("page");
@@ -1638,19 +766,13 @@
       return "home";
     }
 
-    function syncDashboardUrl(activePage){
-      const url = new URL(window.location.href);
-      if (activePage && activePage !== "home") {
-        url.searchParams.set("page", activePage);
-      } else {
-        url.searchParams.delete("page");
-      }
-      window.history.replaceState({}, "", url);
-    }
+    moduleSearch.addEventListener("input", () => {
+      const current = localStorage.getItem("dashboardLastPage") || "home";
+      renderSidebar(visiblePages.includes(current) ? current : "home");
+    });
 
     const initialPage = getPreferredInitialPage();
-    renderMorePanel(initialPage);
-    setActivePage(initialPage);
+    renderPage(initialPage);
   </script>
 </body>
 </html>
