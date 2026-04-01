@@ -5,20 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Staff Dashboard — Restaurant Control Center</title>
 
+  <link rel="icon" href="logo.jpeg" type="image/jpeg" />
+  <link rel="preload" href="logo.jpeg" as="image" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.min.js"></script>
 <style>
     :root{
-      --bg0:#0b1220;--bg1:#0f1a33;
-      --card:rgba(255,255,255,.90);--card2:rgba(255,255,255,.70);
-      --text:#0f172a;--muted:#475569;--border:rgba(15,23,42,.10);
-      --shadow:0 18px 60px rgba(2,6,23,.18);
+      --bg0:#f5f7fb;--bg1:#eef4fb;
+      --card:rgba(255,255,255,.94);--card2:rgba(248,250,252,.94);
+      --text:#0f172a;--muted:#64748b;--border:rgba(148,163,184,.22);
+      --shadow:0 24px 60px rgba(15,23,42,.12);
       --brand:#16a34a;--brand2:#22c55e;
       --warn:#f59e0b;--danger:#ef4444;--info:#3b82f6;
-      --focus:0 0 0 4px rgba(34,197,94,.20);
+      --focus:0 0 0 4px rgba(34,197,94,.18);
     }
     html[data-theme="dark"]{
       --card:rgba(15,23,42,.78);--card2:rgba(15,23,42,.55);
@@ -30,29 +32,60 @@
     body{
       margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       color:var(--text);min-height:100vh;
-      background: radial-gradient(1200px 900px at 20% 15%, rgba(34,197,94,.30), transparent 55%),
-                  radial-gradient(1200px 900px at 85% 25%, rgba(59,130,246,.24), transparent 52%),
+      background: radial-gradient(1200px 900px at 12% 0%, rgba(34,197,94,.18), transparent 60%),
+                  radial-gradient(1200px 900px at 88% 14%, rgba(59,130,246,.16), transparent 58%),
                   linear-gradient(180deg,var(--bg0),var(--bg1));
     }
-    .container{width:min(1250px,100%);margin:70px auto 120px;padding:0 18px;display:grid;gap:20px}
+    .container{width:min(1480px,100%);margin:clamp(18px, 3vw, 36px) auto 72px;padding:0 clamp(16px, 2.5vw, 28px);display:grid;gap:20px}
     .card{
       background:var(--card);backdrop-filter:blur(12px);
-      border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow);
-      overflow:hidden;
+      border:1px solid var(--border);border-radius:24px;box-shadow:var(--shadow);
+      overflow:hidden;position:relative;
+    }
+    .card::before{
+      content:"";
+      position:absolute;
+      inset:0 0 auto 0;
+      height:5px;
+      background:linear-gradient(90deg, rgba(22,163,74,.9), rgba(59,130,246,.76));
     }
     .card-header{
       padding:18px 22px;border-bottom:1px solid var(--border);
-      background:linear-gradient(180deg, rgba(34,197,94,.12), transparent);
+      background:linear-gradient(180deg, rgba(22,163,74,.10), rgba(255,255,255,.02));
       display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
     }
     .card-body{padding:22px}
     h1{margin:0;font-size:20px;letter-spacing:-.02em}
     h2{margin:0;font-size:16px;letter-spacing:-.02em}
     .muted{color:var(--muted)}
+    .page-heading{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      min-width:0;
+    }
+    .page-logo{
+      width:58px;
+      height:58px;
+      padding:8px;
+      border-radius:18px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.9);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      flex:0 0 auto;
+    }
+    .page-logo img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      display:block;
+    }
+    .page-copy{min-width:0}
     .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
     input,select,button{
       border:1px solid var(--border);
-      background:var(--card2);color:var(--text);
+      background:#fff;color:var(--text);
       border-radius:14px;padding:12px 14px;font-size:14px;outline:none;
       transition:all .2s ease;
     }
@@ -64,15 +97,15 @@
     button:hover{background:rgba(34,197,94,.12)}
     .btn-primary{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff}
     .btn-primary:hover{filter:brightness(1.05)}
-    .btn-ghost{background:var(--card2)}
+    .btn-ghost{background:#fff}
     .grid-kpis{
       display:grid;gap:14px;
-      grid-template-columns:repeat(4, minmax(0, 1fr));
+      grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
     }
     .kpi{
       background:var(--card2);
       border:1px solid var(--border);
-      border-radius:18px;
+      border-radius:20px;
       padding:16px;
       display:grid;gap:8px;
     }
@@ -81,17 +114,18 @@
     .kpi .sub{font-size:12px;color:var(--muted)}
     .grid-charts{
       display:grid;gap:18px;
-      grid-template-columns:repeat(2, minmax(0, 1fr));
+      grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));
       align-items:stretch;
     }
     .chart-wrap{
       background:var(--card2);
       border:1px solid var(--border);
-      border-radius:18px;
+      border-radius:20px;
       padding:14px;
       min-height:320px;
     }
     canvas{width:100% !important;height:260px !important}
+    .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
     table{width:100%;border-collapse:separate;border-spacing:0 10px;margin-top:10px}
     th{font-size:12px;color:var(--muted);text-align:left;padding:0 10px}
     td{background:var(--card2);padding:14px 10px;vertical-align:middle}
@@ -106,10 +140,13 @@
       margin-top:12px;padding:12px 14px;border-radius:14px;font-weight:700;
       background:rgba(59,130,246,.12);color:var(--info);display:none;
     }
-    @media (max-width: 980px){
-      .grid-kpis{grid-template-columns:repeat(2, minmax(0,1fr))}
-      .grid-charts{grid-template-columns:1fr}
+    @media (max-width: 1100px){
       canvas{height:240px !important}
+    }
+    @media (max-width: 760px){
+      .page-heading{align-items:flex-start}
+      .page-logo{width:52px;height:52px}
+      table{min-width:720px}
     }
   </style>
 </head>
@@ -118,10 +155,15 @@
   <main class="container">
     <div class="card">
       <div class="card-header">
-        <div>
+        <div class="page-heading">
+          <div class="page-logo">
+            <img src="logo.jpeg" alt="Restoran Ayam Gepuk Ngences logo" loading="eager" decoding="async" />
+          </div>
+          <div class="page-copy">
           <h1><i class="fa-solid fa-chart-line"></i> Staff Dashboard</h1>
           <div class="muted" style="margin-top:6px;font-size:13px;">
             Visual summary of net hours, late/early, and estimated payroll (net hours − breaks)
+          </div>
           </div>
         </div>
 
@@ -218,6 +260,7 @@
         <div class="muted" style="font-size:13px;">Sorted by net hours (desc)</div>
       </div>
       <div class="card-body">
+        <div class="table-wrap">
         <table>
           <thead>
             <tr>
@@ -235,6 +278,7 @@
             <tr><td colspan="8">Loading…</td></tr>
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   </main>
@@ -255,6 +299,10 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+
+    if (window.Chart){
+      Chart.defaults.animation = false;
+    }
 
     if (localStorage.getItem("userRole") !== "admin") {
       alert("Admin access only");
