@@ -1767,7 +1767,7 @@
     const RESTAURANT_INFO = Object.freeze({
       name: "RESTORAN AYAM GEPUK NGENCES",
       tagline: "Ayam Gepuk Ngences x Ngences Coffee",
-      ssm: "SSM No.: IP0536836-W",
+      ssm: "SSM No.: Not provided",
       address: "39, Laluan BG Transit 2, Kampung Bendera, 30200 Batu Gajah, Perak"
     });
     const restaurantLogoUrl = new URL("logo.jpeg", window.location.href).href;
@@ -1939,20 +1939,31 @@
     });
 
 
-    const categories = [
-      { key: "all", label: "All" },
-      { key: "food", label: "Food" },
-      { key: "Side Dish", label: "Side Dish" },
-      { key: "Air Panas", label: "Air Panas" },
-      { key: "Air Sejuk", label: "Air Sejuk" },
-      { key: "Little Ngences Food", label: "Little Ngences Food" },
-      { key: "Little Ngences Drink", label: "Little Ngences Drink" },
-      { key: "Others", label: "Others" }
-    ];
+    const DEFAULT_MENU_CATEGORIES = Object.freeze([
+      "food",
+      "Side Dish",
+      "Air Panas",
+      "Air Sejuk",
+      "Little Ngences Food",
+      "Little Ngences Drink",
+      "Others"
+    ]);
+    const DEFAULT_CATEGORY_META = Object.freeze({
+      food: { label: "Food", icon: "🍗" },
+      "Side Dish": { label: "Side Dish", icon: "🥗" },
+      "Air Panas": { label: "Air Panas", icon: "☕" },
+      "Air Sejuk": { label: "Air Sejuk", icon: "🧊" },
+      "Little Ngences Food": { label: "Little Ngences Food", icon: "🧒" },
+      "Little Ngences Drink": { label: "Little Ngences Drink", icon: "🧃" },
+      Others: { label: "Others", icon: "✨" }
+    });
+    let menuCategoryKeys = [...DEFAULT_MENU_CATEGORIES];
+    let categories = buildCategoryDefinitions(menuCategoryKeys);
 
     // State
     let selectedCategory = "all";
     let menuCache = {}; // {id: item}
+    let rawCategoryStatus = {}; // raw Firebase map
     let categoryStatus = {}; // {categoryName: boolean}
     let cart = [];
     let searchRenderTimer = null;
@@ -2131,7 +2142,8 @@
       applyOrderTypeToCheckout();
       showOrderTypeOverlay();
     }
-    const receiptCategoryOrder = categories.filter((c) => c.key !== "all").map((c) => c.key);
+    let receiptCategoryOrder = categories.filter((c) => c.key !== "all").map((c) => c.key);
+    let categoryAliasMap = buildCategoryAliasMap(categories);
 
     function sanitizeCategoryKey(value){
       return String(value || "")
@@ -2141,12 +2153,99 @@
         .toLowerCase();
     }
 
-    const categoryAliasMap = Object.freeze(categories.reduce((acc, category) => {
-      if(category.key === "all") return acc;
-      acc[sanitizeCategoryKey(category.key)] = category.key;
-      acc[sanitizeCategoryKey(category.label)] = category.key;
-      return acc;
-    }, { food: "food", others: "Others" }));
+    function sanitizeCategoryName(value){
+      return String(value || "")
+        .replace(/[.#$\/\[\]]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function normalizeStoredCategory(value){
+      const clean = sanitizeCategoryName(value);
+      const key = sanitizeCategoryKey(clean);
+      if(!clean) return "";
+      if(key === "food") return "food";
+      if(key === "others") return "Others";
+      return clean;
+    }
+
+    function buildCategoryDefinitions(keys){
+      const list = normalizeCategoryList(keys);
+      return [
+        { key: "all", label: "All" },
+        ...list.map((key) => ({
+          key,
+          label: DEFAULT_CATEGORY_META[key]?.label || key
+        }))
+      ];
+    }
+
+    function buildCategoryAliasMap(categoryDefs){
+      return Object.freeze(categoryDefs.reduce((acc, category) => {
+        if(category.key === "all") return acc;
+        acc[sanitizeCategoryKey(category.key)] = category.key;
+        acc[sanitizeCategoryKey(category.label)] = category.key;
+        return acc;
+      }, { food: "food", others: "Others" }));
+    }
+
+    function normalizeCategoryList(values){
+      const source = Array.isArray(values) ? values : Object.values(values || {});
+      const result = [];
+      const seen = new Set();
+
+      source.forEach((entry) => {
+        const raw = typeof entry === "string"
+          ? entry
+          : (entry?.key || entry?.label || entry?.name || "");
+        const normalized = normalizeStoredCategory(raw);
+        const safeKey = sanitizeCategoryKey(normalized);
+        if(!normalized || safeKey === "all" || seen.has(safeKey)) return;
+        seen.add(safeKey);
+        result.push(normalized);
+      });
+
+      DEFAULT_MENU_CATEGORIES.forEach((key) => {
+        const safeKey = sanitizeCategoryKey(key);
+        if(!seen.has(safeKey)){
+          seen.add(safeKey);
+          result.push(key);
+        }
+      });
+
+      if(!seen.has("others")) result.push("Others");
+      return result.filter((key, index, arr) => !(key === "Others" && index != arr.lastIndexOf("Others")));
+    }
+
+    function computeEffectiveCategoryKeys(explicitKeys, items){
+      const result = normalizeCategoryList(explicitKeys);
+      const seen = new Set(result.map((key) => sanitizeCategoryKey(key)));
+      Object.values(items || {}).forEach((item) => {
+        const normalized = normalizeStoredCategory(item?.category || "Others") || "Others";
+        const safeKey = sanitizeCategoryKey(normalized);
+        if(!seen.has(safeKey)){
+          seen.add(safeKey);
+          result.push(normalized);
+        }
+      });
+      if(!seen.has("others")) result.push("Others");
+      return result.filter((key, index, arr) => !(key === "Others" && index != arr.lastIndexOf("Others")));
+    }
+
+    function refreshCategoryDefinitions(nextKeys = menuCategoryKeys){
+      menuCategoryKeys = normalizeCategoryList(nextKeys);
+      categories = buildCategoryDefinitions(computeEffectiveCategoryKeys(menuCategoryKeys, menuCache));
+      categoryAliasMap = buildCategoryAliasMap(categories);
+      receiptCategoryOrder = categories.filter((c) => c.key !== "all").map((c) => c.key);
+      categoryStatus = categories.reduce((acc, category) => {
+        if(category.key === "all") return acc;
+        acc[category.key] = getCategoryStatusValue(rawCategoryStatus, category.key);
+        return acc;
+      }, {});
+      if(selectedCategory !== "all" && !categories.some((category) => category.key === selectedCategory)){
+        selectedCategory = "all";
+      }
+    }
 
     function normalizeCategory(cat){
       const raw = String(cat || "").trim();
@@ -2297,17 +2396,9 @@
     }
 
     function getCategoryIcon(key){
-      const icons = {
-        all: "🍽️",
-        food: "🍗",
-        "Side Dish": "🥗",
-        "Air Panas": "☕",
-        "Air Sejuk": "🧊",
-        "Little Ngences Food": "🧒",
-        "Little Ngences Drink": "🧃",
-        Others: "✨"
-      };
-      return icons[key] || "🍽️";
+      if(key === "all") return "🍽️";
+      const normalized = normalizeCategory(key);
+      return DEFAULT_CATEGORY_META[normalized]?.icon || "🍽️";
     }
 
     function isSidebarDesktop(){
@@ -2942,17 +3033,22 @@
     // Firebase listeners
     onValue(ref(db, "menuItems"), (snap) => {
       menuCache = snap.val() || {};
+      refreshCategoryDefinitions(menuCategoryKeys);
+      buildCategoryStrip();
+      renderMenu();
+    });
+
+    onValue(ref(db, "menuCategories"), (snap) => {
+      const raw = snap.val();
+      const incoming = Array.isArray(raw) ? raw : Object.values(raw || {});
+      refreshCategoryDefinitions(incoming.length ? incoming : DEFAULT_MENU_CATEGORIES);
+      buildCategoryStrip();
       renderMenu();
     });
 
     onValue(ref(db, "categoryStatus"), (snap) => {
-      const raw = snap.val() || {};
-      const mapped = {};
-      categories.forEach(c => {
-        if(c.key === "all") return;
-        mapped[c.key] = getCategoryStatusValue(raw, c.key);
-      });
-      categoryStatus = mapped;
+      rawCategoryStatus = snap.val() || {};
+      refreshCategoryDefinitions(menuCategoryKeys);
       renderMenu();
     });
 
