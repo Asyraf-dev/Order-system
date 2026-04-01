@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="logo.jpeg" type="image/jpeg" />
+  <link rel="preload" href="logo.jpeg" as="image" />
   <title>Staff Clock In — Restaurant Control Center</title>
 
   <!-- Font Awesome -->
@@ -14,25 +16,25 @@
 
   <style>
     :root {
-      --bg0: #0b1220;
-      --bg1: #0f1a33;
-      --card: rgba(255, 255, 255, .90);
-      --card2: rgba(255, 255, 255, .70);
+      --bg0: #f5f7fb;
+      --bg1: #edf3fb;
+      --card: rgba(255, 255, 255, .94);
+      --card2: rgba(248, 250, 252, .92);
       --text: #0f172a;
-      --muted: #475569;
-      --border: rgba(15, 23, 42, .10);
-      --shadow: 0 18px 60px rgba(2, 6, 23, .18);
+      --muted: #64748b;
+      --border: rgba(148, 163, 184, .22);
+      --shadow: 0 24px 60px rgba(15, 23, 42, .12);
       --brand: #16a34a;
       --brand2: #22c55e;
       --danger: #ef4444;
       --warn: #f59e0b;
       --info: #3b82f6;
-      --focus: 0 0 0 4px rgba(34, 197, 94, .20);
+      --focus: 0 0 0 4px rgba(34, 197, 94, .18);
     }
 
     html[data-theme="dark"] {
-      --card: rgba(15, 23, 42, .78);
-      --card2: rgba(15, 23, 42, .55);
+      --card: rgba(15, 23, 42, .82);
+      --card2: rgba(30, 41, 59, .68);
       --text: #e5e7eb;
       --muted: #a1a1aa;
       --border: rgba(255, 255, 255, .12);
@@ -46,60 +48,76 @@
       font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       color: var(--text);
       min-height: 100vh;
-      background: radial-gradient(1200px 900px at 20% 15%, rgba(34, 197, 94, .30), transparent 55%),
-                  radial-gradient(1200px 900px at 85% 25%, rgba(59, 130, 246, .24), transparent 52%),
+      background: radial-gradient(1100px 780px at 12% 0%, rgba(34, 197, 94, .18), transparent 60%),
+                  radial-gradient(1100px 780px at 88% 12%, rgba(59, 130, 246, .16), transparent 58%),
                   linear-gradient(180deg, var(--bg0), var(--bg1));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
+      padding: clamp(16px, 3vw, 28px);
     }
 
     .container {
-      width: min(440px, 100%);
+      width: min(1160px, 100%);
       display: grid;
-      gap: 18px;
+      gap: 22px;
+      margin: 0 auto;
+      align-items: center;
+    }
+    @media (min-width: 980px) {
+      .container {
+        grid-template-columns: minmax(360px, 500px) minmax(300px, 1fr);
+      }
     }
 
-    .card {
+    .card,
+    .info-card {
       background: var(--card);
       backdrop-filter: blur(12px);
       border: 1px solid var(--border);
-      border-radius: 24px;
+      border-radius: 28px;
       box-shadow: var(--shadow);
       overflow: hidden;
-      text-align: center;
+      position: relative;
+    }
+    .card::before,
+    .info-card::before{
+      content:"";
+      position:absolute;
+      inset:0 0 auto 0;
+      height:6px;
+      background: linear-gradient(90deg, rgba(22,163,74,.88), rgba(59,130,246,.76));
     }
 
     .card-header {
-      padding: 28px 22px 18px;
-      background: linear-gradient(180deg, rgba(34, 197, 94, .15), transparent);
+      padding: 32px 28px 20px;
+      background: linear-gradient(180deg, rgba(22, 163, 74, .12), transparent);
+      text-align: center;
     }
 
-    .card-body { padding: 0 26px 28px; }
+    .card-body { padding: 0 28px 30px; }
 
-    h1 { font-size: 26px; margin: 0 0 8px; letter-spacing: -0.03em; }
+    h1 { font-size: clamp(28px, 4vw, 36px); margin: 0 0 8px; letter-spacing: -0.04em; }
+    h2 { margin: 0 0 10px; font-size: clamp(24px, 3vw, 32px); letter-spacing: -0.04em; }
     p.subtitle { margin: 0; color: var(--muted); font-size: 15px; }
 
     .date-time {
-      margin: 18px 0 14px;
+      margin: 20px 0 16px;
       font-size: 15px;
       color: var(--muted);
       line-height: 1.45;
     }
 
-    .current-time { font-size: 34px; font-weight: 800; color: var(--brand); margin: 6px 0 0; }
+    .current-time { font-size: clamp(36px, 7vw, 56px); font-weight: 800; color: var(--brand); margin: 8px 0 0; letter-spacing:-.04em; }
 
     select, button {
       width: 100%;
       border: 1px solid var(--border);
-      border-radius: 16px;
+      border-radius: 18px;
       padding: 15px 16px;
-      background: var(--card2);
+      background: #fff;
       color: var(--text);
       font-size: 16px;
       outline: none;
       transition: all .2s ease;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.9);
     }
 
     select { margin-bottom: 12px; }
@@ -155,17 +173,24 @@
     .status.info { background: rgba(59, 130, 246, .15); color: var(--info); }
 
     .logo {
-      width: 92px;
-      height: 92px;
-      border-radius: 50%;
-      background: var(--card2);
+      width: 88px;
+      height: 88px;
+      border-radius: 24px;
+      background: #fff;
       margin: 0 auto 14px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 38px;
-      color: var(--brand);
-      border: 4px solid var(--border);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      padding: 12px;
+      box-shadow: 0 16px 36px rgba(15, 23, 42, .10);
+    }
+    .logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
     }
 
     .mini {
@@ -209,6 +234,79 @@
       color: var(--muted);
       line-height: 1.35;
     }
+    .info-card{
+      padding: 32px 28px;
+      display:grid;
+      gap:18px;
+      align-content:start;
+    }
+    .info-eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      width:max-content;
+      padding:8px 12px;
+      border-radius:999px;
+      background: rgba(22,163,74,.10);
+      color: var(--brand);
+      font-size:12px;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+    }
+    .info-copy{
+      margin:0;
+      color:var(--muted);
+      line-height:1.65;
+      font-size:15px;
+    }
+    .info-grid{
+      display:grid;
+      gap:12px;
+    }
+    .info-item{
+      padding:16px 16px 14px;
+      border-radius:20px;
+      border:1px solid var(--border);
+      background:linear-gradient(180deg, rgba(255,255,255,.96), rgba(248,250,252,.92));
+      box-shadow:0 14px 28px rgba(15,23,42,.06);
+    }
+    .info-item strong{
+      display:block;
+      margin-bottom:6px;
+      font-size:15px;
+    }
+    .info-item p{
+      margin:0;
+      color:var(--muted);
+      line-height:1.55;
+      font-size:14px;
+    }
+    .support-note{
+      padding:14px 16px;
+      border-radius:18px;
+      background:rgba(59,130,246,.08);
+      border:1px solid rgba(59,130,246,.14);
+      color:#1e3a8a;
+      font-size:14px;
+      line-height:1.55;
+    }
+    @media (max-width: 979px){
+      .container{
+        max-width:620px;
+      }
+    }
+    @media (max-width: 640px){
+      .card-header,
+      .card-body,
+      .info-card{
+        padding-left:20px;
+        padding-right:20px;
+      }
+      .break-row{
+        flex-direction:column;
+      }
+    }
   </style>
 </head>
 
@@ -217,7 +315,7 @@
     <div class="card">
       <div class="card-header">
         <div class="logo">
-          <i class="fa-solid fa-users"></i>
+          <img src="logo.jpeg" alt="Restoran Ayam Gepuk Ngences logo" />
         </div>
         <h1>Staff Clock In</h1>
         <p class="subtitle">Restaurant Control Center</p>
@@ -257,6 +355,33 @@
         </div>
       </div>
     </div>
+
+    <aside class="info-card" aria-label="Clock-in guidance">
+      <div class="info-eyebrow"><i class="fa-solid fa-shield-heart"></i> Daily Workflow</div>
+      <div>
+        <h2>Start each shift the same way every time.</h2>
+        <p class="info-copy">This page records attendance, break timing, and the payroll data used by the staff dashboard. Use the same staff profile you use everywhere else in the restaurant system.</p>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-item">
+          <strong>1. Choose your staff profile</strong>
+          <p>Select your name first so the system can load your role, location, and shift settings before clocking you in.</p>
+        </div>
+        <div class="info-item">
+          <strong>2. Clock in, then track breaks properly</strong>
+          <p>Break start and end times are saved separately, so attendance reports and net working hours stay accurate.</p>
+        </div>
+        <div class="info-item">
+          <strong>3. Clock out when the shift ends</strong>
+          <p>Your daily record is used by management for punctuality checks, hours summaries, and estimated payroll calculations.</p>
+        </div>
+      </div>
+
+      <div class="support-note">
+        Shift start, end, and grace-period rules come from Staff Management. If your schedule looks wrong here, update it there instead of creating a duplicate profile.
+      </div>
+    </aside>
   </div>
 
   <script type="module">
