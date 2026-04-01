@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Orders Display — Restoran Ayam Gepuk Ngences</title>
 
+  <link rel="icon" href="logo.jpeg" type="image/jpeg" />
+  <link rel="preload" href="logo.jpeg" as="image" />
   <style>
     :root{
       --bg: #f5f7fb;
@@ -76,11 +78,18 @@
       border-radius: 14px;
       display:grid;
       place-items:center;
-      color: white;
-      font-weight: 900;
-      background: linear-gradient(135deg, var(--primary), #60a5fa);
+      padding: 4px;
+      border: 1px solid rgba(2,6,23,.12);
+      background: #fff;
       box-shadow: var(--shadowSoft);
+      overflow: hidden;
       user-select:none;
+    }
+    .logo img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      display:block;
     }
     .brand h1{
       margin:0;
@@ -1376,7 +1385,7 @@
   <div class="topbar">
     <div class="brandRow">
       <div class="brand">
-        <div class="logo">O</div>
+        <div class="logo"><img src="logo.jpeg" alt="Restoran Ayam Gepuk Ngences logo" loading="eager" decoding="async" /></div>
         <div>
           <h1>Orders Display</h1>
           <p>Fast kitchen view — tap a card to expand items.</p>
@@ -1774,6 +1783,43 @@
     // Connection / sync state
     let firebaseConnected = true;
     let lastSyncTs = null;
+    const RESTAURANT_INFO = Object.freeze({
+      name: "RESTORAN AYAM GEPUK NGENCES",
+      tagline: "Ayam Gepuk Ngences x Ngences Coffee",
+      ssm: "SSM No.: Not provided",
+      address: "39, Laluan BG Transit 2, Kampung Bendera, 30200 Batu Gajah, Perak"
+    });
+    const restaurantLogoUrl = new URL("logo.jpeg", window.location.href).href;
+    const RECEIPT_CATEGORY_META = Object.freeze([
+      { key: "food", label: "Food" },
+      { key: "Side Dish", label: "Side Dish" },
+      { key: "Air Panas", label: "Air Panas" },
+      { key: "Air Sejuk", label: "Air Sejuk" },
+      { key: "Little Ngences Food", label: "Little Ngences Food" },
+      { key: "Little Ngences Drink", label: "Little Ngences Drink" },
+      { key: "Others", label: "Others" }
+    ]);
+    function sanitizeReceiptCategoryKey(value){
+      return String(value || "")
+        .replace(/[.#$\/\[\]]/g, "")
+        .trim()
+        .replace(/\s+/g, "_")
+        .toLowerCase();
+    }
+    const receiptCategoryAliasMap = Object.freeze(RECEIPT_CATEGORY_META.reduce((acc, category) => {
+      acc[sanitizeReceiptCategoryKey(category.key)] = category.key;
+      acc[sanitizeReceiptCategoryKey(category.label)] = category.key;
+      return acc;
+    }, { food: "food", others: "Others" }));
+    function normalizeReceiptCategory(cat){
+      const raw = String(cat || "").trim();
+      if(!raw) return "Others";
+      return receiptCategoryAliasMap[sanitizeReceiptCategoryKey(raw)] || "Others";
+    }
+    function getReceiptCategoryLabel(cat){
+      const normalized = normalizeReceiptCategory(cat);
+      return RECEIPT_CATEGORY_META.find((entry) => entry.key === normalized)?.label || normalized;
+    }
 
 
 
@@ -3157,6 +3203,37 @@ card.innerHTML = `
         "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
       }[m]));
     }
+    function getReceiptItems(order){
+      const cart = Array.isArray(order?.cart) ? order.cart : [];
+      return cart.map((ci) => {
+        const qty = getItemQty(ci);
+        const category = normalizeReceiptCategory(ci?.category || "Others");
+        return {
+          category,
+          categoryLabel: getReceiptCategoryLabel(category),
+          name: getItemName(ci),
+          qty,
+          addons: getAddOns(ci),
+          lineTotal: getItemPrice(ci) * qty
+        };
+      });
+    }
+
+    function getReceiptSections(order){
+      const grouped = {};
+      getReceiptItems(order).forEach((item) => {
+        if(!grouped[item.category]) grouped[item.category] = [];
+        grouped[item.category].push(item);
+      });
+
+      return RECEIPT_CATEGORY_META
+        .filter((category) => grouped[category.key]?.length)
+        .map((category) => ({
+          key: category.key,
+          label: category.label,
+          items: grouped[category.key]
+        }));
+    }
 
     // ---------- Actions ----------
     async function setPaymentStatus(orderId, paymentStatus, paymentType=""){
@@ -3269,170 +3346,174 @@ card.innerHTML = `
       const order = ordersMap[orderId];
       if(!order) return;
 
-      const cart = Array.isArray(order.cart) ? order.cart : [];
-      const lines = cart.map(ci => {
-        const nm = getItemName(ci);
-        const qty = getItemQty(ci);
-        const addons = getAddOns(ci);
-        const price = getItemPrice(ci) * qty;
-        return `${nm} x ${qty}\nAddOn: (${addons}) - ${fmtMoney(price)}`;
-      }).join("\n\n");
+      const sections = getReceiptSections(order);
+      const itemMarkup = sections.map((section) => `
+        <section class="receipt-section">
+          <div class="section-title">${escapeHtml(section.label.toUpperCase())}</div>
+          ${section.items.map((item) => `
+            <div class="item">
+              <div class="item-row">
+                <span>${escapeHtml(item.name)}</span>
+                <span>x${escapeHtml(item.qty)}</span>
+              </div>
+              ${item.addons ? `<div class="addon">Add-on: ${escapeHtml(item.addons)}</div>` : ""}
+              <div class="amount">${escapeHtml(fmtMoney(item.lineTotal))}</div>
+            </div>
+          `).join("")}
+        </section>
+      `).join("");
 
-      const printWindow = window.open("", "_blank", "width=320,height=640");
+      const printWindow = window.open("", "_blank", "width=380,height=720");
+      if(!printWindow){
+        showToast("Print popup blocked");
+        return;
+      }
+
       printWindow.document.write(`
-        <html>
+        <!DOCTYPE html>
+        <html lang="en">
         <head>
-          <title>Receipt - RESTORAN AYAM GEPUK NGENCES</title>
+          <meta charset="UTF-8" />
+          <title>Receipt - ${escapeHtml(RESTAURANT_INFO.name)}</title>
           <style>
             @media print {
-              @page { size: 58mm auto; margin: 0; }
+              @page { size: 58mm auto; margin: 4mm; }
               body { margin: 0; }
             }
             body{
-              font-family: monospace;
+              font-family: "Segoe UI", Arial, sans-serif;
               font-size: 10px;
-              padding: 6px;
+              padding: 0;
+              color: #111827;
+              background: #fff;
+            }
+            .receipt{
               width: 58mm;
               box-sizing: border-box;
-              text-align: center;
+              padding: 6px;
+              margin: 0 auto;
             }
-            .line{border-top:1px dashed #000;margin:6px 0;}
-            .left{text-align:left; white-space:pre-wrap;}
-            .footer{margin-top:10px;font-size:7px;opacity:.9;}
-          
-    /* ---------- Compact item rows for smartphone (less scrolling) ---------- */
-    .itemsList li{
-      padding: 8px 10px;       /* was larger */
-      margin: 6px 0;            /* tighter spacing */
-      border-radius: 16px;      /* slightly smaller radius */
-    }
-    .itemTop{
-      gap: 8px;
-    }
-    .name{
-      font-size: 15px;          /* slightly smaller but readable */
-      line-height: 1.2;
-    }
-    .qtyPill{
-      font-size: 16px;
-      padding: 2px 8px;
-      min-width: 40px;
-    }
-    .lineTotal{
-      font-size: 13px;
-    }
-    .itemAdd{
-      margin-top: 4px;
-      font-size: 12px;
-      line-height: 1.15;
-    }
-
-
-    /* ---------- Minimized stats bar (default collapsed) ---------- */
-    .statsMinBar{
-      width:100%;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 10px;
-      padding: 8px 10px;
-      margin-bottom: 10px;
-      border-radius: 18px;
-      border: 1px solid var(--border);
-      background: var(--card);
-      box-shadow: 0 8px 20px rgba(15,23,42,.06);
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .statsMinLeft{
-      display:flex;
-      align-items:center;
-      gap: 8px;
-      flex: 1 1 auto;
-      min-width: 0;
-      flex-wrap: wrap;
-    }
-    .statsMinTitle{
-      font-size: 12px;
-      font-weight: 1000;
-      letter-spacing: .14em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-right: 2px;
-    }
-    .statsMinChip{
-      display:inline-flex;
-      align-items:baseline;
-      gap: 6px;
-      padding: 4px 9px;
-      border-radius: 999px;
-      border: 1px solid rgba(2,6,23,.08);
-      background: rgba(255,255,255,.65);
-      color: var(--text);
-      font-weight: 900;
-      font-size: 13px;
-      white-space: nowrap;
-    }
-    .statsMinChip .num{
-      font-variant-numeric: tabular-nums;
-    }
-    .statsMinChip .lbl{
-      font-weight: 800;
-      color: var(--muted);
-    }
-    .statsMinChev{
-      flex: 0 0 auto;
-      font-weight: 1000;
-      color: var(--muted);
-      padding-left: 6px;
-    }
-    .statsRow.collapsed{display:none;}
-
-
-    /* ---------- Ultra compact spacing (use vertical space better) ---------- */
-    .itemsList{padding-top: 0;}
-    .itemsList li{
-      margin: 6px 0;          /* tighter between item cards */
-      padding: 8px 10px;      /* slightly tighter inside card */
-    }
-    .nameRow{gap: 6px;}
-    .itemTop{gap: 6px;}
-    .itemAdd{margin-top: 3px;}
-
-    /* Section tags (FOOD / SIDE DISH) tighter */
-    .sectionTag{
-      margin: 10px 0 6px;
-      padding: 7px 12px;
-    }
-
-</style>
+            .brand{
+              text-align:center;
+              margin-bottom: 6px;
+            }
+            .brand img{
+              width: 24mm;
+              height: auto;
+              display: block;
+              margin: 0 auto 4px;
+            }
+            .brand h1{
+              margin: 0;
+              font-size: 11px;
+              font-weight: 800;
+              letter-spacing: .04em;
+            }
+            .meta,
+            .item,
+            .footer{
+              text-align: left;
+            }
+            .sub{
+              margin-top: 2px;
+              color: #4b5563;
+              line-height: 1.4;
+            }
+            .line{
+              border-top: 1px dashed #9ca3af;
+              margin: 7px 0;
+            }
+            .meta-row,
+            .item-row,
+            .total{
+              display:flex;
+              justify-content:space-between;
+              gap: 10px;
+              align-items:flex-start;
+            }
+            .meta-row span:first-child,
+            .item-row span:first-child,
+            .total span:first-child{
+              font-weight: 700;
+            }
+            .meta{
+              display:grid;
+              gap: 4px;
+            }
+            .items{
+              display:grid;
+              gap: 7px;
+            }
+            .receipt-section{
+              display:grid;
+              gap: 7px;
+            }
+            .section-title{
+              font-size: 9px;
+              font-weight: 800;
+              letter-spacing: .08em;
+              color:#111827;
+            }
+            .addon{
+              color:#4b5563;
+              margin-top: 2px;
+              line-height: 1.35;
+            }
+            .amount{
+              margin-top: 2px;
+              text-align: right;
+              font-weight: 700;
+            }
+            .total{
+              font-size: 11px;
+              font-weight: 800;
+            }
+            .footer{
+              margin-top: 8px;
+              text-align: center;
+              color:#4b5563;
+              line-height: 1.45;
+            }
+          </style>
         </head>
         <body>
-          <b>RESTORAN AYAM GEPUK NGENCES</b><br>
-          39, Laluan BG Transit 2, Kampung Bendera, 30200 Batu Gajah, Perak<br>
-          <div class="line"></div>
-          Order at: ${escapeHtml(fmtTime(order.timestamp))}<br>
-          Order No: ${escapeHtml(order.queueNumber ?? "N/A")}<br>
-          Name: ${escapeHtml(order.name ?? "-")}<br>
-          Table: ${escapeHtml(order.table ?? "-")}<br>
-          Special Request: ${escapeHtml(order.request ?? "None")}<br>
-          Payment: ${escapeHtml(paymentReceiptText(order))}<br>
-          <div class="line"></div>
-          <b>Order List</b>
-          <div class="left">${escapeHtml(lines)}</div>
-          <div class="line"></div>
-          <b>Total:</b> ${escapeHtml(fmtMoney(order.totalPrice ?? 0))}<br>
-          <div class="line"></div>
-          <div class="footer">
-            Terima kasih!<br>
-            Ayam Gepuk X Ngences Coffee<br>
-            <i>This receipt printed by the ordering system.</i>
-          </div>
-        </body></html>
+          <main class="receipt">
+            <div class="brand">
+              <img src="${restaurantLogoUrl}" alt="${escapeHtml(RESTAURANT_INFO.name)} logo" />
+              <h1>${escapeHtml(RESTAURANT_INFO.name)}</h1>
+              <div class="sub">${escapeHtml(RESTAURANT_INFO.ssm)}</div>
+              <div class="sub">${escapeHtml(RESTAURANT_INFO.address)}</div>
+            </div>
+            <div class="line"></div>
+            <div class="meta">
+              <div class="meta-row"><span>Printed</span><span>${escapeHtml(fmtTime(order.timestamp))}</span></div>
+              <div class="meta-row"><span>Order No</span><span>${escapeHtml(order.queueNumber ?? "N/A")}</span></div>
+              <div class="meta-row"><span>Name</span><span>${escapeHtml(order.name ?? "-")}</span></div>
+              <div class="meta-row"><span>Table</span><span>${escapeHtml(order.table ?? "-")}</span></div>
+              ${order.orderType ? `<div class="meta-row"><span>Type</span><span>${escapeHtml(order.orderType)}</span></div>` : ""}
+              <div class="meta-row"><span>Payment</span><span>${escapeHtml(paymentReceiptText(order))}</span></div>
+              <div class="meta-row"><span>Request</span><span>${escapeHtml(order.request ?? "None")}</span></div>
+            </div>
+            <div class="line"></div>
+            <div class="items">
+              ${itemMarkup || '<div class="addon">No items recorded.</div>'}
+            </div>
+            <div class="line"></div>
+            <div class="total"><span>Total</span><span>${escapeHtml(fmtMoney(order.totalPrice ?? 0))}</span></div>
+            <div class="footer">
+              Terima kasih.<br />
+              ${escapeHtml(RESTAURANT_INFO.tagline)}<br />
+              <small>Printed by the ordering system.</small>
+            </div>
+          </main>
+        </body>
+        </html>
       `);
       printWindow.document.close();
-      printWindow.focus();
-      printWindow.print();
+      printWindow.onload = () => {
+        printWindow.focus();
+        printWindow.print();
+      };
     }
     window.printOrder = printOrder;
 
@@ -3440,24 +3521,25 @@ card.innerHTML = `
       const order = ordersMap[orderId];
       if(!order) return;
 
-      const cart = Array.isArray(order.cart) ? order.cart : [];
-      const lines = cart.map(ci => {
-        const nm = getItemName(ci);
-        const qty = getItemQty(ci);
-        const addons = getAddOns(ci);
-        const price = getItemPrice(ci) * qty;
-        return `${nm} x ${qty}\nAddOn: (${addons}) - ${fmtMoney(price)}`;
+      const sections = getReceiptSections(order);
+      const lines = sections.map((section) => {
+        const sectionLines = section.items.map((item) => {
+          const addOnLine = item.addons ? `\n  Add-on: ${item.addons}` : "";
+          return `- ${item.name} x ${item.qty}${addOnLine}\n  ${fmtMoney(item.lineTotal)}`;
+        }).join("\n\n");
+        return `${section.label.toUpperCase()}\n${sectionLines}`;
       }).join("\n\n");
 
       const text = `
-RESTORAN AYAM GEPUK NGENCES
-39, Laluan BG Transit 2, Kampung Bendera, 30200 Batu Gajah, Perak
+${RESTAURANT_INFO.name}
+${RESTAURANT_INFO.ssm}
+${RESTAURANT_INFO.address}
 
 Order at: ${fmtTime(order.timestamp)}
 Order No: ${order.queueNumber ?? "N/A"}
 Name: ${order.name ?? "-"}
 Table: ${order.table ?? "-"}
-Special Request: ${order.request ?? "None"}
+${order.orderType ? `Type: ${order.orderType}\n` : ""}Special Request: ${order.request ?? "None"}
 Payment: ${paymentReceiptText(order)}
 ----------------------------------------
 Order List:
@@ -3465,6 +3547,7 @@ ${lines}
 ----------------------------------------
 Total: ${fmtMoney(order.totalPrice ?? 0)}
 ----------------------------------------
+${RESTAURANT_INFO.tagline}
 `.trim();
 
       navigator.clipboard.writeText(text)
@@ -3791,24 +3874,21 @@ Total: ${fmtMoney(order.totalPrice ?? 0)}
       requestAnimationFrame(loop);
     }
 
-    async function testInternetSpeed(){
-      const imageUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Fronalpstock_big.jpg/320px-Fronalpstock_big.jpg";
-      const approxBytes = 120_000; // smaller thumbnail
-      const bits = approxBytes * 8;
+    function testInternetSpeed(){
+      const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
 
-      const start = performance.now();
-      try{
-        await fetch(imageUrl + "?nocache=" + Math.random(), { cache: "no-store", mode: "no-cors" });
-        const end = performance.now();
-        const sec = Math.max((end - start) / 1000, 0.001);
-        const mbps = (bits / sec / 1_000_000).toFixed(2);
-        lastSpeedMbps = `${mbps} Mbps`;
-      }catch(err){
+      if(!navigator.onLine){
         lastSpeedMbps = "offline";
+      }else if(connection && Number.isFinite(connection.downlink) && connection.downlink > 0){
+        lastSpeedMbps = `${connection.downlink.toFixed(1)} Mbps`;
+      }else if(connection?.effectiveType){
+        lastSpeedMbps = connection.effectiveType.toUpperCase();
+      }else{
+        lastSpeedMbps = "online";
       }
 
-      speedLineEl.textContent = `Speed: ${lastSpeedMbps ?? "…"} • FPS: ${fps || "…"}`;
-      drawerSpeed.textContent = `Speed: ${lastSpeedMbps ?? "…"}`;
+      if(speedTextEl) speedTextEl.textContent = `Speed: ${lastSpeedMbps ?? "…"}`;
+      if(drawerSpeed) drawerSpeed.textContent = `Speed: ${lastSpeedMbps ?? "…"}`;
     }
 
     // ---------- Daily quote ----------
@@ -4121,7 +4201,7 @@ Total: ${fmtMoney(order.totalPrice ?? 0)}
 
     trackFPS();
     testInternetSpeed();
-    setInterval(testInternetSpeed, 6000);
+    setInterval(testInternetSpeed, 30000);
 
     // refresh elapsed timers / stats without needing DB changes
     setInterval(() => {
